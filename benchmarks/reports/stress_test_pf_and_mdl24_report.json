@@ -1,0 +1,40 @@
+{
+  "continuous_particle_filter_eig": {
+    "num_trials": 80,
+    "n_particles": 500,
+    "n_probe_steps": 8,
+    "random_probing": {
+      "mean_abs_estimation_error": 0.4291,
+      "mean_posterior_std": 0.5084,
+      "runtime_ms": 20.38
+    },
+    "eig_optimal_particle_filter": {
+      "mean_abs_estimation_error": 0.2258,
+      "mean_posterior_std": 0.2909,
+      "runtime_ms": 155.95
+    },
+    "error_reduction_factor": 1.9
+  },
+  "scaled_24task_mdl_library_benchmark": {
+    "total_tasks": 24,
+    "num_structural_families": 4,
+    "no_library": {
+      "total_search_nodes": 1440,
+      "total_mdl_ast_tokens": 792
+    },
+    "naive_accumulation_bloat": {
+      "library_entries": 24,
+      "total_mdl_ast_tokens": 792,
+      "cumulative_lookup_comparisons": 300
+    },
+    "stitch_mdl_refactored_library": {
+      "library_entries": 4,
+      "total_mdl_ast_tokens": 214,
+      "total_search_nodes": 528,
+      "cumulative_lookup_comparisons": 96,
+      "mdl_compression_ratio": 3.7,
+      "search_compute_reduction_pct": 63.33,
+      "lookup_bloat_reduction_factor": 3.12
+    }
+  }
+}

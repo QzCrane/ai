@@ -1,0 +1,24 @@
+{
+  "total_steps": 100,
+  "runtime_ms": 374.92,
+  "baseline_unfiltered_static": {
+    "cumulative_net_utility": 265.0,
+    "safety_barrier_violations": 100,
+    "catastrophic_errors": 41,
+    "search_compute_units": 250,
+    "committed_query_accuracy": 0.72,
+    "final_adapter_norm": 13.5875
+  },
+  "our_unified_closed_loop_system": {
+    "cumulative_net_utility": 2875.0,
+    "safety_barrier_violations": 0,
+    "catastrophic_errors": 3,
+    "search_compute_units": 60,
+    "compute_savings_pct": 76.0,
+    "committed_query_accuracy": 1.0,
+    "conformal_empirical_coverage": 1.0,
+    "loo_neuro_symbolic_routing_acc": 1.0,
+    "honest_abstentions": 14,
+    "final_adapter_norm": 1.0
+  }
+}

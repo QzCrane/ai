@@ -1,0 +1,94 @@
+{
+  "phase1_discovery": {
+    "task_a_attempts": 6,
+    "task_b_attempts": 6,
+    "task_a_lcp_divergence": {
+      "lcp_length": 9,
+      "first_divergence_index": 9,
+      "is_identical": false,
+      "is_prefix_relation": false
+    }
+  },
+  "phase2_abstraction_and_spd_compile": {
+    "ok": true,
+    "primitive_id": "prim_filter_scale_sum_v1",
+    "template_source": "def filter_scale_sum(xs, p1, p2):\n    return sum([x * p1 for x in xs if x > p2])\n",
+    "meta_params": [
+      "p1",
+      "p2"
+    ],
+    "compression_ratio": 1.481,
+    "compiler_report": {
+      "skill_id": "prim_filter_scale_sum_v1",
+      "compile_time_ms": 1.42,
+      "kkt_rel_err": 2.698e-08,
+      "non_target_drift": 0.0,
+      "trigger_threshold": 0.4974,
+      "subspace_conflicts": [],
+      "accepted": true
+    },
+    "rollback_snapshot_id": 0
+  },
+  "phase3_ood_reuse_and_abstention": {
+    "ood_task_result": {
+      "task_id": "task_c_UNSEEN_OOD_gt10_scale5_sum",
+      "mode": "REUSE_COMPILED_PRIMITIVE_OOD",
+      "route": "EXECUTE_COMPILED_PRIMITIVE",
+      "voc": {
+        "voc_primitive": 0.9192,
+        "voc_search": -0.6,
+        "voc_abstain": 0.0
+      },
+      "primitive_used": "prim_filter_scale_sum_v1",
+      "bound_params": [
+        5,
+        10
+      ],
+      "search_attempts": 1,
+      "elapsed_ms": 46.664,
+      "passed": true
+    },
+    "epistemic_abstention_check": {
+      "route": "ABSTAIN_INSUFFICIENT_EVIDENCE",
+      "voc": {
+        "voc_primitive": -1.0,
+        "voc_search": -2.25,
+        "voc_abstain": 0.0
+      }
+    }
+  },
+  "phase4_governance_and_safety": {
+    "sandbox_blocked_malicious_import": true,
+    "sandbox_error_msg": "ImportError: __import__ not found",
+    "rarity_critical_quarantine_blocked": true,
+    "one_click_rollback_succeeded": true,
+    "restored_version": 1
+  },
+  "phase5_tier_b_fista_nnls_kv": {
+    "compression_ratio": 10.0,
+    "output_cosine_similarity": 0.818596,
+    "compaction_time_ms": 1.211,
+    "C_K_shape": [
+      12,
+      32
+    ],
+    "C_V_shape": [
+      12,
+      32
+    ],
+    "beta_min_max": [
+      -13.8155,
+      2.8304
+    ]
+  },
+  "phase6_human_cognitive_summary": {
+    "active_primitives_count": 1,
+    "total_snapshots_for_rollback": 2,
+    "avg_discovery_search_attempts": 6.0,
+    "avg_ood_primitive_reuse_attempts": 1.0,
+    "search_space_shrink_factor": 6.0,
+    "compiled_subspace_operators": [
+      "prim_filter_scale_sum_v1"
+    ]
+  }
+}

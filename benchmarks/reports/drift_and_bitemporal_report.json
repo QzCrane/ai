@@ -1,0 +1,28 @@
+{
+  "nonstationary_drift_pomdp": {
+    "drift_onset_episode": 150,
+    "cusum_drift_detected_episode": 258,
+    "detection_delay_episodes": 108,
+    "post_drift_static_pomdp": {
+      "mean_net_utility": -9.13,
+      "catastrophic_error_rate": 0.4733
+    },
+    "post_drift_adaptive_pomdp": {
+      "mean_net_utility": 49.03,
+      "catastrophic_error_rate": 0.18
+    },
+    "learned_probe_A_accuracy_post_drift": 0.639
+  },
+  "bitemporal_contradiction_memory": {
+    "historical_query_2025": {
+      "answer": "ClampedLSTSQ",
+      "conflict": false
+    },
+    "current_query_2026": {
+      "answer": "FISTA_NNLS",
+      "best_source": "v2_audit_spec",
+      "conflict_flagged": true,
+      "coexisting_claims_count": 2
+    }
+  }
+}

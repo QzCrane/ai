@@ -1,0 +1,38 @@
+{
+  "closure1_online_mdl_refactoring": {
+    "mdl_before_chars": 158,
+    "mdl_after_chars": 157,
+    "delta_mdl_saved": 1,
+    "behavioral_equivalence_verified": true
+  },
+  "closure2_counterexample_refinement": {
+    "v1_passed_old_tests": true,
+    "v1_failed_counterexample": true,
+    "v1_counterexample_error": "ZeroDivisionError: division by zero",
+    "v2_passed_old_plus_counterexample": true,
+    "ir_upgraded_version": 2,
+    "counterexamples_retained_count": 1,
+    "rollback_snapshot_available": 0
+  },
+  "closure3_cross_backbone_migration": {
+    "backbone_A_compile_ms": 0.599,
+    "backbone_A_non_target_drift": 0.0,
+    "backbone_B_d_model": 256,
+    "backbone_B_recompile_ms": 0.701,
+    "backbone_B_non_target_drift": 0.0,
+    "backbone_B_behavioral_pass_rate": 1.0,
+    "raw_weights_copied": 0
+  },
+  "closure4_conflict_detection_and_resolution": {
+    "conflict_detected_automatically": true,
+    "detected_subspace_overlap": [
+      [
+        "skill_conflict_1",
+        1.0
+      ]
+    ],
+    "joint_spd_resolution_accepted": true,
+    "joint_spd_compile_ms": 0.503,
+    "joint_non_target_drift": 0.0
+  }
+}
