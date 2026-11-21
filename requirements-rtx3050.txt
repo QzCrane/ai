@@ -1,0 +1,92 @@
+# Sovereign AI Brain — RTX 3050 4GB Production Acceleration & Tooling Stack (v10.32, 2026-11-21 GitHub API Verified)
+# Organized by 16 functional domains with explicit conflict & sovereignty arbitration:
+#   - REJECTED conflicts (DO NOT INSTALL):
+#       * bitsandbytes (superseded by PolarExpressMuon+TorchAO+AutoRound)
+#       * ollama (single-slot concurrency cap on hybrid linear-attention models; 52x slower than SGLang/vLLM)
+#       * daytona (OSS repo archived to private codebase June 2026; use Apache-2.0 E2B + Firecracker)
+#       * arize-phoenix (non-OSI Elastic License 2.0 + Dynatrace acquisition Oct 2026; use MIT Langfuse)
+
+# [Domain 1] GPU Kernels & Compilers (Linux / WSL2 CUDA 12.x; FA4 is Scale-Up Hopper/Blackwell only)
+torch>=2.5.0
+numpy>=1.26.0
+flash-linear-attention>=0.2.0
+liger-kernel>=0.5.0
+cut-cross-entropy>=25.1.1
+# Serving & compiler backends:
+#   pip install flashinfer-python flashqla tilelang helion
+
+# [Domain 2] Quantization, QAT & Checkpoints (bitsandbytes REJECTED)
+safetensors>=0.4.5
+torchao>=0.8.0
+# Optional offline PTQ challenger:
+#   pip install auto-round
+
+# [Domain 3] Microsecond Constrained Decoding (<tool_call> JSON/CFG; CoT unconstrained)
+xgrammar>=0.1.18
+# Optional Rust challenger:
+#   pip install llguidance
+
+# [Domain 4] Serving & Edge Inference (Ollama REJECTED for prod/hybrid)
+#   - Hybrid GPU server (primary):     pip install sglang   (or challenger: vllm)
+#   - Local CPU/GPU single-user edge:  source build ggml-org/llama.cpp & microsoft/BitNet (bitnet.cpp)
+#   - Mobile / WebGPU edge:            pip install executorch  (or mlc-llm)
+
+# [Domain 5] Distributed Training, Optimizers & Async RLVR (Scale-Up / Phase 2)
+#   - Multi-GPU pretraining (primary): pip install torchtitan
+#   - Distributed Muon (6x faster):    pip install git+https://github.com/microsoft/dion.git
+#   - RLVR / Async Agent RL:           pip install verl areal  (challengers: slime, skyrl, prime-rl, openrlhf)
+
+# [Domain 6] Corpus Curation & Deduplication (30GB local = DataTrove; 10T+ GPU = NeMo Curator)
+datasets>=3.0.0
+datatrove>=0.4.0
+# Scale-Up 10T+ GPU dedup only:
+#   pip install nemo-curator
+
+# [Domain 7] Real Contamination-Resistant Benchmarks & Agent Evals
+lm-eval>=0.4.7
+inspect-ai>=0.3.0
+evalplus>=0.3.1
+# Optional coding-agent control plane reference:
+#   pip install openhands
+
+# [Domain 8] Hardware-Isolated Agent Sandboxes & Sovereign Observability (Daytona & Arize Phoenix REJECTED)
+#   - Hardware microVM sandbox:        firecracker-microvm/firecracker + pip install e2b
+#   - MIT self-hosted tracing/evals:   pip install langfuse
+
+# [Domain 9] Streaming DataLoaders, Rust Data Ops & Synthetic Pipelines
+polars>=1.0.0
+duckdb>=1.1.0
+# Optional fast streaming & synthetic curation (install via `uv pip install`):
+#   uv pip install litdata mosaicml-streaming distilabel bespokelabs-curator
+
+# [Domain 10] KV Offload, Sovereign Experiment Tracking & Safety Guardrails
+swanlab>=0.4.0
+# Optional KV offload & guardrail stacks:
+#   uv pip install lmcache mooncake-transfer-engine trackio mlflow nemoguardrails
+
+# [Domain 11] Formal Math/Code Verifiers & STEM Document Ingestion
+z3-solver>=4.13.0
+# Optional RLVR formal/code oracles & STEM PDF parsers:
+#   Lean 4 (elan) + pantograph + bytedance/SandboxFusion
+#   uv pip install mineru docling
+
+# [Domain 12] Local 0-VRAM Vector Retrieval & MCP Interop
+usearch>=2.15.0
+mcp>=1.2.0
+# Optional server-scale vector DB:
+#   uv pip install qdrant-client
+
+# [Domain 13] Code AST, Repo Search & Deterministic Linting
+tree-sitter>=0.23.0
+ruff>=0.8.0
+
+# [Domain 14] Web Extraction & Browser Exoskeleton
+trafilatura>=2.0.0
+# Optional agent browsing:
+#   uv pip install crawl4ai playwright
+
+# [Domain 15] White-Box Mechanistic Interpretability (TransformerLens REJECTED for DeltaNet+HoPE)
+#   uv pip install nnsight sae-lens
+
+# [Domain 16] Optional 0-Cloud Local Edge Speech I/O (CPU-only)
+#   source build ggml-org/whisper.cpp + uv pip install kokoro

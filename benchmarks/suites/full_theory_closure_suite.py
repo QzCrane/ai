@@ -20,6 +20,9 @@ Hardware-agnostic, pure closed-loop proof of the 4 remaining theoretical links:
 """
 from __future__ import annotations
 
+import pathlib as _p, sys as _s
+_h = str(_p.Path(__file__).resolve().parents[2] / 'src' / 'harness')
+if _h not in _s.path: _s.path.insert(0, _h)
 import json
 import os
 import sys

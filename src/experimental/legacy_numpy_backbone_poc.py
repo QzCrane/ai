@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-From-Scratch Sovereign Non-Transformer Hybrid AI Model Prototype (v2.0 — Faithful to Law 1)
+[LEGACY NUMPY PROTOTYPE — Superseded by src/brain/sovereign_brain_pytorch.py v1.4]
+From-Scratch Sovereign Non-Transformer Hybrid AI Model Prototype (v2.0 — Retained for legacy benchmark compatibility)
 ===========================================================================================
 Directly instantiates the Whitepaper's Three Master Equations & 5 Laws with ZERO contradiction:
   0. LosslessByteFrontend       (256-byte raw input, zero tokenizer blindspots)

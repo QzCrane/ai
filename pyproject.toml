@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sovereign-ai-brain"
+version = "8.0.0"
+description = "Sovereign AI Brain (Route B: 4GB VRAM Hybrid Gated DeltaNet + Looped Core + Deterministic Exoskeleton Harness)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+cuda = [
+    "torch>=2.3.0",
+]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

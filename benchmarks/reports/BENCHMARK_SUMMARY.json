@@ -1,0 +1,182 @@
+{
+  "schema_version": "v7.0-cto-ssot",
+  "total_raw_reports": 16,
+  "note": "Unified CTO index over all historical benchmark JSON reports (raw provenance files preserved untouched).",
+  "reports": [
+    {
+      "file": "deep_blindspots_report.json",
+      "lines": 27,
+      "top_keys": [
+        "blindspot1_multimodal_bures_wasserstein_ot",
+        "blindspot2_anti_goodhart_thresholdout",
+        "blindspot3_type_directed_dag_synthesis"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "deep_research_loo_conformal_cbf_report.json",
+      "lines": 59,
+      "top_keys": [
+        "exp1_loo_neuro_symbolic_router",
+        "exp2_conformal_prediction_abstention",
+        "exp3_cbf_safe_online_adaptation"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "drift_and_bitemporal_report.json",
+      "lines": 28,
+      "top_keys": [
+        "bitemporal_contradiction_memory",
+        "nonstationary_drift_pomdp"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "end_to_end_verification_report.json",
+      "lines": 94,
+      "top_keys": [
+        "phase1_discovery",
+        "phase2_abstraction_and_spd_compile",
+        "phase3_ood_reuse_and_abstention",
+        "phase4_governance_and_safety",
+        "phase5_tier_b_fista_nnls_kv",
+        "phase6_human_cognitive_summary"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "full_theory_closure_report.json",
+      "lines": 38,
+      "top_keys": [
+        "closure1_online_mdl_refactoring",
+        "closure2_counterexample_refinement",
+        "closure3_cross_backbone_migration",
+        "closure4_conflict_detection_and_resolution"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "immortal_ir_full_closure.json",
+      "lines": 84,
+      "top_keys": [
+        "audit_log",
+        "primitives",
+        "snapshot_count"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "master_18_problems_scorecard.json",
+      "lines": 80,
+      "top_keys": [
+        "all_6_suites_passed",
+        "hard_problems_summary",
+        "suite_execution_results"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "multi_agent_dag_report.json",
+      "lines": 21,
+      "top_keys": [
+        "consensus_submissions",
+        "dag_3node_branching_ood_result"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "non_transformer_backbone_report.json",
+      "lines": 31,
+      "top_keys": [
+        "backbone_passed",
+        "backbone_version",
+        "dense_quadratic_softmax_layers",
+        "erm_energies",
+        "erm_halted_at_loop",
+        "hybrid_ratio",
+        "mhc_row_col_max_err",
+        "muon_train_loss_end"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "pomdp_belief_verification_report.json",
+      "lines": 17,
+      "top_keys": [
+        "catastrophe_reduction_factor",
+        "episodes",
+        "naive_deterministic",
+        "pomdp_belief_voi_exoskeleton"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "shared_multi_agent_ir.json",
+      "lines": 150,
+      "top_keys": [
+        "audit_log",
+        "primitives",
+        "snapshot_count"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "stress_test_pf_and_mdl24_report.json",
+      "lines": 40,
+      "top_keys": [
+        "continuous_particle_filter_eig",
+        "scaled_24task_mdl_library_benchmark"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "stress_test_phase_transition_report.json",
+      "lines": 133,
+      "top_keys": [
+        "few_shot_ood_generalization_vs_failure_boundary",
+        "superposition_phase_transition_D512"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "suite12_frontier_laws_report.json",
+      "lines": 71,
+      "top_keys": [
+        "all_passed",
+        "belnap_b4_logic",
+        "code_lora_orthogonality_dilemma",
+        "hippo_cls_paradox",
+        "prospective_vs_retrospective_mdl",
+        "suite"
+      ],
+      "reported_status": true
+    },
+    {
+      "file": "unified_100step_stress_report.json",
+      "lines": 24,
+      "top_keys": [
+        "baseline_unfiltered_static",
+        "our_unified_closed_loop_system",
+        "runtime_ms",
+        "total_steps"
+      ],
+      "reported_status": null
+    },
+    {
+      "file": "unified_kernel_report.json",
+      "lines": 45,
+      "top_keys": [
+        "architecture_profile",
+        "chained_episode_summary",
+        "default_active_modules",
+        "route1_chained_episodes_passed",
+        "tier1_mvp_modules",
+        "tier2_armor_modules",
+        "tier3_opt_in_plugins_catalog",
+        "tier3_opt_in_plugins_passed"
+      ],
+      "reported_status": null
+    }
+  ]
+}

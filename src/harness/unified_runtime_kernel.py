@@ -459,6 +459,8 @@ class EnergyBudgetAnytimeController:
         best_halt_step = 0
         summaries: Dict[str, Dict[str, Any]] = {}
         for tid, energies in candidate_energy_trajectories.items():
+            if not energies:
+                continue
             halt_step = len(energies)
             min_e = energies[0]
             min_idx = 1
@@ -630,6 +632,8 @@ class MultiTurnConformalAbstentionGate:
             return {"decision": "ABSTAIN_ADVERSARIAL_EXCHANGEABILITY_BROKEN", "prediction_set": [], "conformal_valid": False}
         alpha_t = self.total_alpha / self.max_turns
         n = len(self.cal_scores)
+        if n == 0:
+            return {"decision": "ABSTAIN_EMPTY_CALIBRATION", "prediction_set": [], "conformal_valid": False}
         q_idx = min(n - 1, int(np.ceil((n + 1) * (1.0 - alpha_t))) - 1)
         q_hat = float(self.cal_scores[max(0, q_idx)])
         # Include candidates whose nonconformity score (1 - prob) <= q_hat
@@ -689,7 +693,8 @@ class DeterministicEnvelopeRewindLog:
             return {"committed": False, "reason": "REJECTED_VDEP_STALE_LINEAGE"}
         if not exit_check_passed:
             return {"committed": False, "reason": "REJECTED_ENVELOPE_EXIT_CHECK_FAILED"}
-        return {"committed": True, "checkpoint_idx": len(self.checkpoints) - 1, "chain_hash": self._commit_root(label, candidate_state)}
+        chain_hash = self._commit_root(label, candidate_state)
+        return {"committed": True, "checkpoint_idx": len(self.checkpoints) - 1, "chain_hash": chain_hash}
 
     def rewind_to(self, checkpoint_idx: int, falsified_hypothesis: str) -> Dict[str, Any]:
         self.checkpoints = self.checkpoints[: checkpoint_idx + 1]
