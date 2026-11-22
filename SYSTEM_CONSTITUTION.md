@@ -131,6 +131,12 @@
       2. **语料数据集（Hugging Face Hub API 实测）**：调用 `audit_corpus_sources_liveness()` 前置核验全量 `hf_id` 零 `404`/零 `disabled`，并对 `gated=True` 数据集（如 `BAAI/Infinity-Instruct`、`nvidia/Nemotron-CC-Math-v1`）强制前置提示 `HF_TOKEN` 授权，绝不在开训后中途 401 崩盘；
       3. **突破论文与报告（arXiv 年份分布 + 前置去重 + 证伪配对）**：保持全库 2025–2026 前沿占比 `>= 95%`（当前 `98.4%`），结合 Step 1.5 前置机器查重与反向盲搜，持续淘汰过期基线与已证伪路线。
 
+
+28. **第 28 条（原生 Windows 零虚拟化、流式打散混写与元认知刹车律，v11.0 固化）**：
+    - **原生 Windows 优先**：RTX 3050 4GB 宿主机优先运行原生 Windows + `PyTorch 2.15 (CUDA)` + 官方 `triton-lang/triton-windows` 3.9（全缓存锁死 `D:\Environment\.cache`），所有 CPU 驻留 `CPUPinnedEngramMemory` 查找必须处于 `@torch.compiler.disable` 边界内；
+    - **流式语料防偏科**：任何流式截取构建 `.bin` 必须同时开启分片/缓冲 `.shuffle()` 与 `weighted_interleave=True` 加权交错混写，并用 5 维硬特征前置掐尖筛除低熵水文；
+    - **显式洞与诚实刹车**：底层因果 IR 零未定义行为，顶层意图缺失必须显式编码为 `UnresolvedHole`，并由 `GracefulRLRewardEngine` 强制施加 `做对 > 诚实报洞/拒答 > 瞎编` 偏序激励。
+
 ## 七、单轮研究与架构演进完整标准执行闭环（8-Step Per-Round SOP）
 
 每一轮前沿深挖与架构迭代必须严格按以下 **8 步闭环** 顺序执行，缺一不可：

@@ -1633,9 +1633,119 @@ class CrossMechanismInterferenceMatrixGuard:
             conflicts.append("fused_scalar_ce_kernel_conflicts_with_per_token_selective_loss")
             mitigations.append("use_vectorized_per_tok_ce_for_256byte_selective_loss_or_disable_selective_for_fused_ce")
 
+        # 11. v11.0: Native Windows triton-windows torch.compile x CPU-resident Engram pointer boundary
+        if bool(cfg.get("torch_compile_whole_model", False)) and bool(cfg.get("cpu_pinned_engram_enabled", True)) and not bool(cfg.get("engram_compiler_disabled", True)):
+            conflicts.append("triton_windows_cpu_pointer_crash")
+            mitigations.append("wrap_cpu_engram_lookup_with_torch_compiler_disable")
+
+        # 12. v11.0: Streaming corpus truncation without shard shuffle or weighted interleave
+        if bool(cfg.get("streaming_corpus_slice", False)) and (not bool(cfg.get("shard_shuffle_enabled", True)) or not bool(cfg.get("weighted_interleave_enabled", True))):
+            conflicts.append("sequential_shard_truncation_and_source_forgetting")
+            mitigations.append("enable_hf_streaming_shuffle_and_weighted_interleave")
+
         return {
             "safe": len(conflicts) == 0,
-            "checked_pairs": 10,
+            "checked_pairs": 12,
             "conflicts": conflicts,
             "mitigations": mitigations,
         }
+
+
+class GracefulRLRewardEngine:
+    """v11.0 GracefulRL (arXiv:2610.20401): Strict reward ordering
+    Success (+1.0) > HonestFallback/Abstain/HoleAlert (+0.20) > Fabrication/Hallucination (-1.0),
+    with an anti-over-refusal penalty (-0.25) when abstaining on an answerable in-distribution task.
+    """
+
+    def __init__(
+        self,
+        r_success: float = 1.0,
+        r_honest_fallback: float = 0.20,
+        r_over_refusal: float = -0.25,
+        r_fabrication: float = -1.0,
+    ) -> None:
+        self.r_success = float(r_success)
+        self.r_honest_fallback = float(r_honest_fallback)
+        self.r_over_refusal = float(r_over_refusal)
+        self.r_fabrication = float(r_fabrication)
+
+    def score_outcome(
+        self,
+        is_correct: bool,
+        abstained_or_flagged_hole: bool,
+        is_answerable: bool = True,
+    ) -> Dict[str, object]:
+        if abstained_or_flagged_hole:
+            if not is_answerable:
+                return {"reward": self.r_honest_fallback, "label": "honest_fallback"}
+            return {"reward": self.r_over_refusal, "label": "over_refusal"}
+        if is_correct and is_answerable:
+            return {"reward": self.r_success, "label": "success"}
+        return {"reward": self.r_fabrication, "label": "fabrication"}
+
+    def compute_graceful_group_advantages(self, outcomes: List[Dict[str, bool]]) -> List[float]:
+        rewards = [
+            float(
+                self.score_outcome(
+                    is_correct=bool(o.get("is_correct", False)),
+                    abstained_or_flagged_hole=bool(o.get("abstained_or_flagged_hole", False)),
+                    is_answerable=bool(o.get("is_answerable", True)),
+                )["reward"]
+            )
+            for o in outcomes
+        ]
+        if not rewards:
+            return []
+        mean_r = sum(rewards) / len(rewards)
+        var_r = sum((r - mean_r) ** 2 for r in rewards) / len(rewards)
+        std_r = max(1e-6, var_r ** 0.5)
+        return [round((r - mean_r) / std_r, 6) for r in rewards]
+
+
+class AristotelianNeighborhoodProbe:
+    """v11.0 Representation Convergence Probe (arXiv:2602.14486 / arXiv:2609.27252):
+    Measures local topological neighborhood agreement (mutual k-NN overlap, mKNN) across
+    two representation spaces (N, D1) and (N, D2), invariant to global rotation/stretching
+    and compatible even when D1 != D2.
+    """
+
+    def compute_mknn_overlap(self, rep_a: torch.Tensor, rep_b: torch.Tensor, k: int = 5) -> Dict[str, float]:
+        n = int(rep_a.size(0))
+        if n <= 1 or int(rep_b.size(0)) != n:
+            return {"mknn_overlap": 0.0, "k": 0, "n": n}
+        k_eff = max(1, min(int(k), n - 1))
+        a = F.normalize(rep_a.detach().float(), dim=-1)
+        b = F.normalize(rep_b.detach().float(), dim=-1)
+        sim_a = a @ a.T
+        sim_b = b @ b.T
+        sim_a.fill_diagonal_(-1e9)
+        sim_b.fill_diagonal_(-1e9)
+        nn_a = torch.topk(sim_a, k=k_eff, dim=-1).indices.tolist()
+        nn_b = torch.topk(sim_b, k=k_eff, dim=-1).indices.tolist()
+        overlaps = [len(set(ra).intersection(rb)) / float(k_eff) for ra, rb in zip(nn_a, nn_b)]
+        mean_overlap = sum(overlaps) / len(overlaps)
+        random_baseline = float(k_eff) / float(n - 1)
+        calibrated_lift = (mean_overlap - random_baseline) / max(1e-6, 1.0 - random_baseline)
+        return {
+            "mknn_overlap": round(mean_overlap, 4),
+            "random_baseline": round(random_baseline, 4),
+            "calibrated_lift": round(calibrated_lift, 4),
+            "k": k_eff,
+            "n": n,
+        }
+
+
+def evaluate_v11_graceful_and_topology(
+    outcomes: List[Dict[str, bool]],
+    rep_a: torch.Tensor,
+    rep_b: torch.Tensor,
+    k: int = 5,
+) -> Dict[str, object]:
+    """v11.0 live evaluation hook combining GracefulRLRewardEngine (arXiv:2610.20401)
+    and AristotelianNeighborhoodProbe (arXiv:2602.14486)."""
+    grl = GracefulRLRewardEngine()
+    probe = AristotelianNeighborhoodProbe()
+    return {
+        "graceful_advantages": grl.compute_graceful_group_advantages(outcomes),
+        "aristotelian_mknn": probe.compute_mknn_overlap(rep_a, rep_b, k=k),
+    }

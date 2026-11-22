@@ -497,3 +497,27 @@ class ERJEPAMunkeyDualMemoryController:
             "jepa_consistent": float(latent_jepa_err) <= 0.25,
             "deleted_key_count": len(self._deleted_keys),
         }
+
+
+def v11_live_runtime_hooks(hidden_dim: int = 64) -> dict:
+    """v11.0 Live Runtime Wiring: invokes build_external_backbone_engram_adapter and
+    evaluate_v11_graceful_and_topology for dual-path (Route B + 2B external backbone) execution."""
+    import torch
+    from sovereign_brain_pytorch import build_external_backbone_engram_adapter
+    from training_engine import evaluate_v11_graceful_and_topology
+
+    adapter = build_external_backbone_engram_adapter(hidden_dim=hidden_dim, slots=256, engram_dim=min(32, hidden_dim))
+    diag = evaluate_v11_graceful_and_topology(
+        [
+            {"is_correct": True, "abstained_or_flagged_hole": False, "is_answerable": True},
+            {"is_correct": False, "abstained_or_flagged_hole": True, "is_answerable": False},
+        ],
+        torch.randn(10, 8),
+        torch.randn(10, 8),
+        k=3,
+    )
+    return {
+        "adapter_gate_init": float(adapter.gate.detach().item()),
+        "graceful_advantages": diag["graceful_advantages"],
+        "probe_ready": "mknn_overlap" in diag["aristotelian_mknn"],
+    }

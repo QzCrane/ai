@@ -1549,7 +1549,7 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
             "real_anchor_ratio": 0.80,
         })
         self.assertTrue(clean["safe"])
-        self.assertEqual(clean["checked_pairs"], 10)
+        self.assertEqual(clean["checked_pairs"], 12)
 
         broken = guard.audit_stack_compatibility({
             "epoch_progress": 1.2, "engram_lr": 0.05,
@@ -2127,7 +2127,7 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
         guard = te.CrossMechanismInterferenceMatrixGuard()
         ok_res = guard.audit_stack_compatibility({"use_ube_codec": True, "enable_rho1_mask": True, "ube_aware_mask": True})
         self.assertTrue(ok_res["safe"])
-        self.assertEqual(ok_res["checked_pairs"], 10)
+        self.assertEqual(ok_res["checked_pairs"], 12)
 
         bad_res = guard.audit_stack_compatibility({
             "use_ube_codec": True, "enable_rho1_mask": True, "ube_aware_mask": False,
@@ -2192,6 +2192,247 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
         for w in ("tree_sitter", "ruff", "ripgrep", "crawl4ai", "playwright", "trafilatura", "nnsight", "sae_lens", "whisper_cpp", "kokoro"):
             self.assertIn(w, probe["details"])
             self.assertTrue(probe["details"][w]["url"].startswith("https://"))
+
+
+
+    def test_241_v11_engineering_fusion_complete(self):
+        """v11.0 Gate: Verify native Windows runtime guard, streaming shuffle+weighted_interleave+5-dim filter,
+        5-primitive CausalIRConflictGenerator, ZeroInitGatedEngramAdapter, 12-pair interference matrix,
+        GracefulRLRewardEngine, and AristotelianNeighborhoodProbe."""
+        import tempfile
+        import torch
+        import prepare_seed_corpus as psc
+        import sovereign_brain_pytorch as sbp
+        import training_engine as te
+        import ecosystem_backends as eb
+
+        # 1. Super-dense v11 profile checks (zero gated repos, >=60% real anchor, 100% Tier-S 2025-2026)
+        prof = psc.CORPUS_PROFILES["rtx3050_4gb_super_dense_v11"]
+        self.assertEqual(prof.target_mb, 2048)
+        total_w = sum(s.weight for s in prof.sources)
+        self.assertAlmostEqual(total_w, 1.0, places=5)
+        real_w = sum(s.weight for s in prof.sources if s.category.startswith("real_"))
+        self.assertGreaterEqual(real_w, 0.60)
+        self.assertTrue(all(s.vintage_year >= 2025 and s.quality_tier == "S" for s in prof.sources))
+        self.assertNotIn("BAAI/Infinity-Instruct", [s.hf_id for s in prof.sources])
+
+        # 2. 5-dim super-density filter + weighted_interleave in write_deduped_stream
+        junk = "aaaa " * 100
+        good = (
+            "def verify_invariant(x, limit):\n"
+            "    # Because x + base must satisfy constraint <= limit, verify contradiction and fix.\n"
+            "    if x > limit:\n"
+            "        return limit\n"
+            "    return x\n"
+        )
+        self.assertFalse(psc.score_super_density_sample(junk, "real_edu_en")["passed"])
+        self.assertTrue(psc.score_super_density_sample(good, "real_code")["passed"])
+
+        s1 = psc.DatasetSource("src_code", "dummy/code", None, "train", "text", None, 0.5, "real_code", 2026, "S")
+        s2 = psc.DatasetSource("src_math", "dummy/math", None, "train", "text", None, 0.5, "real_edu_en", 2026, "S")
+        rows_code = [{"text": f"def f_{i}(x):\n    # Because invariant constraint holds, verify error and fix {i}\n    return x + {i}\n"} for i in range(6)]
+        rows_math = [{"text": f"Assume constraint C_{i} holds; therefore verify counterexample and fix contradiction {i}."} for i in range(6)]
+        with tempfile.TemporaryDirectory() as td:
+            out_bin = Path(td) / "interleaved.bin"
+            rep = psc.write_deduped_stream(
+                out_bin,
+                [(s1, rows_code), (s2, rows_math)],
+                target_bytes=2048,
+                weighted_interleave=True,
+                enable_super_density_filter=True,
+                min_density_score=0.35,
+            )
+            self.assertTrue(rep["weighted_interleave"])
+            self.assertGreater(rep["bytes_by_source"]["src_code"], 0)
+            self.assertGreater(rep["bytes_by_source"]["src_math"], 0)
+
+        # 3. 5-primitive CausalIRConflictGenerator (normal conflict + explicit UnresolvedHole + Context Distillation)
+        gen = psc.CausalIRConflictGenerator()
+        c_fix = gen.generate_case(seed=7, skin="commerce_order", inject_unresolved_hole=False, context_distillation=True)
+        self.assertTrue(c_fix["conflict_detected"])
+        self.assertEqual(c_fix["verdict"], "MINIMAL_INTERVENTION_VERIFIED")
+        self.assertNotIn("[Rule:", c_fix["prompt"])
+        c_hole = gen.generate_case(seed=8, skin="approval_workflow", inject_unresolved_hole=True, context_distillation=False)
+        self.assertTrue(c_hole["has_unresolved_hole"])
+        self.assertEqual(c_hole["verdict"], "ABSTAIN_AND_SURFACE_TRADEOFF")
+        self.assertIn("[Rule:", c_hole["prompt"])
+        self.assertEqual(len(gen.generate_batch(6)), 6)
+
+        # 4. ZeroInitGatedEngramAdapter real PyTorch forward/backward (exact identity at step 0 + gradient flow)
+        adapter = sbp.ZeroInitGatedEngramAdapter(hidden_dim=64, slots=512, engram_dim=32)
+        h_in = torch.randn(2, 6, 64, requires_grad=True)
+        toks = torch.randint(0, 1000, (2, 6))
+        h_out = adapter(h_in, toks)
+        self.assertEqual(float((h_out - h_in).abs().max().item()), 0.0)
+        (h_out.pow(2).mean()).backward()
+        self.assertIsNotNone(adapter.gate.grad)
+
+        # 5. 12-pair CrossMechanismInterferenceMatrixGuard catches #11 (Triton CPU Engram) and #12 (unshuffled stream)
+        guard = te.CrossMechanismInterferenceMatrixGuard()
+        bad_v11 = guard.audit_stack_compatibility({
+            "torch_compile_whole_model": True,
+            "cpu_pinned_engram_enabled": True,
+            "engram_compiler_disabled": False,
+            "streaming_corpus_slice": True,
+            "shard_shuffle_enabled": False,
+            "weighted_interleave_enabled": False,
+        })
+        self.assertFalse(bad_v11["safe"])
+        self.assertEqual(bad_v11["checked_pairs"], 12)
+        self.assertIn("triton_windows_cpu_pointer_crash", bad_v11["conflicts"])
+        self.assertIn("sequential_shard_truncation_and_source_forgetting", bad_v11["conflicts"])
+
+        # 6. GracefulRLRewardEngine strict ordering & group advantage normalization
+        grl = te.GracefulRLRewardEngine()
+        r_ok = grl.score_outcome(True, False, True)["reward"]
+        r_fb = grl.score_outcome(False, True, False)["reward"]
+        r_or = grl.score_outcome(False, True, True)["reward"]
+        r_fab = grl.score_outcome(False, False, True)["reward"]
+        self.assertTrue(r_ok > r_fb > r_or > r_fab)
+        adv = grl.compute_graceful_group_advantages([
+            {"is_correct": True, "abstained_or_flagged_hole": False, "is_answerable": True},
+            {"is_correct": False, "abstained_or_flagged_hole": True, "is_answerable": False},
+            {"is_correct": False, "abstained_or_flagged_hole": False, "is_answerable": True},
+        ])
+        self.assertEqual(len(adv), 3)
+        self.assertGreater(adv[0], adv[1])
+        self.assertGreater(adv[1], adv[2])
+
+        # 7. AristotelianNeighborhoodProbe local mKNN rotation invariance across mismatched dims
+        probe = te.AristotelianNeighborhoodProbe()
+        torch.manual_seed(0)
+        rep_a = torch.randn(24, 16)
+        q_rot, _ = torch.linalg.qr(torch.randn(16, 16))
+        rep_b = torch.cat([rep_a @ q_rot, torch.zeros(24, 8)], dim=-1)
+        mknn = probe.compute_mknn_overlap(rep_a, rep_b, k=5)
+        self.assertAlmostEqual(mknn["mknn_overlap"], 1.0, places=4)
+        self.assertAlmostEqual(mknn["calibrated_lift"], 1.0, places=4)
+
+        # 8. WindowsNativeRuntimeGuard + 2026-11 edge backbones registry
+        wguard = eb.WindowsNativeRuntimeGuard()
+        env_map = wguard.build_env_vars(r"D:\Environment\.cache")
+        self.assertTrue(env_map["TRITON_CACHE_DIR"].startswith(r"D:\Environment\.cache"))
+        budget = wguard.recommend_micro_batch_budget(3100.0)
+        self.assertEqual(budget["recommended_num_workers_windows"], 0)
+        self.assertTrue(budget["avoid_fp8_on_ampere_sm86"])
+        audit_w = wguard.audit_windows_native_stack()
+        self.assertIn("olala_v1_mini_7a1b", audit_w["edge_backbones_2026_11"])
+        self.assertIn("nemotron_3_5_bolt_e4b_4gb", audit_w["edge_backbones_2026_11"])
+        import wake_sleep_runtime as wsr
+        hooks = wsr.v11_live_runtime_hooks(hidden_dim=64)
+        self.assertEqual(hooks["adapter_gate_init"], 0.0)
+        self.assertTrue(hooks["probe_ready"])
+
+    def test_242_v12_full_repo_windows_cli_and_data_closure(self) -> None:
+        """v12.0 Gate: Verify full-repo 2026-11 dependency alignment, Windows D-drive scripts, CLI aliases & --data-bin memmap training."""
+        import subprocess, sys, tempfile
+        from pathlib import Path
+        from src.brain.ecosystem_backends import WindowsNativeRuntimeGuard
+
+        repo = Path(__file__).resolve().parents[1]
+
+        # 1. Dependency specs & WindowsNativeRuntimeGuard alignment
+        pyproj = (repo / "pyproject.toml").read_text(encoding="utf-8")
+        req3050 = (repo / "requirements-rtx3050.txt").read_text(encoding="utf-8")
+        self.assertIn('version = "12.2.0"', pyproj)
+        self.assertIn('requires-python = ">=3.11"', pyproj)
+        self.assertIn("torch>=2.15.0", req3050)
+        self.assertIn("triton-windows>=3.9.0", req3050)
+        self.assertIn("flash-linear-attention>=0.6.0", req3050)
+        self.assertIn("liger-kernel>=0.8.5", req3050)
+        self.assertIn("datasets>=5.2.0", req3050)
+        self.assertIn("torchao>=0.18.0", req3050)
+        self.assertIn("hf-xet>=1.8.0", req3050)
+        self.assertIn("transformers>=5.24.0", req3050)
+
+        guard = WindowsNativeRuntimeGuard()
+        self.assertEqual(guard.RECOMMENDED_PYTHON, "3.15")
+        self.assertEqual(guard.SUPPORTED_PYTORCH, "2.15.0")
+        self.assertEqual(guard.DEFAULT_CUDA_WHEEL, "cu134")
+
+        # 2. Native Windows zero-C-drive bootstrap & smoke scripts
+        setup_ps1 = (repo / "scripts/setup_windows_d_drive.ps1").read_text(encoding="utf-8")
+        smoke_ps1 = (repo / "scripts/run_smoke_windows.ps1").read_text(encoding="utf-8")
+        self.assertIn("D:\\Environment", setup_ps1)
+        self.assertIn("triton-windows", setup_ps1)
+        self.assertIn("cu134", setup_ps1)
+        self.assertIn("--super-density", smoke_ps1)
+        self.assertIn("--data-bin", smoke_ps1)
+
+        # 3. prepare_seed_corpus.py default profile + --target-mb / --output-dir CLI
+        psc_help = subprocess.check_output(
+            [sys.executable, str(repo / "src/brain/prepare_seed_corpus.py"), "--help"],
+            text=True,
+        )
+        self.assertIn("--output-dir", psc_help)
+        self.assertIn("--target-mb", psc_help)
+        self.assertIn("--causal-ir-samples", psc_help)
+
+        # 4. sovereign_brain_pytorch.py --data-bin memmap training end-to-end (tiny_ci, 2 steps)
+        with tempfile.TemporaryDirectory() as td:
+            bin_path = Path(td) / "smoke.bin"
+            ckpt_path = Path(td) / "out" / "smoke.pt"
+            bin_path.write_bytes((b"def f(x): return x + 1\n" * 64))
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(repo / "src/brain/sovereign_brain_pytorch.py"),
+                    "--config", "micro_debug",
+                    "--data-bin", str(bin_path),
+                    "--seq-len", "64",
+                    "--steps", "2",
+                    "--save-path", str(ckpt_path),
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            self.assertIn("Loaded memmap corpus", proc.stdout)
+            self.assertIn("tok/s=", proc.stdout)
+            self.assertTrue(ckpt_path.is_file())
+
+
+    def test_243_v12_1_simhash_band_index_real_sources_and_warmup_timing(self) -> None:
+        """v12.1 Gate: Verify O(1) 4-band SimHashBandIndex exactness, real non-empty code/zh HF sources, and warmup steady-state timing."""
+        import random, subprocess, sys, tempfile
+        from pathlib import Path
+        from src.brain.prepare_seed_corpus import CORPUS_PROFILES, SimHashBandIndex
+
+        rng = random.Random(2026)
+        idx = SimHashBandIndex(max_hamming=3)
+        naive: list[int] = []
+        base_fps = [rng.getrandbits(64) or 1 for _ in range(200)]
+        probe_fps = list(base_fps)
+        for fp in base_fps[:40]:
+            probe_fps.append(fp ^ (1 << 5))
+            probe_fps.append(fp ^ ((1 << 3) | (1 << 21)))
+            probe_fps.append(fp ^ ((1 << 1) | (1 << 19) | (1 << 45)))
+            probe_fps.append(fp ^ ((1 << 2) | (1 << 18) | (1 << 34) | (1 << 50)))
+
+        for fp in probe_fps:
+            got = idx.check_and_add(fp)
+            exp = any((fp ^ prev).bit_count() <= 3 for prev in naive)
+            if not exp:
+                naive.append(fp)
+            self.assertEqual(got, exp, f"SimHashBandIndex mismatch on fp={fp:#x}")
+
+        all_hf_ids = {s.hf_id for p in CORPUS_PROFILES.values() for s in p.sources}
+        all_subsets = {s.subset for p in CORPUS_PROFILES.values() for s in p.sources}
+        self.assertNotIn("nvidia/Nemotron-Pretraining-Code-v3", all_hf_ids)
+        self.assertIn("nvidia/OpenCodeReasoning", all_hf_ids)
+        self.assertIn("Ultra-FineWeb-L3-zh-QA-Synthetic", all_subsets)
+        self.assertIn("Ultra-FineWeb-L3-zh-Multi-Style-Synthetic", all_subsets)
+
+        repo = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as td:
+            ckpt = Path(td) / "w.pt"
+            proc = subprocess.run(
+                [sys.executable, str(repo / "src/brain/sovereign_brain_pytorch.py"),
+                 "--config", "micro_debug", "--warmup-steps", "1", "--steps", "3", "--save-path", str(ckpt)],
+                capture_output=True, text=True, check=True,
+            )
+            self.assertIn("ms/step=", proc.stdout)
+            self.assertIn("tok/s=", proc.stdout)
 
 
 if __name__ == "__main__":

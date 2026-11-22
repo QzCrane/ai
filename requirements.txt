@@ -1,5 +1,12 @@
-torch>=2.4.0
-numpy>=2.0.0
-scipy>=1.13.0
-datasets>=3.0.0
+# Core Sovereign AI Brain runtime (v12.2, 2026-11-22 Verified Latest; Python 3.15.2 / 3.14)
+# On Native Windows GPU (driver >= R615, e.g. 621.24), install PyTorch 2.15.0+cu134 first:
+#   pip install -U torch --index-url https://download.pytorch.org/whl/cu134
+torch>=2.15.0
+triton-windows>=3.9.0,<3.10.0; sys_platform == 'win32'
+numpy>=2.5.5
+scipy>=1.18.1
+datasets>=5.2.0
+safetensors>=0.8.0
+huggingface-hub>=2.4.0
+hf-xet>=1.8.0
 pytest>=8.0.0

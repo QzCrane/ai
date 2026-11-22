@@ -1,5 +1,10 @@
 __pycache__/
 *.py[cod]
+
+# local secrets — never commit
+.env
+.env.*
+!.env.example
 *$py.class
 .pytest_cache/
 *.egg-info/

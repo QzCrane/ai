@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import zlib
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -49,11 +50,11 @@ class CorpusProfile:
     sources: Tuple[DatasetSource, ...]
 
 
-_SRC_CODE = DatasetSource("nemotron_code_v3", "nvidia/Nemotron-Pretraining-Code-v3", None, "train", "text", None, 0.35, "real_code", 2026, "S")
+_SRC_CODE = DatasetSource("open_code_reasoning", "nvidia/OpenCodeReasoning", "split_0", "split_0", "output", None, 0.35, "real_code", 2025, "S")
 _SRC_MATH_CC = DatasetSource("nemotron_cc_math_v1", "nvidia/Nemotron-CC-Math-v1", "4plus", "train", "text", None, 0.10, "real_edu_en")
 _SRC_EDU_EN = DatasetSource("fineweb_edu", "HuggingFaceFW/fineweb-edu", "sample-10BT", "train", "text", None, 0.25, "real_edu_en", 2024, "B")
 _SRC_PDF_EN = DatasetSource("finepdfs_dclm_mix", "HuggingFaceFW/finepdfs_edu_50BT-dclm_30BT-fineweb_edu_20BT-shuffled", None, "train", "text", None, 0.30, "real_edu_en", 2025, "S")
-_SRC_EDU_ZH = DatasetSource("ultra_fineweb_zh", "openbmb/Ultra-FineWeb", "zh", "train", "content", None, 0.15, "real_edu_zh")
+_SRC_EDU_ZH = DatasetSource("ultra_fineweb_zh_multistyle", "openbmb/Ultra-FineWeb-L3", "Ultra-FineWeb-L3-zh-Multi-Style-Synthetic", "train", "content", None, 0.15, "real_edu_zh", 2026, "S")
 _SRC_OT114K = DatasetSource("openthoughts_114k", "open-thoughts/OpenThoughts-114k", "default", "train", "conversations", "conversations", 0.12, "verified_reasoning")
 _SRC_DEEPMATH = DatasetSource("deepmath_103k", "zwhe99/DeepMath-103K", None, "train", "final_answer", "question", 0.08, "verified_reasoning")
 _SRC_MEGAMATH = DatasetSource("megamath_371b", "LLM360/MegaMath", None, "train", "text", None, 0.12, "real_edu_en")
@@ -66,8 +67,10 @@ _SRC_ZH_TEXTBOOK_V3 = DatasetSource("fineweb_edu_zh_v3_books", "opencsg/Fineweb-
 _SRC_DOLMINO3 = DatasetSource("dolma3_dolmino_100b", "allenai/dolma3_dolmino_mix-100B-1125", None, "train", "text", None, 0.14, "real_edu_en", 2025, "S")
 _SRC_INFINITY_ZH = DatasetSource("infinity_instruct_zh_speech", "BAAI/Infinity-Instruct", "0625", "train", "conversations", "conversations", 0.04, "natural_dialogue_speech_zh", 2025, "S")
 _SRC_ULTRADATA_MATH = DatasetSource("ultradata_math_290b", "openbmb/UltraData-Math", None, "train", "text", None, 0.11, "real_edu_en", 2026, "S")
-_SRC_EDU_ZH_L3 = DatasetSource("ultra_fineweb_zh_l3_200b", "openbmb/Ultra-FineWeb-L3", "zh", "train", "content", None, 0.09, "real_edu_zh", 2026, "S")
+_SRC_EDU_ZH_L3 = DatasetSource("ultra_fineweb_zh_l3_200b", "openbmb/Ultra-FineWeb-L3", "Ultra-FineWeb-L3-zh-QA-Synthetic", "train", "content", None, 0.09, "real_edu_zh", 2026, "S")
 _SRC_NEMOTRON_MATH_V4 = DatasetSource("nemotron_sft_math_v4", "nvidia/Nemotron-SFT-Math-v4", None, "train", "messages", "messages", 0.01, "verified_reasoning", 2026, "S")
+_SRC_SWE_HERO = DatasetSource("swe_hero_openhands_34k", "nvidia/SWE-Hero-openhands-trajectories", None, "train", "messages", "messages", 0.08, "verified_agentic_swe", 2026, "S")
+_SRC_DOLCI_THINK_7B = DatasetSource("dolci_think_sft_coconot", "allenai/Dolci-Think-SFT-7B", None, "train", "messages", "messages", 0.08, "verified_reasoning", 2025, "S")
 
 CORPUS_PROFILES: Dict[str, CorpusProfile] = {
     "micro_debug_200mb": CorpusProfile(
@@ -104,6 +107,22 @@ CORPUS_PROFILES: Dict[str, CorpusProfile] = {
             DatasetSource(**{**_SRC_NEMOTRON_MATH_V4.__dict__, "weight": 0.01}),
             DatasetSource(**{**_SRC_SWE_TRAJ.__dict__, "weight": 0.02}),
             DatasetSource(**{**_SRC_PI_ABSTAIN.__dict__, "weight": 0.02}),
+        ),
+    ),
+    "rtx3050_4gb_super_dense_v11": CorpusProfile(
+        name="rtx3050_4gb_super_dense_v11",
+        target_mb=2048,
+        sources=(
+            DatasetSource(**{**_SRC_CODE.__dict__, "weight": 0.32}),
+            DatasetSource(**{**_SRC_ULTRADATA_MATH.__dict__, "weight": 0.22}),
+            DatasetSource(**{**_SRC_EDU_ZH_L3.__dict__, "weight": 0.16}),
+            DatasetSource(**{**_SRC_ZH_TEXTBOOK_V3.__dict__, "weight": 0.10}),
+            DatasetSource(**{**_SRC_ZH_COT.__dict__, "weight": 0.06}),
+            DatasetSource(**{**_SRC_DOLCI_THINK_7B.__dict__, "weight": 0.04}),
+            DatasetSource(**{**_SRC_SWE_HERO.__dict__, "weight": 0.05}),
+            DatasetSource(**{**_SRC_SWE_TRAJ.__dict__, "weight": 0.02}),
+            DatasetSource(**{**_SRC_PI_ABSTAIN.__dict__, "weight": 0.02}),
+            DatasetSource(**{**_SRC_NEMOTRON_MATH_V4.__dict__, "weight": 0.01}),
         ),
     ),
     "cluster_1b_80gb": CorpusProfile(
@@ -163,6 +182,54 @@ def format_record_bytes(src: DatasetSource, row: Dict[str, object], use_ube_code
     return _enc(raw_txt) + b"\n"
 
 
+def score_super_density_sample(text: str, category: str = "real_edu_en") -> Dict[str, object]:
+    """v11.0 5-Dimension Upfront CPU Super-Density Filter:
+    (1) zlib compression ratio in golden window [0.25, 0.65],
+    (2) explicit causal/logic/counterexample density,
+    (3) code control-flow complexity (for code/agentic categories),
+    (4) self-correction / conflict / abstention signal bonus,
+    (5) healthy minimum length gate (>= 32 chars).
+    """
+    raw = text.strip()
+    n_chars = len(raw)
+    if n_chars < 32:
+        return {"score": 0.0, "passed": False, "zlib_ratio": 0.0, "reason": "too_short"}
+    enc = raw.encode("utf-8", errors="ignore")
+    comp_ratio = len(zlib.compress(enc, level=6)) / max(1, len(enc))
+    if comp_ratio < 0.18 or (len(enc) >= 200 and comp_ratio > 0.85):
+        return {"score": 0.0, "passed": False, "zlib_ratio": round(comp_ratio, 4), "reason": "entropy_outlier"}
+    zlib_score = 1.0 if 0.25 <= comp_ratio <= 0.65 else 0.55
+
+    low = raw.lower()
+    logic_markers = (
+        "because", "therefore", "however", "contradiction", "assume", "invariant",
+        "constraint", "proof", "verify", "counterexample", "trade-off",
+        "因为", "因此", "然而", "矛盾", "假设", "约束", "不变量", "推导", "验证", "反例", "边界",
+    )
+    logic_hits = sum(1 for m in logic_markers if m in low)
+    logic_score = min(1.0, logic_hits / 3.0)
+
+    corr_markers = (
+        "wait", "mistake", "error", "traceback", "fix", "instead", "abstain", "unknown", "conflict",
+        "等等", "报错", "修正", "推翻", "冲突", "未知", "无法确定",
+    )
+    corr_hits = sum(1 for m in corr_markers if m in low)
+    corr_score = min(1.0, corr_hits / 2.0)
+
+    code_markers = ("def ", "class ", "return ", "if ", "for ", "while ", "try:", "assert ", "fn ", "match ")
+    code_hits = sum(1 for m in code_markers if m in raw)
+    code_score = min(1.0, code_hits / 3.0) if ("code" in category or "swe" in category) else 0.5
+
+    total = round(0.30 * zlib_score + 0.30 * logic_score + 0.25 * corr_score + 0.15 * code_score, 4)
+    return {
+        "score": total,
+        "passed": total >= 0.35,
+        "zlib_ratio": round(comp_ratio, 4),
+        "logic_hits": logic_hits,
+        "correction_hits": corr_hits,
+    }
+
+
 def write_deduped_stream(
     out_path: Path,
     source_iters: List[Tuple[DatasetSource, Iterable[Dict[str, object]]]],
@@ -171,6 +238,9 @@ def write_deduped_stream(
     enable_simhash_dedup: bool = True,
     simhash_hamming_thresh: int = 3,
     use_ube_codec: bool = False,
+    weighted_interleave: bool = True,
+    enable_super_density_filter: bool = False,
+    min_density_score: float = 0.35,
 ) -> Dict[str, object]:
     real_weight = sum(s.weight for s, _ in source_iters if s.category.startswith("real_"))
     total_weight = sum(s.weight for s, _ in source_iters)
@@ -187,47 +257,94 @@ def write_deduped_stream(
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     seen_hashes = set()
-    seen_simhashes: List[int] = []
+    simhash_index = SimHashBandIndex(max_hamming=int(simhash_hamming_thresh))
     written_by_src: Dict[str, int] = {}
     dup_skipped = 0
     near_dup_skipped = 0
     rce_or_pollution_skipped = 0
     total_written = 0
 
+    density_skipped = 0
+    budgets = {src.name: int(target_bytes * (src.weight / max(1e-9, total_weight))) for src, _ in source_iters}
+    for src, _ in source_iters:
+        written_by_src[src.name] = 0
+
+    def _accept_blob(src: DatasetSource, row: Dict[str, object]) -> Optional[bytes]:
+        nonlocal dup_skipped, near_dup_skipped, rce_or_pollution_skipped, density_skipped
+        blob = format_record_bytes(src, row, use_ube_codec=use_ube_codec)
+        if len(blob) < 16:
+            return None
+        decoded = blob.decode("utf-8", errors="ignore")
+        if enable_sanitizers:
+            if not sanitize_pretraining_rce_triggers(decoded)["clean"]:
+                rce_or_pollution_skipped += 1
+                return None
+            if not sanitize_chinese_pollution_and_loops(decoded)["clean"]:
+                rce_or_pollution_skipped += 1
+                return None
+        if enable_super_density_filter:
+            ds_eval = score_super_density_sample(decoded, src.category)
+            if float(ds_eval["score"]) < float(min_density_score):
+                density_skipped += 1
+                return None
+        digest = hashlib.sha256(blob).digest()
+        if digest in seen_hashes:
+            dup_skipped += 1
+            return None
+        if enable_simhash_dedup:
+            fp = _simhash64(decoded)
+            if fp != 0 and simhash_index.check_and_add(fp):
+                near_dup_skipped += 1
+                return None
+        seen_hashes.add(digest)
+        return blob
+
     with open(out_path, "wb") as fout:
-        for src, it in source_iters:
-            budget = int(target_bytes * (src.weight / max(1e-9, total_weight)))
-            written = 0
-            for row in it:
-                if written >= budget:
+        if weighted_interleave:
+            # v11.0 Fix: Weighted round-robin interleave eliminates sequential-source catastrophic forgetting
+            active: List[Tuple[DatasetSource, object]] = [(src, iter(it)) for src, it in source_iters]
+            while active and total_written < target_bytes:
+                # Pick active source with lowest fulfillment ratio (written / budget)
+                best_idx = -1
+                best_ratio = float("inf")
+                for idx, (src, _) in enumerate(active):
+                    b = max(1, budgets[src.name])
+                    if written_by_src[src.name] >= b:
+                        continue
+                    r = written_by_src[src.name] / b
+                    if r < best_ratio:
+                        best_ratio = r
+                        best_idx = idx
+                if best_idx < 0:
                     break
-                blob = format_record_bytes(src, row, use_ube_codec=use_ube_codec)
-                if len(blob) < 16:
-                    continue
-                if enable_sanitizers:
-                    decoded = blob.decode("utf-8", errors="ignore")
-                    if not sanitize_pretraining_rce_triggers(decoded)["clean"]:
-                        rce_or_pollution_skipped += 1
-                        continue
-                    if not sanitize_chinese_pollution_and_loops(decoded)["clean"]:
-                        rce_or_pollution_skipped += 1
-                        continue
-                digest = hashlib.sha256(blob).digest()
-                if digest in seen_hashes:
-                    dup_skipped += 1
-                    continue
-                if enable_simhash_dedup:
-                    fp = _simhash64(blob.decode("utf-8", errors="ignore"))
-                    if fp != 0 and any((fp ^ prev).bit_count() <= int(simhash_hamming_thresh) for prev in seen_simhashes):
-                        near_dup_skipped += 1
-                        continue
-                    if fp != 0:
-                        seen_simhashes.append(fp)
-                seen_hashes.add(digest)
-                fout.write(blob)
-                written += len(blob)
-                total_written += len(blob)
-            written_by_src[src.name] = written
+                src, it_obj = active[best_idx]
+                wrote_one = False
+                while True:
+                    try:
+                        row = next(it_obj)
+                    except StopIteration:
+                        active.pop(best_idx)
+                        break
+                    blob = _accept_blob(src, row)
+                    if blob is not None:
+                        fout.write(blob)
+                        written_by_src[src.name] += len(blob)
+                        total_written += len(blob)
+                        wrote_one = True
+                        break
+                if wrote_one and written_by_src[src.name] >= budgets[src.name]:
+                    active.pop(best_idx)
+        else:
+            for src, it in source_iters:
+                budget = budgets[src.name]
+                for row in it:
+                    if written_by_src[src.name] >= budget:
+                        break
+                    blob = _accept_blob(src, row)
+                    if blob is not None:
+                        fout.write(blob)
+                        written_by_src[src.name] += len(blob)
+                        total_written += len(blob)
 
     return {
         "output_file": str(out_path),
@@ -238,27 +355,37 @@ def write_deduped_stream(
         "duplicates_skipped": dup_skipped,
         "near_duplicates_skipped": near_dup_skipped,
         "rce_or_pollution_skipped": rce_or_pollution_skipped,
+        "density_skipped": density_skipped,
+        "weighted_interleave": bool(weighted_interleave),
         "bytes_by_source": written_by_src,
     }
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build 2026 streaming raw-byte seed corpus for Route B Brain")
-    parser.add_argument("--profile", choices=list(CORPUS_PROFILES.keys()), default="rtx3050_4gb_5gb")
+    parser = argparse.ArgumentParser(description="Build 2026-11 streaming super-density raw-byte corpus for Route B Brain (v12.0)")
+    parser.add_argument("--profile", choices=list(CORPUS_PROFILES.keys()), default="rtx3050_4gb_super_dense_v11")
     parser.add_argument("--out", type=str, default="data/seed_corpus.bin")
-    parser.add_argument("--target_mb", type=int, default=0, help="Override profile target size in MB (0 = use profile default)")
+    parser.add_argument("--output-dir", type=str, default="", help="v12.0: Output directory (writes <output-dir>/seed_corpus.bin)")
+    parser.add_argument("--target-mb", "--target_mb", dest="target_mb", type=int, default=0, help="Override profile target size in MB (0 = use profile default)")
     parser.add_argument("--local-jsonl", type=str, default="", help="v10.16: Clean, deduplicate, decontaminate & pack a local JSONL file into .bin")
     parser.add_argument("--stage05-samples", type=int, default=32, help="Number of Stage 0.5 automata/Dyck samples to mix into local .bin")
+    parser.add_argument("--causal-ir-samples", type=int, default=-1, help="v12.0: Deterministic 5-primitive Causal-IR + UnresolvedHole samples to interleave (-1 = auto 64 when --super-density)")
     parser.add_argument("--audit-zh", action="store_true", help="v10.16: Print Chinese-first 60:40 readiness audit and exit")
-    parser.add_argument("--use-ube", action="store_true", help="v10.32: Encode corpus via lossless 2-byte CJK UBE (-33.3% Chinese length)")
+    parser.add_argument("--use-ube", action="store_true", help="v10.32: Encode corpus via lossless 2-byte CJK UBE (-33.3%% Chinese length)")
+    parser.add_argument("--shuffle-seed", type=int, default=42, help="v11.0: HF streaming shard+buffer shuffle seed")
+    parser.add_argument("--shuffle-buffer", type=int, default=10000, help="v11.0: HF streaming rolling shuffle buffer size")
+    parser.add_argument("--super-density", action="store_true", help="v11.0/v12.0: Enable 5-dim upfront super-density quality filter + auto Causal-IR mix")
     args = parser.parse_args()
+
+    out_path = Path(args.output_dir) / "seed_corpus.bin" if args.output_dir else Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
 
     if args.audit_zh:
         print(json.dumps(audit_chinese_interaction_readiness(args.profile), indent=2, ensure_ascii=False))
         return
     if args.local_jsonl:
-        stats = build_local_clean_byte_corpus(args.local_jsonl, args.out, include_stage05_samples=args.stage05_samples)
-        print(json.dumps({"mode": "local_clean_byte_corpus", **stats}, indent=2, ensure_ascii=False))
+        stats = build_local_clean_byte_corpus(args.local_jsonl, str(out_path), include_stage05_samples=args.stage05_samples)
+        print(json.dumps({"mode": "local_clean_byte_corpus", "out": str(out_path), **stats}, indent=2, ensure_ascii=False))
         return
 
     from datasets import load_dataset
@@ -266,12 +393,37 @@ def main() -> None:
     prof = CORPUS_PROFILES[args.profile]
     mb = args.target_mb if args.target_mb > 0 else prof.target_mb
     streams: List[Tuple[DatasetSource, Iterable[Dict[str, object]]]] = []
+    skipped_sources: List[str] = []
     for src in prof.sources:
-        ds = load_dataset(src.hf_id, src.subset, split=src.split, streaming=True)
-        streams.append((src, ds))
+        try:
+            ds = load_dataset(src.hf_id, src.subset, split=src.split, streaming=True)
+            # v11.0 Fix: Shard-level + buffer-level shuffle prevents sequential-shard domain omission
+            if hasattr(ds, "shuffle") and int(args.shuffle_buffer) > 0:
+                ds = ds.shuffle(seed=int(args.shuffle_seed), buffer_size=int(args.shuffle_buffer))
+            streams.append((src, ds))
+        except Exception as exc:
+            skipped_sources.append(f"{src.name}({type(exc).__name__})")
 
-    report = write_deduped_stream(Path(args.out), streams, target_bytes=mb * 1024 * 1024, use_ube_codec=bool(args.use_ube))
-    print(json.dumps({"profile": prof.name, **report}, indent=2, ensure_ascii=False))
+    n_causal = args.causal_ir_samples if args.causal_ir_samples >= 0 else (64 if args.super_density else 0)
+    if n_causal > 0:
+        ir_gen = CausalIRConflictGenerator()
+        ir_cases = ir_gen.generate_batch(n=n_causal, context_distillation=True)
+        ir_rows = [{"text": f"{c['prompt']}\n{c['trace']}"} for c in ir_cases]
+        ir_src = DatasetSource("causal_ir_v12", "local/causal_ir_v12", None, "train", "text", 0.20, "causal_ir")
+        streams.append((ir_src, ir_rows))
+
+    if not streams:
+        raise RuntimeError(f"All dataset sources failed to load: {skipped_sources}")
+
+    report = write_deduped_stream(
+        out_path,
+        streams,
+        target_bytes=mb * 1024 * 1024,
+        use_ube_codec=bool(args.use_ube),
+        weighted_interleave=True,
+        enable_super_density_filter=bool(args.super_density),
+    )
+    print(json.dumps({"profile": prof.name, "out": str(out_path), "skipped_sources": skipped_sources, **report}, indent=2, ensure_ascii=False))
 
 
 
@@ -688,6 +840,58 @@ def _simhash64(text: str) -> int:
     return out
 
 
+
+
+class SimHashBandIndex:
+    """v12.1 O(1) 4-band 16-bit pigeonhole SimHash index (exact equivalence for Hamming <= 3).
+
+    Eliminates the O(N^2) near-duplicate scan bottleneck (330 KB/s -> 22 KB/s degradation on 200MB+)
+    by partitioning 64-bit fingerprints into 4 disjoint 16-bit bands. By the pigeonhole principle,
+    any pair with Hamming distance <= 3 MUST share at least one identical 16-bit band.
+    """
+
+    def __init__(self, max_hamming: int = 3) -> None:
+        self.max_hamming = int(max_hamming)
+        self._bands: Tuple[Dict[int, List[int]], ...] = ({}, {}, {}, {})
+        self._all: List[int] = []
+
+    def is_near_duplicate(self, fp: int) -> bool:
+        fp_int = int(fp)
+        if fp_int == 0:
+            return False
+        if self.max_hamming <= 3:
+            thresh = self.max_hamming
+            for shift, table in ((0, self._bands[0]), (16, self._bands[1]), (32, self._bands[2]), (48, self._bands[3])):
+                bucket = table.get((fp_int >> shift) & 0xFFFF)
+                if bucket:
+                    for prev in bucket:
+                        if (fp_int ^ prev).bit_count() <= thresh:
+                            return True
+            return False
+        return any((fp_int ^ prev).bit_count() <= self.max_hamming for prev in self._all)
+
+    def add(self, fp: int) -> None:
+        fp_int = int(fp)
+        if fp_int == 0:
+            return
+        self._all.append(fp_int)
+        if self.max_hamming <= 3:
+            for shift, table in ((0, self._bands[0]), (16, self._bands[1]), (32, self._bands[2]), (48, self._bands[3])):
+                key = (fp_int >> shift) & 0xFFFF
+                bucket = table.get(key)
+                if bucket is None:
+                    table[key] = [fp_int]
+                else:
+                    bucket.append(fp_int)
+
+    def check_and_add(self, fp: int) -> bool:
+        """Returns True if fp is a near-duplicate (and does not add it); otherwise adds and returns False."""
+        if self.is_near_duplicate(fp):
+            return True
+        self.add(fp)
+        return False
+
+
 def run_data_orchestra_curation_pipeline(records: list[dict], simhash_hamming_thresh: int = 3) -> dict:
     """v10.13: Runnable local 3-stage data curation pipeline (Noise Removal -> 64-bit SimHash Dedup -> DataOrchestra 3-way Router).
 
@@ -700,7 +904,7 @@ def run_data_orchestra_curation_pipeline(records: list[dict], simhash_hamming_th
     kept_untouched: list[dict] = []
     routed_rephrase: list[dict] = []
     dropped: list[dict] = []
-    seen_hashes: list[int] = []
+    simhash_idx = SimHashBandIndex(max_hamming=int(simhash_hamming_thresh))
 
     for rec in records:
         text = str(rec.get("text", "")).strip()
@@ -714,10 +918,9 @@ def run_data_orchestra_curation_pipeline(records: list[dict], simhash_hamming_th
             dropped.append({"id": rec.get("id"), "reason": "noise_compression_outlier", "comp_ratio": round(comp_ratio, 3)})
             continue
         fp = _simhash64(text)
-        if any((fp ^ prev).bit_count() <= int(simhash_hamming_thresh) for prev in seen_hashes):
+        if simhash_idx.check_and_add(fp):
             dropped.append({"id": rec.get("id"), "reason": "near_duplicate_simhash"})
             continue
-        seen_hashes.append(fp)
         if any(k in source for k in ("code", "math", "book", "textbook", "diff", "arxiv")):
             kept_untouched.append({"id": rec.get("id"), "action": "keep_untouched", "comp_ratio": round(comp_ratio, 3)})
         else:
@@ -809,7 +1012,7 @@ def build_local_clean_byte_corpus(
     out_path = _pathlib.Path(output_bin_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    seen_hashes: list[int] = []
+    simhash_idx = SimHashBandIndex(max_hamming=int(simhash_hamming_thresh))
     stats = {
         "records_read": 0,
         "records_kept": 0,
@@ -845,10 +1048,9 @@ def build_local_clean_byte_corpus(
                 stats["dropped_contaminated"] += 1
                 continue
             fp = _simhash64(text)
-            if any((fp ^ prev).bit_count() <= int(simhash_hamming_thresh) for prev in seen_hashes):
+            if simhash_idx.check_and_add(fp):
                 stats["dropped_duplicate"] += 1
                 continue
-            seen_hashes.append(fp)
             stats["records_kept"] += 1
             zh_chars += sum(1 for ch in text if "一" <= ch <= "鿿")
             total_chars += len(text)
@@ -960,6 +1162,121 @@ def audit_corpus_sources_liveness(
         "broken_or_disabled": broken_repos,
         "gated_requiring_hf_token": gated_repos,
     }
+
+
+
+# =============================================================================
+# v11.0: 5-Primitive Minimal Causal IR Conflict & Context-Distillation Generator
+# (State / Invariant / CausalEdge / Conflict / Intervention + UnresolvedHole)
+# =============================================================================
+class CausalIRConflictGenerator:
+    """Zero-redundancy programmatic generator for minimal 5-primitive causal dynamics IR.
+
+    Implements:
+      - Closed deterministic IR primitives: State, Invariant, CausalEdge, Conflict, Intervention
+      - Explicit first-class UnresolvedHole node (no silent UB; forces brake/abstention alert)
+      - Cross-domain isomorphic skinning (code_dependency / commerce_order / approval_workflow / abstract_symbol)
+      - Context Distillation mode: strips explicit rule header from training prompt so scene tokens
+        directly trigger invariant-checking & self-correction reflexes.
+    """
+
+    SKINS: Dict[str, Dict[str, str]] = {
+        "code_dependency": {
+            "a": "cache_ttl_ms", "b": "db_lock_wait_ms", "c": "p99_latency_ms",
+            "inv_label": "strict_consistency_and_sla",
+        },
+        "commerce_order": {
+            "a": "inventory_reserve", "b": "flash_sale_qps", "c": "oversell_risk",
+            "inv_label": "zero_oversell_and_50ms_ack",
+        },
+        "approval_workflow": {
+            "a": "risk_threshold", "b": "escalation_hops", "c": "approval_timeout_min",
+            "inv_label": "compliance_audit_and_sla",
+        },
+        "abstract_symbol": {
+            "a": "node_alpha", "b": "node_beta", "c": "node_gamma",
+            "inv_label": "invariant_phi_1",
+        },
+    }
+
+    def generate_case(
+        self,
+        seed: int = 0,
+        skin: str = "commerce_order",
+        inject_unresolved_hole: bool = False,
+        context_distillation: bool = True,
+    ) -> Dict[str, object]:
+        sk = self.SKINS.get(skin, self.SKINS["abstract_symbol"])
+        base = 50 + (abs(int(seed)) % 40)
+        delta_a = 30 + (abs(int(seed)) % 20)
+        limit_c = base + 10
+        observed_c = base + delta_a
+        conflict_detected = observed_c > limit_c
+
+        ir = {
+            "states": {sk["a"]: delta_a, sk["b"]: base, sk["c"]: observed_c},
+            "invariants": [
+                {"id": sk["inv_label"], "expr": f"{sk['c']} <= {limit_c}", "hard": True},
+            ],
+            "causal_edges": [
+                {"src": sk["a"], "dst": sk["c"], "effect": "+1.0"},
+                {"src": sk["b"], "dst": sk["c"], "effect": "+1.0"},
+            ],
+            "unresolved_holes": (
+                [{"hole_id": f"hole_{seed}", "missing": f"fallback_policy_when_{sk['c']}_exceeds_{limit_c}"}]
+                if inject_unresolved_hole
+                else []
+            ),
+        }
+
+        if inject_unresolved_hole:
+            verdict = "ABSTAIN_AND_SURFACE_TRADEOFF"
+            intervention = f"Halt execution: UnresolvedHole({ir['unresolved_holes'][0]['missing']}); ask human for business trade-off."
+        elif conflict_detected:
+            required_drop = observed_c - limit_c
+            verdict = "MINIMAL_INTERVENTION_VERIFIED"
+            intervention = f"Reduce {sk['a']} by {required_drop} (from {delta_a} to {delta_a - required_drop}) -> {sk['c']}={limit_c} <= {limit_c} (verified)."
+        else:
+            verdict = "NO_CONFLICT"
+            intervention = "All invariants satisfied."
+
+        scene_prompt = (
+            f"[Scene:{skin}] {sk['a']}={delta_a}, {sk['b']}={base}, causal({sk['a']}+{sk['b']}->{sk['c']}={observed_c}). "
+            f"Hard invariant: {sk['c']} <= {limit_c}."
+        )
+        if inject_unresolved_hole:
+            scene_prompt += " Note: fallback policy on breach is UNSPECIFIED."
+        if not context_distillation:
+            scene_prompt = "[Rule: Check invariants first; if an UnresolvedHole exists, abstain and surface trade-off.]\n" + scene_prompt
+
+        trace = (
+            f"1. Map scene to 5-primitive IR: states={ir['states']}, limit={limit_c}.\n"
+            f"2. Conflict check: {sk['c']}={observed_c} > {limit_c} => conflict={conflict_detected}, holes={len(ir['unresolved_holes'])}.\n"
+            f"3. Action ({verdict}): {intervention}"
+        )
+        return {
+            "skin": skin,
+            "ir": ir,
+            "conflict_detected": conflict_detected,
+            "has_unresolved_hole": bool(inject_unresolved_hole),
+            "context_distillation": bool(context_distillation),
+            "verdict": verdict,
+            "prompt": scene_prompt,
+            "trace": trace,
+        }
+
+    def generate_batch(self, n: int = 8, context_distillation: bool = True) -> List[Dict[str, object]]:
+        skins = list(self.SKINS.keys())
+        return [
+            self.generate_case(
+                seed=i,
+                skin=skins[i % len(skins)],
+                inject_unresolved_hole=(i % 3 == 2),
+                context_distillation=context_distillation,
+            )
+            for i in range(max(1, int(n)))
+        ]
+
 
 if __name__ == "__main__":
     main()

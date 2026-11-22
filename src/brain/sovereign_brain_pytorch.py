@@ -522,6 +522,14 @@ class _CPUSparseEngramFn(torch.autograd.Function):
         return None, None, None, None, None
 
 
+def _compiler_disable(fn):
+    """v11.0: Guard CPU-resident Engram lookups from torch.compile / triton-windows CPU-pointer crashes."""
+    comp = getattr(torch, "compiler", None)
+    if comp is not None and hasattr(comp, "disable"):
+        return comp.disable(fn)
+    return fn
+
+
 class CPUPinnedEngramMemory(nn.Module):
     def __init__(self, slots: int, d_model: int, n_hash_heads: int = 4, engram_lr: float = 0.05) -> None:
         super().__init__()
@@ -577,6 +585,7 @@ class CPUPinnedEngramMemory(nn.Module):
         key = tuple(int(b) for b in suffix_bytes)
         return self._grafted_suffixes.pop(key, None) is not None
 
+    @_compiler_disable
     def lookup(
         self,
         patch_byte_keys: torch.Tensor,
@@ -2865,37 +2874,96 @@ class CVSAZeroDenseCoverageGate:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Sovereign Route B AI Brain v4.7 (RTX 3050 4GB Executable)")
+    import time as _time
+    from pathlib import Path
+    import numpy as _np
+
+    parser = argparse.ArgumentParser(description="Sovereign Route B AI Brain v12.0 (Native Windows RTX 3050 4GB Executable)")
     parser.add_argument("--config", choices=list(PRESETS.keys()), default="rtx3050_4gb_65m")
+    parser.add_argument("--verify-engram-adapter", action="store_true", help="v11.0: verify zero-init external Engram adapter")
+    parser.add_argument("--data-bin", type=str, default="", help="v12.0: Path to raw-byte .bin corpus (zero-RAM-bloat np.memmap streaming)")
+    parser.add_argument("--seq-len", type=int, default=256, help="v12.0: Sequence length in bytes per training step")
+    parser.add_argument("--batch-size", type=int, default=1, help="v12.0: Micro-batch size")
+    parser.add_argument("--compile", action="store_true", help="v12.0: Enable torch.compile (requires triton-windows 3.9+ on Windows)")
     parser.add_argument("--steps", type=int, default=20)
-    parser.add_argument("--save_path", type=str, default="sovereign_route_b_v3_8.pt")
+    parser.add_argument("--warmup-steps", type=int, default=3, help="v12.1: Warmup steps excluded from steady-state ms/step & tok/s timing")
+    parser.add_argument("--save-path", "--save_path", dest="save_path", type=str, default="sovereign_route_b_v12.pt")
     args = parser.parse_args()
+    if getattr(args, "verify_engram_adapter", False):
+        ad = build_external_backbone_engram_adapter(hidden_dim=64, slots=256, engram_dim=32)
+        print({"engram_adapter_gate_init": float(ad.gate.detach().item())})
+        return
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cfg = PRESETS[args.config]
     model = SovereignRouteBBrain(cfg).to(device)
-    print(f"[RouteB v4.7] config={cfg.name} | device={device} | audit={model.vram_audit_mb()}")
+    if args.compile and hasattr(torch, "compile"):
+        model = torch.compile(model)
+    print(f"[RouteB v12.0] config={cfg.name} | device={device} | audit={model.vram_audit_mb()}")
 
-    sample = b"def fib(n): return n if n < 2 else fib(n-1) + fib(n-2) # Route B 4GB Brain\n" * 4
-    seq = torch.tensor(list(sample), dtype=torch.long, device=device).unsqueeze(0)
-    inp, tgt = seq[:, :-1], seq[:, 1:]
+    memmap_data = None
+    if args.data_bin and Path(args.data_bin).is_file():
+        memmap_data = _np.memmap(args.data_bin, dtype=_np.uint8, mode="r")
+        print(f"[RouteB v12.0] Loaded memmap corpus: {args.data_bin} ({len(memmap_data):,} bytes)")
+        if len(memmap_data) < args.seq_len + 2:
+            raise ValueError(f"Corpus {args.data_bin} too small ({len(memmap_data)} bytes) for seq_len={args.seq_len}")
+    else:
+        sample = b"def fib(n): return n if n < 2 else fib(n-1) + fib(n-2) # Route B 4GB Brain\n" * 4
+        seq = torch.tensor(list(sample), dtype=torch.long, device=device).unsqueeze(0)
+        inp_static, tgt_static = seq[:, :-1], seq[:, 1:]
 
     opt = PolarExpressMuonOptimizer(model.optimizer_param_groups(base_lr=0.02, weight_decay=0.01), lr=0.02, polar_steps=5)
     use_bf16 = (device.type == "cuda" and torch.cuda.is_bf16_supported())
+    rng = _np.random.default_rng(42)
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats()
+    warmup = min(max(0, int(args.warmup_steps)), max(0, int(args.steps) - 1))
+    t_steady = _time.perf_counter()
+    steady_tokens = 0
+    steady_steps = 0
+
     for step in range(1, args.steps + 1):
+        if memmap_data is not None:
+            max_start = len(memmap_data) - args.seq_len - 1
+            starts = rng.integers(0, max(1, max_start), size=max(1, int(args.batch_size)))
+            batch_np = _np.stack([memmap_data[s : s + args.seq_len + 1] for s in starts]).astype(_np.int64)
+            batch_t = torch.from_numpy(batch_np).to(device, non_blocking=(device.type == "cuda"))
+            inp, tgt = batch_t[:, :-1], batch_t[:, 1:]
+        else:
+            inp, tgt = inp_static, tgt_static
+
         opt.zero_grad()
         with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=use_bf16):
             out = model(inp, targets=tgt)
         out["loss"].backward()
         opt.step()
+        if step == warmup:
+            if device.type == "cuda":
+                torch.cuda.synchronize()
+            t_steady = _time.perf_counter()
+            steady_tokens = 0
+            steady_steps = 0
+        elif step > warmup:
+            steady_tokens += int(inp.numel())
+            steady_steps += 1
         if step == 1 or step == args.steps or step % 5 == 0:
+            if device.type == "cuda":
+                torch.cuda.synchronize()
+            elapsed = max(1e-6, _time.perf_counter() - t_steady)
+            ms_step = (elapsed * 1000.0 / max(1, steady_steps)) if steady_steps > 0 else 0.0
+            tok_s = (steady_tokens / elapsed) if steady_steps > 0 else 0.0
+            vram_mb = (torch.cuda.max_memory_allocated() / 1e6) if device.type == "cuda" else 0.0
             print(
                 f"  step={step:03d} | loss={out['loss'].item():.4f} | "
+                f"ms/step={ms_step:.1f} | tok/s={tok_s:.1f} | peak_vram_mb={vram_mb:.1f} | "
                 f"rel_residuals={out['rel_residuals']} | neuromod={out.get('neuromod')}"
             )
 
-    torch.save({"config": cfg.__dict__, "state_dict": model.state_dict()}, args.save_path)
-    print(f"[Saved] {args.save_path}")
+    save_p = Path(args.save_path)
+    save_p.parent.mkdir(parents=True, exist_ok=True)
+    raw_model = model._orig_mod if hasattr(model, "_orig_mod") else model
+    torch.save({"config": cfg.__dict__, "state_dict": raw_model.state_dict()}, str(save_p))
+    print(f"[Saved] {save_p}")
 
 
 
@@ -3261,6 +3329,41 @@ class AutomataEigenStateAndTCQEngramGuard:
 
     def stacktrans_depth_feasible(self, stack_depth: int, hidden_dim: int) -> bool:
         return int(stack_depth) >= 1 and int(stack_depth) <= max(1, int(hidden_dim) // 16)
+
+
+
+class ZeroInitGatedEngramAdapter(nn.Module):
+    """v11.0 (Approach B): Zero-initialized gated residual adapter for mounting CPUPinnedEngramMemory
+    onto any external 2026 pretrained open-weight backbone (Gemma 4 E2B / Qwen3.5-2B / Olala-7A1B).
+
+    - Uses token-id n-gram hashing (compatible with subword-tokenized backbones)
+    - Initializes residual gate strictly to 0.0 (max_diff == 0.0 at step 0, preserving pretrained representations)
+    - Decorated with @_compiler_disable so native Windows triton-windows torch.compile never hits CPU pointer errors.
+    """
+
+    def __init__(self, hidden_dim: int, slots: int = 8192, engram_dim: int = 128, engram_lr: float = 0.02) -> None:
+        super().__init__()
+        h_dim = int(hidden_dim)
+        e_dim = int(engram_dim)
+        self.in_proj = nn.Linear(h_dim, e_dim, bias=False)
+        self.engram = CPUPinnedEngramMemory(slots=int(slots), d_model=e_dim, engram_lr=float(engram_lr))
+        self.out_proj = nn.Linear(e_dim, h_dim, bias=False)
+        self.gate = nn.Parameter(torch.zeros(1))
+
+    @_compiler_disable
+    def forward(self, hidden_states: torch.Tensor, token_ids: torch.Tensor) -> torch.Tensor:
+        ctx_small = self.in_proj(hidden_states)
+        mem_small = self.engram.lookup(token_ids, ctx_small)
+        delta = self.out_proj(mem_small)
+        return hidden_states + torch.tanh(self.gate) * delta
+
+
+def build_external_backbone_engram_adapter(
+    hidden_dim: int, slots: int = 8192, engram_dim: int = 128, engram_lr: float = 0.02
+) -> ZeroInitGatedEngramAdapter:
+    """v11.0 factory wiring ZeroInitGatedEngramAdapter for external 2B/4B open-weight backbones."""
+    return ZeroInitGatedEngramAdapter(hidden_dim=hidden_dim, slots=slots, engram_dim=engram_dim, engram_lr=engram_lr)
+
 
 if __name__ == "__main__":
     main()

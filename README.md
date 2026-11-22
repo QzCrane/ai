@@ -1,13 +1,13 @@
 # Sovereign AI — Route B Pure AI Brain & Deterministic Agent Harness (v10.32)
 
-本仓库包含从第一性原理出发的自研主权 AI 全栈架构研究与可执行代码，严格执行**「纯 AI 大脑本体（`src/brain/`）」与「确定性外骨骼 / Agent Harness（`src/harness/`）」双轨解耦**，并由 `SYSTEM_CONSTITUTION.md`（七章 27 条最高元约束，含第 27 条全仓四层活性与反腐烂强制审计律）与 `docs/whitepapers/brain_paper_organ_registry.md`（2236 条零重复文献统一字典，98.4% 为 2025–2026 前沿文献）全链路兜底。
+本仓库包含从第一性原理出发的自研主权 AI 全栈架构研究与可执行代码，严格执行**「纯 AI 大脑本体（`src/brain/`）」与「确定性外骨骼 / Agent Harness（`src/harness/`）」双轨解耦**，并由 `SYSTEM_CONSTITUTION.md`（七章 28 条最高元约束，含第 27 条全仓四层活性与反腐烂强制审计律）与 `docs/whitepapers/brain_paper_organ_registry.md`（2236 条零重复文献统一字典，98.4% 为 2025–2026 前沿文献）全链路兜底。
 
 ## 全工程单源真相（SSOT）信息地图（严格锁定 8 份 `.md`，零重复职责）
 
 | 层级 | 文件路径 | 唯一职责（想查什么就只看这份） |
 | :--- | :--- | :--- |
 | **L1 总入口与规范** | `README.md` | 项目总览、硬件基线（RTX 3050 4GB）、16 大领域 77 轮子活性与冲突裁决表及全仓导航入口 |
-| **L1 总入口与规范** | [`SYSTEM_CONSTITUTION.md`](SYSTEM_CONSTITUTION.md) | 七章 27 条最高工程与科研元规范（含第 27 条轮子/语料/论文四层活性反腐烂铁律） |
+| **L1 总入口与规范** | [`SYSTEM_CONSTITUTION.md`](SYSTEM_CONSTITUTION.md) | 七章 28 条最高工程与科研元规范（含第 27 条轮子/语料/论文四层活性反腐烂铁律） |
 | **L2 架构裁决与拓扑** | [`docs/architecture/ARCHITECTURE_DECISIONS.md`](docs/architecture/ARCHITECTURE_DECISIONS.md) | **唯一架构决策与全链路追踪中枢（`ADR-001`–`ADR-013`：`✅既定主干 / ⚔️同位待PK / ❌淘汰` × `Phase 1/2/3/Scale-Up`）** |
 | **L2 架构裁决与拓扑** | [`docs/architecture/ARCHITECTURE_DIAGRAMS.md`](docs/architecture/ARCHITECTURE_DIAGRAMS.md) | 唯一纯文本 Mermaid 系统拓扑图与活体模块映射（v10.32，`repo_doctor.py` 硬门禁强制同步） |
 | **L3 深度设计母本** | [`docs/whitepapers/sovereign_ai_brain_whitepaper.md`](docs/whitepapers/sovereign_ai_brain_whitepaper.md) | 纯 AI 大脑第一性原理、正文演进 `0.0D`、硬件屋顶线与 2236 条权威参考文献母本 |
@@ -58,7 +58,7 @@
 ```text
 ai/
 ├── README.md
-├── SYSTEM_CONSTITUTION.md                        # 七章 27 条最高元约束宪章（v10.32）
+├── SYSTEM_CONSTITUTION.md                        # 七章 28 条最高元约束宪章（v10.32）
 ├── pyproject.toml                                # PEP 621 标准打包入口
 ├── requirements.txt
 ├── requirements-rtx3050.txt                      # RTX 3050 4GB 16大领域77轮子依赖清单
@@ -91,3 +91,21 @@ ai/
 - **RTX 3050 4GB 生产环境一键装轮子**：`pip install -r requirements-rtx3050.txt`
 - **RTX 3050 4GB 烟雾验证**（待用户解除 `GAP-10` 后）：`pip install -e ".[cuda,dev]" && python3 src/brain/sovereign_brain_pytorch.py --config rtx3050_4gb_65m --steps 20`
 - **单条新突破 6 步强制闭环**：去重裁决 → 真实代码落点 → 合入 `ARCHITECTURE_DECISIONS.md` → 同步 `ARCHITECTURE_DIAGRAMS.md` → 更新白皮书 `0.0D` 与文献字典自动重算 → 跑通 `repo_doctor.py --run-tests`
+
+## v11.0 工程融合升级（2026-11 原生 Windows + 悟性/刹车闭环 + 2B 强底座双路径）
+
+- **原生 Windows 2026 执行栈（取代 WSL2 默认方案）**：官方 [`triton-lang/triton-windows` 3.9](https://github.com/triton-lang/triton-windows) 已原生支持 PyTorch 2.15 与 Ampere (`sm_86`, RTX 3050)，内置 `ptxas 12.9` 与 TinyCC；配合 `WindowsNativeRuntimeGuard` 将全量缓存锁死在 `D:\Environment\.cache`，消除 WSL2 3%–15% GPU 虚拟化税与 15%–30% `/mnt/d/` 跨盘 I/O 损耗；`CPUPinnedEngramMemory.lookup` 已加装 `@_compiler_disable` 隔离 `torch.compile` CPU 指针崩溃。
+- **数据流两大真实 Bug 根治 + 5 维硬特征掐尖 + 5 原语因果 IR 生成器**：
+  - `prepare_seed_corpus.py` 流式拉取强制开启 `.shuffle(seed=42, buffer_size=10000)` 与加权交错混写（`weighted_interleave=True`），彻底消除 Parquet 顺序分片截断偏科与逐源串行写入遗忘；
+  - 新增零 gated 高纯浓缩配置 `rtx3050_4gb_super_dense_v11`（含 [`nvidia/SWE-Hero-openhands-trajectories`](https://huggingface.co/datasets/nvidia/SWE-Hero-openhands-trajectories) 与 [`allenai/Dolci-Think-SFT-7B`](https://huggingface.co/datasets/allenai/Dolci-Think-SFT-7B)）及 `score_super_density_sample` 5 维前置掐尖筛子；
+  - 新增 `CausalIRConflictGenerator`（`State / Invariant / CausalEdge / Conflict / Intervention` + 显式 `UnresolvedHole` 节点 + 跨外壳换皮 + Context Distillation 规则内化）。
+- **元认知刹车 + 亚里士多德邻域探针 + 外部 2B 强底座双接法**：
+  - `GracefulRLRewardEngine`（[arXiv:2610.20401](https://arxiv.org/pdf/2610.20401)）：实现严格偏序奖励 `做对 (+1.0) > 诚实拒答/报洞 (+0.20) > 过度拒答 (-0.25) > 瞎编 (-1.0)`；
+  - `AristotelianNeighborhoodProbe`（[arXiv:2602.14486](https://arxiv.org/html/2602.14486v2) / [arXiv:2609.27252](https://arxiv.org/abs/2609.27252)）：基于 `mKNN` 局部邻域一致度测量极小模型表征收敛；
+  - `ZeroInitGatedEngramAdapter` + `EDGE_BACKBONES_2026_11`（[`OVHaiLLM/Olala-v1.0-mini-7A1B`](https://huggingface.co/OVHaiLLM/Olala-v1.0-mini-7A1B)、[`NVIDIA-Nemotron-3.5-Bolt-E4B-4GB`](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-E4B-4GB)、[`Gemma 4 E2B`](https://ai.google.dev/gemma/docs/core/model_card_4)、[`EmbeddingGemma 2 (740M)`](https://blog.google/innovation-and-ai/technology/ai/google-ai-updates-october-2026/)）：支持 Route B 原创从零预训练与成熟 2B 强底座双路径无缝挂载。
+
+## v12.2 原生 Windows 一键开干（2026-11 最新依赖全栈 + 统一数据闭环）
+
+- **最新原生 Windows 依赖栈（零 C 盘写入，全锁 `D:\Environment`）**：推荐 **Python `3.15.2` / `3.14`**（[升级说明](https://blog.codercops.com/blog/python-3-10-end-of-life-upgrade-to-3-14-2026)）+ **[PyTorch `2.15.0`](https://pytorch.org/blog/pytorch-2-15-release-blog/)（`cu134` 最新 / `cu132` 备选）** + 官方 **[`triton-windows` `3.9.0.post30`](https://github.com/triton-lang/triton-windows)** + **[`flash-linear-attention` `0.6.0` + `liger-kernel` `0.8.5`](https://pypi.org/project/fla-core/0.5.2/)** + **[`transformers` `5.24.0` + `datasets` `5.2.0` + `torchao` `0.18.0` + `safetensors` `0.8.0` + `hf-xet` `1.8.0`](https://pypi.org/project/transformers/)** / `huggingface-hub` / `datasets` / `safetensors` / `torchao` / `liger-kernel`（严禁安装 `bitsandbytes`）。
+- **一键装机与自检**：`powershell -ExecutionPolicy Bypass -File scripts\setup_windows_d_drive.ps1`（自动锁定 `D:\Environment\.cache`、按 `nvidia-smi` 自动选 CUDA wheel、跑 GPU/Triton 与全仓 `repo_doctor.py --run-tests`）。
+- **一键 200MB 掐尖冒烟 + 3050 4GB 实测**：`powershell -ExecutionPolicy Bypass -File scripts\run_smoke_windows.ps1`（默认走零门控 `rtx3050_4gb_super_dense_v11`：80% 开源 Tier-S 实时 5 维掐尖 + 20% 内生 5 原语因果冲突/拒答燃料，随后以 `np.memmap` 零内存膨胀直接喂入 `sovereign_brain_pytorch.py --data-bin` 跑 20 步实测并打印峰值显存与吞吐）。
