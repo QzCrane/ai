@@ -2,13 +2,17 @@
 """
 Sovereign AI Brain — Automated CTO Repo Doctor, ADR Compiler & 11-Dim Graph SSOT CLI (v10.32).
 Single-command health check verifying:
-  1. Zero dead classes & zero dead functions across src/brain/ hot path (AST call graph).
-  2. Zero-duplicate 900 refs & unified 3-Verdict x 6-Substate closure.
+  1. Zero dead classes & zero dead functions across the src/brain/ hot path (AST call graph).
+  2. Zero-duplicate 2236 refs & unified 3-Verdict x 6-Substate closure.
   3. ARCHITECTURE_GRAPH.json -> ARCHITECTURE_DECISIONS.md one-way compiled byte-for-byte sync (`--compile-adr`).
   4. ARCHITECTURE_DIAGRAMS.md version & live Mermaid node sync gate.
   5. ARCHITECTURE_GRAPH.json 11-Dim AST bidirectional verification (code_anchors, gate_tests, mermaid_nodes, ref_ids, cross_organ_edges).
   6. `--trace <query>` instant reverse-lookup across the 11-dim architecture graph.
-  7. Optional full 3-tier unittest regression (`--run-tests`).
+  7. Three-pillar anti-decay audit, offline by default and live under `--audit-freshness` (GitHub wheels + HF corpora + arXiv years).
+  8. Anti-drift slimming, theory-preservation manifest, executable world engine, and the v33/v34/v35 closure gates.
+  9. SSOT Markdown ceiling (`EXPECTED_MD_FILES`), counted with hidden/cache directories excluded.
+ 10. Cross-repo zero-AI sync against the sibling sec repo (`--sec-repo`, `--require-sec-repo`).
+ 11. Optional full 3-tier unittest regression (`--run-tests`).
 """
 from __future__ import annotations
 
