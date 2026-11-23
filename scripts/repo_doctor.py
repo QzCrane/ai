@@ -681,7 +681,9 @@ def audit_v33_convergence_closure() -> dict:
         errors.append("five_gate_adjudication_present_failed")
 
     active_cnt = sum(1 for e in manifest.get("entries", []) if e.get("status") == "ACTIVE")
-    manifest_v33_upgraded = bool(manifest.get("manifest_version") == "v33.0" and active_cnt >= 82)
+    raw_ver = str(manifest.get("manifest_version", "v0")).lstrip("v")
+    major_ver = int(raw_ver.split(".")[0]) if raw_ver.split(".")[0].isdigit() else 0
+    manifest_v33_upgraded = bool(major_ver >= 33 and active_cnt >= 82)
     if not manifest_v33_upgraded:
         errors.append(f"manifest_v33_upgrade_failed:{manifest.get('manifest_version')}:{active_cnt}")
 
@@ -697,6 +699,113 @@ def audit_v33_convergence_closure() -> dict:
         "dlf_formal_spec_present": dlf_formal_spec_present,
         "five_gate_adjudication_present": five_gate_adjudication_present,
         "manifest_v33_upgraded": manifest_v33_upgraded,
+        "md_file_count_locked_at_9": md_locked,
+        "errors": errors,
+    }
+
+
+
+def audit_v34_unification_and_lean_synthesis() -> dict:
+    """v34.0 conceptual unification, M0/M1 vs L0-L3 orthogonal map & Lean 4 de Bruijn synthesis gate."""
+    l1_txt = (REPO_ROOT / "docs" / "whitepapers" / "world_cognition_unified_model.md").read_text(encoding="utf-8")
+    const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+    mpath = REPO_ROOT / "docs" / "architecture" / "THEORY_PRESERVATION_MANIFEST.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    entries = {e.get("id"): e for e in manifest.get("entries", [])}
+    errors: list[str] = []
+
+    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    if not md_locked:
+        errors.append("md_file_count_not_locked_at_9")
+
+    ortho_tokens = (
+        "### 3.1G",
+        "正交坐标清晰分离",
+        "L0–L3",
+        "空间架构栈",
+        "M0 / M1",
+        "演化代际",
+        "v33.0→v34.0",
+    )
+    ortho_entry = entries.get("ARCH-CONCEPTUAL-UNIFICATION-ORTHOGONAL-MAP", {})
+    orthogonal_map_verified = bool(
+        all(t in l1_txt for t in ortho_tokens)
+        and ortho_entry.get("status") == "ACTIVE"
+        and ortho_entry.get("arch_layer") == "LAYER_A_META_WORLD"
+    )
+    if not orthogonal_map_verified:
+        errors.append("orthogonal_map_verification_failed")
+
+    triad_tokens = (
+        "极简三联统一压缩视图",
+        "内核本体",
+        "物理边界",
+        "离散有限 + 离线立法 + 诚实停机",
+        "运行与演化护栏",
+        "日常写 `.gift` 完全无需背诵",
+    )
+    triad_unification_verified = bool(all(t in l1_txt for t in triad_tokens))
+    if not triad_unification_verified:
+        errors.append("triad_unification_verification_failed")
+
+    lean_tokens = (
+        "Lean 4 第一性原理悟性融合",
+        "de Bruijn",
+        "kernel_checker",
+        "PTXLean4",
+        "非空真性",
+        "证书可复验",
+        "依赖类型",
+        "宇宙多态",
+        "Mathlib",
+    )
+    lean_entry = entries.get("EXEC-LEAN4-DEBRUIJN-CHECKER-SYNTHESIS", {})
+    lean4_debruijn_synthesis_verified = bool(
+        all(t in l1_txt for t in lean_tokens)
+        and lean_entry.get("status") == "ACTIVE"
+        and lean_entry.get("arch_layer") == "LAYER_D_L2_L3_PHYSICAL_EXECUTION"
+    )
+    if not lean4_debruijn_synthesis_verified:
+        errors.append("lean4_debruijn_synthesis_verification_failed")
+
+    const_v34_tokens = (
+        "v34.0",
+        "极简三联",
+        "正交坐标",
+        "de Bruijn",
+        "kernel_checker",
+        "PTXLean4",
+        "非空真性",
+        "依赖类型",
+        "Mathlib",
+        "zero_ai_inside_compiler: true",
+        "EXTERNAL_USER_ONLY",
+        "v34_unification_and_lean_synthesis",
+    )
+    constitution_v34_synced = bool(all(t in const_txt for t in const_v34_tokens))
+    if not constitution_v34_synced:
+        errors.append("constitution_v34_sync_failed")
+
+    active_cnt = sum(1 for e in manifest.get("entries", []) if e.get("status") == "ACTIVE")
+    manifest_v34_upgraded = bool(manifest.get("manifest_version") == "v34.0" and active_cnt >= 84)
+    if not manifest_v34_upgraded:
+        errors.append(f"manifest_v34_upgrade_failed:{manifest.get('manifest_version')}:{active_cnt}")
+
+    return {
+        "ok": bool(
+            md_locked
+            and orthogonal_map_verified
+            and triad_unification_verified
+            and lean4_debruijn_synthesis_verified
+            and constitution_v34_synced
+            and manifest_v34_upgraded
+            and not errors
+        ),
+        "orthogonal_map_verified": orthogonal_map_verified,
+        "triad_unification_verified": triad_unification_verified,
+        "lean4_debruijn_synthesis_verified": lean4_debruijn_synthesis_verified,
+        "constitution_v34_synced": constitution_v34_synced,
+        "manifest_v34_upgraded": manifest_v34_upgraded,
         "md_file_count_locked_at_9": md_locked,
         "errors": errors,
     }
@@ -810,6 +919,7 @@ def main() -> int:
     theory_res = audit_theory_preservation_manifest()
     engine_res = audit_executable_world_engine()
     v33_res = audit_v33_convergence_closure()
+    v34_res = audit_v34_unification_and_lean_synthesis()
     allow_missing_sec = True if (args.allow_missing_sec_repo or not args.require_sec_repo) else False
     cross_repo_res = audit_cross_repo_governance_sync(Path(args.sec_repo) if args.sec_repo else None, allow_missing=allow_missing_sec)
     tests_ok = True
@@ -826,9 +936,10 @@ def main() -> int:
         "theory_preservation_manifest": theory_res,
         "executable_world_engine": engine_res,
         "v33_convergence_closure": v33_res,
+        "v34_unification_and_lean_synthesis": v34_res,
         "cross_repo_governance_sync": cross_repo_res,
         "tests_passed": tests_ok if args.run_tests else "skipped",
-        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and slim_res["ok"] and theory_res["ok"] and engine_res["ok"] and v33_res["ok"] and cross_repo_res["ok"] and tests_ok),
+        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and slim_res["ok"] and theory_res["ok"] and engine_res["ok"] and v33_res["ok"] and v34_res["ok"] and cross_repo_res["ok"] and tests_ok),
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0 if report["overall_healthy"] else 1

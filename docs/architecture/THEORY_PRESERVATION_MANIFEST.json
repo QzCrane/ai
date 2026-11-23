@@ -1,5 +1,5 @@
 {
-  "manifest_version": "v33.0",
+  "manifest_version": "v34.0",
   "target_document": "docs/whitepapers/world_cognition_unified_model.md",
   "governance_rule": "Every ACTIVE theory/mechanism/falsification entry MUST have its required_anchor present in target_document; any removed entry MUST switch status to MERGED_INTO or FALSIFIED_BY with explicit disposition_target (zero silent evaporation).",
   "entries": [
@@ -672,6 +672,26 @@
       "status": "ACTIVE",
       "required_anchor": "类 C 5-Primitive 内核封闭定理",
       "source_ref": "world_cognition_unified_model.md#3.1F",
+      "disposition_target": null
+    },
+    {
+      "id": "ARCH-CONCEPTUAL-UNIFICATION-ORTHOGONAL-MAP",
+      "domain": "meta_methodology",
+      "arch_layer": "LAYER_A_META_WORLD",
+      "title": "极简三联概念大统一与 M0/M1 ⊥ L0–L3 正交坐标映射（内核本体 / 物理边界 / 运行与演化护栏）",
+      "status": "ACTIVE",
+      "required_anchor": "极简三联统一压缩视图",
+      "source_ref": "world_cognition_unified_model.md#3.1G",
+      "disposition_target": null
+    },
+    {
+      "id": "EXEC-LEAN4-DEBRUIJN-CHECKER-SYNTHESIS",
+      "domain": "physical_execution_compiler",
+      "arch_layer": "LAYER_D_L2_L3_PHYSICAL_EXECUTION",
+      "title": "Lean 4 第一性原理悟性融合（de Bruijn 不可信前端 vs 极小独立复验器 kernel_checker、PTXLean4 非空真性防空洞与拒绝依赖类型/Mathlib 热路径）",
+      "status": "ACTIVE",
+      "required_anchor": "Lean 4 第一性原理悟性融合",
+      "source_ref": "world_cognition_unified_model.md#3.1G",
       "disposition_target": null
     }
   ],

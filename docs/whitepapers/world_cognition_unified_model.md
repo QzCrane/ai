@@ -186,6 +186,18 @@ MSK-v1 (ContractInterface — orthogonal & live-consumed fields, zero arbitrary 
 - **5-Gate 双时态与 Chisholm 归属裁决（`FIVE_GATE_ADJUDICATION: M1_STANDARD_CALCULUS_LIB`）**：针对 `BitemporalFactLedger`（4D 双时态）与 `ChisholmDeonticEngine`（Chisholm 反事实违约补偿）是否晋升 M0 内核原语，按 M0→M1 五闸门逐项终审：① **Gate 1（Felleisen 不可消除性）**：4D 双时态可由原语 1（不可变带时戳状态）+ 原语 4（单调墓碑与代际防复活）局部保义编码，Chisholm CTD 可由原语 1（分层状态位）+ 原语 2（受守卫变迁）+ 原语 3（R3 硬红线词典序优先与四态双格）局部保义编码——两者均**可局部消去**，未突破五原语表达力上界；② **Gate 2（可判定与预算退出）**：均属有限离散可判定片段且受 R6 预算截断（通过）；③ **Gate 3（正交与活体消费）**：已在 `world_kernel_engine.py` 活体运行且零死代码，但属五原语组合派生而非第 6 个正交核原语；④ **Gate 4（外部对抗属性测试）**：已由 `test_251`/`test_252` 独立验证（通过）；⑤ **Gate 5（M0 逐位零回归）**：外置后 M0 逐位零回归（通过）。**终审裁决**：4D 双时态与 Chisholm CTD 永久归属 **M1 标准确定性演算库（`M1_STANDARD_CALCULUS_LIB`，位于 `LAYER_C_L1_DETERMINISTIC_KERNEL`）**，绝不膨胀 M0 五原语控制骨架。
 - **类 C 5-Primitive 内核封闭定理（`core_closure_locked: true`）**：如同 C 语言凭 **Böhm–Jacopini + Church–Turing** 在通用离散计算结构上永久封闭、而不靠穷举人类所有行业软件证明完备性；本统一内核严格**收敛于控制结构而非开放业务领域**。一切离散可控系统的规范—认识控制语义均完整投影至 5 个不可约正交控制原语（状态与不变量 / 显式变迁与副作用权限边界 / Belnap–Dunn 四值双格与 MUS-MCS 冲突归因 / 正负传递依赖闭包与单调墓碑 / 诚实停机与主权移交），内核外不可判定/连续/开放语用域由 $\mathcal{A}_1$–$\mathcal{A}_5$ 显式拒收。**具体业务场景（订单、清结算、供应链、风控等）绝不作为内核穷举吸收对象，仅作为两类有限外部检验工具**：① **反例压力测试集**（用于攻击五原语封闭假设，若现不可局部编码反例须过 5-Gate 证伪）；② **L0 表面语法糖的 Green & Blackwell 认知维度可用性标尺**。
 
+### 3.1G v34.0 极简三联概念大统一、正交坐标厘清与 Lean 4 第一性原理悟性融合
+- **正交坐标清晰分离（`L0–L3` 空间架构栈 $\perp$ `M0 / M1` 演化代际）**：为彻底消除“层级”与“代际”混用带来的认知碎片化，全部机器锚点保持 100% 零蒸发，并在顶层建立单一正交坐标系：
+  - **`L0–L3` 是空间架构栈**（同一时刻的职责分层）：`L0` 人类/CTO 意图表面语法与认知糖衣 $\to$ `L1` 确定性五原语控制内核 $\to$ `L2` 可确定性降维片段（DLF）分类与证明证书 $\to$ `L3` Rust 仿射所有权单目标物理执行与 `extern capability` 逃生舱；
+  - **`M0 / M1` 是演化代际**（时间维度的底核冻结与工程演进）：`M0` = 冻结的极小验证底核（5 原语控制骨架 + A1–A5 + R1–R6，永不随意膨胀）；`M1` = 在不破 `M0` 逐位零回归前提下建成的完整工程全栈（`L0` 表面语法糖与标准 Profile + `M1_STANDARD_CALCULUS_LIB` 双时态/Chisholm 库 + `L2` DLF 降维器 + `L3` Rust 单目标编译器）。
+- **极简三联统一压缩视图（类 C 极简心智模型，日常只需记住三件事）**：
+  1. **① 内核本体（5 个不可约简控制原语）**：状态与硬不变量、显式变迁与副作用权限边界、Belnap–Dunn 四值双格冲突保持与 MUS/MCS 归因、正负传递依赖失效与单调墓碑、诚实停机与主权移交（`UnresolvedHole` / `ResourceLimit` / 5 路封闭 `Verdict`）。
+  2. **② 物理边界（A1–A5 收敛为「离散有限 + 离线立法 + 诚实停机」）**：`A1` 拒绝连续/随机/浮点动力学，`A2` 拒绝步内本体突变（仅允许跨 Epoch 离线立法），`A3` 拒绝开放语用与 PSPACE/PPAD 多主体博弈，`A4` 拒绝自证 TCB 与自授权，`A5` 拒绝跨层无损逆函子幻觉——五条排除公理统一折叠为一句工程边界准则。
+  3. **③ 运行与演化护栏（R1–R6 自动守则 $\times$ 5-Gate 离线 PR 门禁）**：`R1–R6` 是编译器与求值器在**编译运行期自动强制执行的守则**（冲突不坍缩、局部不放大、硬红线词典序优先、传递失效与墓碑、模态权限正交、预算诚实截断）；`5-Gate` 仅仅是**修改内核源码时的离线 PR 准入评审门禁**，日常写 `.gift` 完全无需背诵。
+- **Lean 4 第一性原理悟性融合（精髓吸纳 $\times$ 重型依赖类型坚决拒绝）**：
+  - **核心吸纳（3 项）**：① **de Bruijn 准则（不可信复杂前端 vs 极小独立复验器 `kernel_checker`）**——汲取 [Lean4Lean (arXiv:2403.14064)](https://arxiv.org/html/2403.14064v3) 的 TCB 隔离与独立外部校验哲学，将 `L0` 语法糖展开、`L2` DLF 降维与外部求解器全部置于不可信前端，仅由极小、独立、可审计的 `kernel_checker` 复验最终产物，防止内核特性蔓延引入可靠性漏洞；② **PTXLean4 非空真性防空洞检查（Non-Vacuity Check）**——汲取 [PTXLean4 (arXiv:2611.04447)](https://arxiv.org/html/2611.04447v1) 在通用正确性定理之外强制构造具体可执行启动实例以排除空洞真（vacuous truth）的硬约束，防止空模块或过约束前提导致不变量被“空洞判真”；③ **证书可复验（Certificate Re-verifiability）**——汲取 [LeanCSP (arXiv:2607.28459)](https://arxiv.org/html/2607.28459v1) 的求解—校验解耦范式，重型求解/降维仅输出确定性证明证书（如 `DlfProofCertificate` 与 MUS/MCS 见证），由独立极小复验器在零 AI、零启发式条件下确定性复验。
+  - **坚决拒绝（3 项）**：在 `zero_ai_inside_compiler: true` 与 `core_closure_locked: true` 铁律下，**绝不引入依赖类型（Dependent Types）、宇宙多态（Universe Polymorphism）与 Mathlib 级重型证明库进入编译器热路径**，严守 `A1` 有限离散可判定性与类 C 极简控制内核定位。
+
 ### 4.1 自我推翻与跃迁全记录
 
 | 阶段 | 旧形态 | 致命反例与诊断 | 跃迁新形态 |
@@ -203,6 +215,7 @@ MSK-v1 (ContractInterface — orthogonal & live-consumed fields, zero arbitrary 
 | **v31.0→v32.0（第九次跃迁｜六项理论与工程空洞全量闭合）** | 尚存在 DLF 分类器、仿射线性租约、CALM 协调判定、图谱增量 Diff、4D/Chisholm 可执行演算与跨 Epoch 迁移协议六项真实空洞 | 三路并发深入双仓源码审计并暴露多跳糖链 5 处真实归因漏洞与历史空洞 | 在 `sec_repo` 落地 `DlfClass`、零成本 ZST 仿射租约（`rustc` E0382 反重放真机证明）、`CalmReport`、`ArchitectureGraphDiff` 与多跳糖链修复（225/225 Rust 测试通过）；在 `ai_repo` 落地 `BitemporalFactLedger`、`ChisholmDeonticEngine`、`validate_epoch_migration` 与 `validate_external_user_protocol`（79 条 `ACTIVE` 全分层理论 + 265/265 Python 测试全绿）。 |
 
 | **v32.0→v33.0（第十次跃迁｜理论收敛收口与类 C 五原语内核封闭锁定）** | DLF 边界尚缺正式 BNF 充要刻画、4D 双时态与 Chisholm 尚未经 5-Gate 正式定性归属、内核封闭与开放业务边界未立形式化定理与机检门禁 | 以 M0→M1 五闸门与 Felleisen 局部消去完成最终理论收口，杜绝向 M0 塞入业务原语或第 6/7 原语导致概念发散 | 固化 **DLF 形式化 BNF 与充要判定边界**、**5-Gate 双时态与 Chisholm 归属裁决（`M1_STANDARD_CALCULUS_LIB`）** 与 **类 C 5-Primitive 内核封闭定理**（收敛于控制结构而非开放业务领域，具体业务仅作反例压力测试集）；总账升级至 `v33.0`（82 条全分层 `ACTIVE`），`repo_doctor.py` 新增 `v33_convergence_closure` 硬门禁，9-MD 锁与零历史 URL 蒸发 100% 保持。 |
+| **v33.0→v34.0（第十一次跃迁｜极简三联概念大统一、正交坐标厘清与 Lean 4 悟性融合）** | 历史演进积累的 5 原语 / A1–A5 / R1–R6 / 5-Gate / M0 & M1 / L0–L3 平铺并列，易造成“层级与代际混用”及概念过载感，且尚未提炼 Lean 4 TCB 独立复验与非空真性第一性原理 | 在 100% 保留全部既有机器锚点与零历史 URL 蒸发前提下，分离空间栈与演化代际并剥离日常写 `.gift` 与内核 PR 评审的心智边界，对照 [Lean4Lean (arXiv:2403.14064)](https://arxiv.org/html/2403.14064v3)、[PTXLean4 (arXiv:2611.04447)](https://arxiv.org/html/2611.04447v1) 与 [LeanCSP (arXiv:2607.28459)](https://arxiv.org/html/2607.28459v1) 划清吸纳与拒绝边界 | 新增 `§3.1G` 建立**正交坐标清晰分离（`L0–L3` 空间架构栈 $\perp$ `M0 / M1` 演化代际）**、**极简三联统一压缩视图**（内核本体 / 物理边界「离散有限 + 离线立法 + 诚实停机」 / 运行与演化护栏）与 **Lean 4 第一性原理悟性融合**（吸纳 de Bruijn 独立复验器 `kernel_checker` + PTXLean4 非空真性防空洞 + 证书可复验，坚决拒绝依赖类型/宇宙多态/Mathlib 入热路径）；总账升至 `v34.0`（84 条全分层 `ACTIVE`），`repo_doctor.py` 新增 `v34_unification_and_lean_synthesis` 门禁，9-MD 锁与零历史 URL 蒸发 100% 保持。 |
 
 ### 4.2 2026-Q4 重大证伪清单（90 天滚动窗口，全量量化保留）
 
