@@ -12,6 +12,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.repo_doctor import ssot_markdown_files
+
 
 class Test254V35WheelFirstLandscape(unittest.TestCase):
     """Rule 31-34 & v35.0 Wheel-First loop, Lean 4 tiered correction & 10 PL/formal benchmark audit."""
@@ -100,7 +102,7 @@ class Test254V35WheelFirstLandscape(unittest.TestCase):
         rule34_sec = const_txt.split("## Rule 34:", 1)[1]
         self.assertNotIn("坚决拒绝依赖类型", rule34_sec, "Rule 34 must use tiered Lean 4 boundary instead of blanket rejection")
 
-        md_files = [p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]
+        md_files = ssot_markdown_files()
         self.assertEqual(len(md_files), 9, f"Expected exactly 9 .md files, found: {md_files}")
 
     def test_254c_manifest_v35_87_active_five_layer_and_zero_evaporation(self) -> None:

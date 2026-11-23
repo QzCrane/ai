@@ -21,8 +21,12 @@ import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BRAIN_DIR = REPO_ROOT / "src" / "brain"
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 if str(BRAIN_DIR) not in sys.path:
     sys.path.insert(0, str(BRAIN_DIR))
+
+from scripts.repo_doctor import ssot_markdown_files
 
 import exoskeleton_bridge as eb
 import prepare_seed_corpus as psc
@@ -330,7 +334,7 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
         self.assertEqual(j.score_and_gate(0.85, 0.60, has_gold_sft=False)["mode"], "calibrated_reference_free_grpo")
 
     def test_192_sga_sparse_live_and_8_md_lock(self) -> None:
-        md_files = [p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]
+        md_files = ssot_markdown_files()
         self.assertEqual(len(md_files), 9, f"Expected exactly 9 .md files, got {[p.name for p in md_files]}")
         bsrc = (REPO_ROOT / "src" / "brain" / "sovereign_brain_pytorch.py").read_text(encoding="utf-8")
         self.assertIn("ffn_sparsity_thresh: float = 0.0", bsrc)
@@ -2486,7 +2490,7 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
         from pathlib import Path
 
         repo = Path(__file__).resolve().parents[1]
-        md_files = [p for p in repo.rglob("*.md") if ".git" not in p.parts]
+        md_files = ssot_markdown_files()
         self.assertEqual(len(md_files), 9)
 
         l1_path = repo / "docs/whitepapers/world_cognition_unified_model.md"

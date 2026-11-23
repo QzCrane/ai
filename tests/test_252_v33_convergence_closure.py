@@ -13,6 +13,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.repo_doctor import ssot_markdown_files
+
 
 class Test252V33ConvergenceClosure(unittest.TestCase):
     """Rule 31-34 & v33.0 convergence closure verification (zero mock lambdas)."""
@@ -178,7 +180,7 @@ class Test252V33ConvergenceClosure(unittest.TestCase):
         self.assertTrue(ssot["ok"], ssot)
         self.assertTrue(ssot["md_file_count_locked_at_9"])
 
-        md_files = [p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]
+        md_files = ssot_markdown_files()
         self.assertEqual(len(md_files), 9, f"Expected exactly 9 .md files, found: {md_files}")
 
         ext_ok = validate_external_user_protocol(

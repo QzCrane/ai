@@ -12,6 +12,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.repo_doctor import ssot_markdown_files
+
 
 class Test253V34UnificationAndLeanSynthesis(unittest.TestCase):
     """Rule 31-34 & v34.0 conceptual unification + Lean 4 de Bruijn synthesis verification."""
@@ -101,7 +103,7 @@ class Test253V34UnificationAndLeanSynthesis(unittest.TestCase):
         ):
             self.assertIn(tok, const_txt, f"Missing v34.0 SYSTEM_CONSTITUTION.md token: {tok}")
 
-        md_files = [p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]
+        md_files = ssot_markdown_files()
         self.assertEqual(len(md_files), 9, f"Expected exactly 9 .md files, found: {md_files}")
 
     def test_253d_repo_doctor_v34_gate_zero_dead_code_and_cli_overall_healthy(self) -> None:

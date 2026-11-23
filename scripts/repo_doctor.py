@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import ast
 import json
+import os
 import re
 import subprocess
 import sys
@@ -23,6 +24,50 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 REPO_VERSION = "v10.32"
 EXPECTED_REFS = 2236
+EXPECTED_MD_FILES = 9
+
+# Sibling names probed for the cross-repo zero-AI gate. A candidate only counts when the
+# M0 axioms sentinel exists, so an unrelated directory that happens to be named `sec` is ignored.
+SEC_REPO_SIBLING_CANDIDATES = ("sec_repo", "sec", "gift")
+SEC_REPO_SENTINEL = Path("crates") / "gift-author-kernel" / "M0_BOUNDARY_AXIOMS.md"
+_NON_SSOT_DIR_NAMES = frozenset({"__pycache__"})
+
+
+def ssot_markdown_files(root: Path | None = None) -> list[Path]:
+    """Authoritative SSOT Markdown corpus: every `*.md` under the repo root except dot-directories
+    (`.git`, `.pytest_cache`, `.venv`, `.workbuddy`, …) and `__pycache__`.
+
+    Hidden paths carry tool/cache state, never SSOT documents. Counting them made the
+    `EXPECTED_MD_FILES` ceiling depend on whether pytest (or an in-repo venv) had ever run,
+    i.e. the gate was green on a fresh clone and red on the second invocation.
+    """
+    base = root or REPO_ROOT
+    files: list[Path] = []
+    for p in base.rglob("*.md"):
+        parents = p.relative_to(base).parts[:-1]
+        if any(part.startswith(".") or part in _NON_SSOT_DIR_NAMES for part in parents):
+            continue
+        files.append(p)
+    return sorted(files)
+
+
+def ssot_markdown_count(root: Path | None = None) -> int:
+    """Number of SSOT Markdown documents; the single source for the `EXPECTED_MD_FILES` ceiling."""
+    return len(ssot_markdown_files(root))
+
+
+def resolve_sec_repo_root(explicit: Path | None = None) -> Path:
+    """Resolve the sibling sec repo: explicit argument > `$SEC_REPO_ROOT` > sibling clone names."""
+    if explicit is not None:
+        return explicit
+    env_root = os.environ.get("SEC_REPO_ROOT")
+    if env_root:
+        return Path(env_root)
+    for name in SEC_REPO_SIBLING_CANDIDATES:
+        candidate = REPO_ROOT.parent / name
+        if (candidate / SEC_REPO_SENTINEL).is_file():
+            return candidate
+    return REPO_ROOT.parent / SEC_REPO_SIBLING_CANDIDATES[0]
 
 
 def compile_adr_markdown(data: dict) -> str:
@@ -245,7 +290,7 @@ def audit_ssot_governance() -> dict:
     ]
     missing_diag = [t for t in required_diag_tokens if t not in diag]
     diagrams_synced = len(missing_diag) == 0
-    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    md_locked = ssot_markdown_count() == EXPECTED_MD_FILES
     graph_res = audit_architecture_graph()
     return {
         "ok": (
@@ -619,7 +664,7 @@ def audit_v33_convergence_closure() -> dict:
     entries = {e.get("id"): e for e in manifest.get("entries", [])}
     errors: list[str] = []
 
-    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    md_locked = ssot_markdown_count() == EXPECTED_MD_FILES
     if not md_locked:
         errors.append("md_file_count_not_locked_at_9")
 
@@ -714,7 +759,7 @@ def audit_v34_unification_and_lean_synthesis() -> dict:
     entries = {e.get("id"): e for e in manifest.get("entries", [])}
     errors: list[str] = []
 
-    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    md_locked = ssot_markdown_count() == EXPECTED_MD_FILES
     if not md_locked:
         errors.append("md_file_count_not_locked_at_9")
 
@@ -823,7 +868,7 @@ def audit_v35_wheel_first_and_pl_landscape() -> dict:
     entries = {e.get("id"): e for e in manifest.get("entries", [])}
     errors: list[str] = []
 
-    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    md_locked = ssot_markdown_count() == EXPECTED_MD_FILES
     if not md_locked:
         errors.append("md_file_count_not_locked_at_9")
 
@@ -932,8 +977,7 @@ def audit_v35_wheel_first_and_pl_landscape() -> dict:
 def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_missing: bool = False) -> dict:
     """Cross-repo governance sync gate verifying sec_repo M0_BOUNDARY_AXIOMS.md,
     BOUNDARY_MANIFEST.json (Rust-Only M1+ & JS M0 Freeze), and CLI protocols."""
-    import os
-    sec_root = sec_repo_root or Path(os.environ.get("SEC_REPO_ROOT", str(REPO_ROOT.parent / "sec_repo")))
+    sec_root = resolve_sec_repo_root(sec_repo_root)
     const_text = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
     ai_const_errors = [
         f"ai_constitution_missing:{ctok}"
@@ -949,6 +993,7 @@ def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_mi
             "mode": "standalone_ai_repo_only",
             "sec_repo_found": False,
             "sec_repo_root": str(sec_root),
+            "sec_repo_probe": [str(REPO_ROOT.parent / n) for n in SEC_REPO_SIBLING_CANDIDATES],
             "ai_constitution_zero_ai_enforced": len(ai_const_errors) == 0,
             "errors": errs,
         }
@@ -956,7 +1001,6 @@ def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_mi
     axioms_path = sec_root / "crates" / "gift-author-kernel" / "M0_BOUNDARY_AXIOMS.md"
     bm_path = sec_root / "BOUNDARY_MANIFEST.json"
     main_rs_path = sec_root / "crates" / "gift-author-kernel" / "src" / "main.rs"
-    const_text = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
 
     for req_p in (axioms_path, bm_path, main_rs_path):
         if not req_p.exists():
@@ -1004,7 +1048,7 @@ def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_mi
 def main() -> int:
     ap = argparse.ArgumentParser(description=f"Sovereign AI Brain CTO Repo Doctor ({REPO_VERSION})")
     ap.add_argument("--run-tests", action="store_true", help="Also run full 3-tier unittest suite")
-    ap.add_argument("--sec-repo", type=str, default=None, help="Path to sibling sec_repo for cross-repo governance sync")
+    ap.add_argument("--sec-repo", type=str, default=None, help="Path to sibling sec repo for cross-repo governance sync (default: $SEC_REPO_ROOT, then ../sec_repo, ../sec, ../gift — first one holding crates/gift-author-kernel/M0_BOUNDARY_AXIOMS.md)")
     ap.add_argument("--allow-missing-sec-repo", action="store_true", help="Allow skipping cross-repo check when sec_repo is absent (standalone default)")
     ap.add_argument("--require-sec-repo", action="store_true", help="Hard-fail if sibling sec_repo is absent")
     ap.add_argument("--compile-adr", action="store_true", help="Compile ARCHITECTURE_DECISIONS.md from ARCHITECTURE_GRAPH.json")

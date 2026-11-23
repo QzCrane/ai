@@ -16,3 +16,6 @@ venv/
 *.pth
 *.safetensors
 .DS_Store
+
+# WorkBuddy workspace metadata (project memory, intake archives) — never repo content
+.workbuddy/
