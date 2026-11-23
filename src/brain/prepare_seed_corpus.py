@@ -19,6 +19,7 @@ import json
 import zlib
 import sys
 from dataclasses import dataclass
+from five_axis_microworld import FiveAxisMicroworldGenerator, PROTOCOL_TOKENS, validate_msk_v1_packet
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
@@ -72,6 +73,13 @@ _SRC_NEMOTRON_MATH_V4 = DatasetSource("nemotron_sft_math_v4", "nvidia/Nemotron-S
 _SRC_SWE_HERO = DatasetSource("swe_hero_openhands_34k", "nvidia/SWE-Hero-openhands-trajectories", None, "train", "messages", "messages", 0.08, "verified_agentic_swe", 2026, "S")
 _SRC_DOLCI_THINK_7B = DatasetSource("dolci_think_sft_coconot", "allenai/Dolci-Think-SFT-7B", None, "train", "messages", "messages", 0.08, "verified_reasoning", 2025, "S")
 
+
+# v13.0 L1 Dao (Systematic Philosophy / Ontology / Science Textbooks) & L2.5 Human Intent Disambiguation
+_SRC_DAO_LIBRETEXTS = DatasetSource("dao_libretexts_3000books", "common-pile/libretexts", None, "train", "text", None, 0.18, "real_edu_en", 2025, "S")
+_SRC_DAO_OPENSTAX = DatasetSource("dao_openstax_textbooks", "crumb/openstax-text", None, "train", "text", None, 0.06, "real_edu_en", 2026, "S")
+_SRC_DAO_COMMON_CORPUS = DatasetSource("dao_common_corpus_books", "PleIAs/common_corpus", None, "train", "text", None, 0.06, "real_edu_en", 2025, "S")
+_SRC_INTENT_DIAFORGE = DatasetSource("intent_diaforge_disambig", "SAP/diaforge-utc-r-0725", None, "train", "messages", "messages", 0.05, "verified_reasoning", 2025, "S")
+
 CORPUS_PROFILES: Dict[str, CorpusProfile] = {
     "micro_debug_200mb": CorpusProfile(
         name="micro_debug_200mb",
@@ -108,6 +116,41 @@ CORPUS_PROFILES: Dict[str, CorpusProfile] = {
             DatasetSource(**{**_SRC_SWE_TRAJ.__dict__, "weight": 0.02}),
             DatasetSource(**{**_SRC_PI_ABSTAIN.__dict__, "weight": 0.02}),
         ),
+    ),
+    "rtx3050_4gb_v16": CorpusProfile(
+        name="rtx3050_4gb_v16",
+        target_mb=2048,
+        sources=[
+            DatasetSource("ultra_fineweb_zh_l3_v16", "openbmb/Ultra-FineWeb-L3", "Ultra-FineWeb-L3-zh-QA-Synthetic", "train", "content", None, 0.16, "real_edu_zh", 2026, "S"),
+            DatasetSource("fineweb_edu_zh_v3_v16", "opencsg/Fineweb-Edu-Chinese-V3", None, "train", "messages", "messages", 0.10, "real_edu_zh", 2026, "S"),
+            DatasetSource("domyn_edge_8_4t_v16", "domyn/Domyn-Edge-Pretraining-Mix-8.4T", None, "train", "text", None, 0.16, "real_edu_zh", 2026, "S"),
+            DatasetSource("ultradata_code_v16", "openbmb/UltraData-Code", None, "train", "content", None, 0.16, "real_code", 2026, "S"),
+            DatasetSource("ultradata_stack_v3_l2", "openbmb/UltraData-Stack-v3-L2", None, "train", "content", None, 0.08, "real_code", 2026, "S"),
+            DatasetSource("common_corpus_rfc_law", "PleIAs/common_corpus", None, "train", "text", None, 0.08, "real_edu_en", 2026, "S"),
+            DatasetSource("pleias_synth_75b", "PleIAs/SYNTH", None, "train", "synthetic_reasoning", "query", 0.06, "verified_reasoning", 2026, "S"),
+            DatasetSource("dolci_think_clean_v1", "allenai/Dolci-Think-SFT-Clean-v1", None, "train", "messages", "messages", 0.04, "verified_reasoning", 2026, "S"),
+            DatasetSource("ultradata_sft_agent_2609", "openbmb/UltraData-SFT-Agent-2609", None, "train", "messages", "messages", 0.04, "verified_agentic_swe", 2026, "S"),
+            DatasetSource("ultradata_rl_2609", "openbmb/UltraData-RL-2609", None, "train", "ground_truth", "query", 0.06, "verified_reasoning", 2026, "S"),
+            DatasetSource("wildai_human_anchor_ref", "pangram/WildAI", None, "train", "text", None, 0.06, "real_edu_en", 2026, "S"),
+        ],
+    ),
+    "rtx3050_4gb_dao_fa_shu_v13": CorpusProfile(
+        name="rtx3050_4gb_dao_fa_shu_v13",
+        target_mb=2048,
+        sources=[
+            _SRC_DAO_LIBRETEXTS,
+            _SRC_DAO_OPENSTAX,
+            _SRC_DAO_COMMON_CORPUS,
+            DatasetSource("open_code_reasoning", "nvidia/OpenCodeReasoning", "split_0", "split_0", "output", None, 0.16, "real_code", 2025, "S"),
+            DatasetSource("ultradata_math_290b", "openbmb/UltraData-Math", None, "train", "text", None, 0.14, "real_edu_en", 2026, "S"),
+            _SRC_INTENT_DIAFORGE,
+            DatasetSource("dolci_think_sft_coconot", "allenai/Dolci-Think-SFT-7B", None, "train", "messages", "messages", 0.03, "verified_reasoning", 2025, "S"),
+            DatasetSource("llmail_inject_abstention", "microsoft/llmail-inject-challenge", None, "train", "body", "objective", 0.02, "safety_abstention_immunization", 2025, "S"),
+            DatasetSource("ultra_fineweb_zh_l3_200b", "openbmb/Ultra-FineWeb-L3", "Ultra-FineWeb-L3-zh-QA-Synthetic", "train", "content", None, 0.14, "real_edu_zh", 2026, "S"),
+            DatasetSource("fineweb_edu_zh_v3_books", "opencsg/Fineweb-Edu-Chinese-V3", None, "train", "messages", "messages", 0.08, "real_edu_zh", 2026, "S"),
+            DatasetSource("chinese_r1_distill_110k", "Congliu/Chinese-DeepSeek-R1-Distill-data-110k-SFT", None, "train", "output", "instruction", 0.04, "verified_reasoning_zh", 2025, "S"),
+            DatasetSource("swe_hero_openhands_34k", "nvidia/SWE-Hero-openhands-trajectories", None, "train", "messages", "messages", 0.04, "verified_agentic_swe", 2026, "S"),
+        ],
     ),
     "rtx3050_4gb_super_dense_v11": CorpusProfile(
         name="rtx3050_4gb_super_dense_v11",
@@ -370,6 +413,8 @@ def main() -> None:
     parser.add_argument("--local-jsonl", type=str, default="", help="v10.16: Clean, deduplicate, decontaminate & pack a local JSONL file into .bin")
     parser.add_argument("--stage05-samples", type=int, default=32, help="Number of Stage 0.5 automata/Dyck samples to mix into local .bin")
     parser.add_argument("--causal-ir-samples", type=int, default=-1, help="v12.0: Deterministic 5-primitive Causal-IR + UnresolvedHole samples to interleave (-1 = auto 64 when --super-density)")
+    parser.add_argument("--local-books-dir", type=str, default="", help="v13.0: Directory of local .txt/.md/.jsonl philosophy/ontology/science books to read in full")
+    parser.add_argument("--book-epochs", type=int, default=2, help="v13.0: Full-pass epochs for --local-books-dir systematic books")
     parser.add_argument("--audit-zh", action="store_true", help="v10.16: Print Chinese-first 60:40 readiness audit and exit")
     parser.add_argument("--use-ube", action="store_true", help="v10.32: Encode corpus via lossless 2-byte CJK UBE (-33.3%% Chinese length)")
     parser.add_argument("--shuffle-seed", type=int, default=42, help="v11.0: HF streaming shard+buffer shuffle seed")
@@ -409,8 +454,15 @@ def main() -> None:
         ir_gen = CausalIRConflictGenerator()
         ir_cases = ir_gen.generate_batch(n=n_causal, context_distillation=True)
         ir_rows = [{"text": f"{c['prompt']}\n{c['trace']}"} for c in ir_cases]
-        ir_src = DatasetSource("causal_ir_v12", "local/causal_ir_v12", None, "train", "text", 0.20, "causal_ir")
-        streams.append((ir_src, ir_rows))
+        bridge_rows = [{"text": ir_gen.generate_vertical_bridge_case(seed=i)["text"]} for i in range(max(12, n_causal // 2))]
+        ir_src = DatasetSource("causal_ir_and_vertical_bridge_v13", "local/causal_ir_v13", None, "train", "text", None, 0.20, "causal_ir", 2026, "S")
+        streams.append((ir_src, ir_rows + bridge_rows))
+
+    if args.local_books_dir:
+        book_rows = iter_local_books_corpus(args.local_books_dir, repeat_epochs=int(args.book_epochs))
+        if book_rows:
+            book_src = DatasetSource("local_dao_books_v13", "local/dao_books_v13", None, "train", "text", None, 0.30, "real_edu_zh", 2026, "S")
+            streams.append((book_src, book_rows))
 
     if not streams:
         raise RuntimeError(f"All dataset sources failed to load: {skipped_sources}")
@@ -440,6 +492,7 @@ def get_eval_suite_manifest() -> Dict[str, Dict[str, str]]:
         "long_context_niah": {"benchmarks": "RULER / Multi-Query NIAH (4K-128K)", "metric": "exact retrieval accuracy"},
         "agentic_tool_rlvr": {"benchmarks": "Nemotron-SFT-Math-v3 / Tool-R0 Self-Play", "metric": "end-to-end tool success"},
         "calibration_abstention": {"benchmarks": "Split-Conformal Abstention + Aborted-KV Leak Audit", "metric": "ECE & 0/63 physical leak"},
+        "sovereign_5axis_bench": {"benchmarks": "Sovereign-5Axis-Bench (Triad-Flip / BiTemp-Tombstone / Budget-RLimit / Sov-Refute / OpenTexture-Precedent)", "metric": "De-Jargon Gap <= 8pp, Tombstone 100%, NonComp Breach 0%"},
     }
 
 
@@ -1277,6 +1330,138 @@ class CausalIRConflictGenerator:
             for i in range(max(1, int(n)))
         ]
 
+
+    def generate_vertical_bridge_case(self, seed: int = 0) -> Dict[str, object]:
+        """v13.0 Vertical Dao-Fa-Intent-Shu Semantic Bridge + 4-Axis Human Intent Parsing.
+
+        Places all 4 layers inside ONE single contiguous context window so a token-free 256-byte
+        shared looped core is forced by gradients to bind Human Speech (Shu) -> 4-Axis Intent ->
+        5-Primitive Causal IR (Fa) -> Ontological/Logical Axiom (Dao) into the same attractor.
+        """
+        idx = abs(int(seed)) % 3
+        if idx == 0:
+            utterance = "帮我把这套接口弄快点，别出事就行。"
+            explicit_goal = "降低接口延迟（提升吞吐/响应速度）"
+            implicit_invariants = ["零数据丢失/强一致性", "不得破坏线上可用性 SLA"]
+            unresolved_hole = "速度与强一致性冲突时，业务允许牺牲多少实时性（最终一致窗口秒数）？"
+            axiom = "本体论/系统论不变量（CAP 与守恒律）：在有限带宽与一致性约束下，性能提升不能无代价突破硬不变量，必须显式暴露帕累托权衡。"
+            action = "ABSTAIN_AND_CLARIFY: 先给出无损优化（索引/批处理），并就缓存过期容忍度提出最小澄清问题。"
+        elif idx == 1:
+            utterance = "别按昨天那套老方案了，全用最新版，但不能把 C 盘撑爆。"
+            explicit_goal = "升级全套依赖至最新兼容版并推翻旧方案"
+            implicit_invariants = ["用户最新指令覆盖历史旧设定（Conflict Precedence）", "C 盘零新增缓存写入"]
+            unresolved_hole = "无（约束完整；若最新主版本缺预编译轮子则自动回退次新稳定版）"
+            axiom = "认识论与逻辑覆盖律：显式新约束严格覆盖过期先验；版本约束需满足依赖图可满足性（SAT）。"
+            action = "EXECUTE_WITH_GUARD: 锁定 D 盘缓存环境变量并按兼容矩阵求解最新可执行版本。"
+        else:
+            utterance = "这东西怎么感觉还是悟不出来，是不是数据太碎了？"
+            explicit_goal = "诊断小模型泛化不足的根因并重构训练语料"
+            implicit_invariants = ["有限参数下最大化跨领域概念压缩密度", "保留真实语言与边界刹车能力"]
+            unresolved_hole = "无（可通过三层道-法-术配比 + 纵向语义桥直接闭合）"
+            axiom = "信息论与本体论压缩原理：随机碎片样本熵高而互信息低；公理化系统书库（道）+ 形式化因果骨架（法）+ 真实语境锚点（术）才能形成跨场景不变量。"
+            action = "RESTRUCTURE_CURRICULUM: 切换至道-法-意图-术四柱配比并开启纵向语义桥样本。"
+
+        text = (
+            f"[人类口语/术] {utterance}\n"
+            f"[4轴意图精解] 显性目标={explicit_goal} | 隐含底线={implicit_invariants} | "
+            f"歧义/缺槽(UnresolvedHole)={unresolved_hole}\n"
+            f"[5原语因果IR/法] State->CausalEdge->InvariantCheck->Conflict/HoleSurface\n"
+            f"[第一性原理/道] {axiom}\n"
+            f"[行动与刹车] {action}"
+        )
+        return {
+            "utterance": utterance,
+            "explicit_goal": explicit_goal,
+            "implicit_invariants": implicit_invariants,
+            "unresolved_hole": unresolved_hole,
+            "axiom": axiom,
+            "action": action,
+            "text": text,
+        }
+
+
+def iter_local_books_corpus(books_dir: str, repeat_epochs: int = 2, chunk_chars: int = 4096) -> List[Dict[str, str]]:
+    """v13.0 Local Classic Books / Philosophy / Ontology / Science Textbook Ingester.
+
+    Reads all .txt / .md / .jsonl files under `books_dir` in full coherent chunks and repeats
+    for `repeat_epochs` passes so a small model reads foundational systematic books completely
+    rather than sampling tiny fragments.
+    """
+    root = Path(books_dir)
+    if not root.exists():
+        return []
+    chunks: List[Dict[str, str]] = []
+    exts = {".txt", ".md", ".jsonl"}
+    for p in sorted(root.rglob("*")):
+        if not p.is_file() or p.suffix.lower() not in exts:
+            continue
+        raw = p.read_text(encoding="utf-8", errors="ignore").strip()
+        if not raw:
+            continue
+        if p.suffix.lower() == ".jsonl":
+            for line in raw.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                    txt = str(obj.get("text") or obj.get("content") or "").strip()
+                except Exception:
+                    txt = line
+                if txt:
+                    chunks.append({"text": f"[Book:{p.stem}]\n{txt}"})
+        else:
+            step = max(512, int(chunk_chars))
+            for i in range(0, len(raw), step):
+                part = raw[i : i + step].strip()
+                if part:
+                    chunks.append({"text": f"[Book:{p.stem}]\n{part}"})
+    out: List[Dict[str, str]] = []
+    for _ in range(max(1, int(repeat_epochs))):
+        out.extend(chunks)
+    return out
+
+
+def compute_atomic_reasoning_ratio(hop_h: float, holdout_q: float = 0.5) -> Dict[str, float]:
+    """arXiv:2611.19042 dynamic atomic-fact vs reasoning-trace allocation under fixed token budget.
+
+    Longer reasoning chains (higher hop_h) or broader trace coverage (lower holdout_q)
+    monotonically increase the optimal atomic-fact share a* to preserve OOD compositional generalization.
+    """
+    h = max(1.0, float(hop_h))
+    q = min(1.0, max(0.0, float(holdout_q)))
+    if h <= 3.0:
+        base_a = 0.60
+    elif h <= 8.0:
+        base_a = 0.70
+    else:
+        base_a = 0.76
+    # Broader coverage (smaller holdout_q) shifts additional budget toward atomic facts
+    adj = (0.5 - q) * 0.06
+    atomic_share = round(min(0.85, max(0.50, base_a + adj)), 4)
+    return {
+        "atomic_fact_share": atomic_share,
+        "reasoning_trace_share": round(1.0 - atomic_share, 4),
+        "hop_h": h,
+        "holdout_q": q,
+        "protocol_token_count": float(len(PROTOCOL_TOKENS)),
+    }
+
+
+def generate_verified_five_axis_corpus_slice(n_per_axis: int = 2) -> Dict[str, Any]:
+    """Generate a live 5-axis microworld corpus slice and verify every MSK-v1 packet."""
+    gen = FiveAxisMicroworldGenerator()
+    batch = gen.generate_five_axis_batch(n_per_axis=n_per_axis)
+    pair_formal, pair_plain = gen.generate_dejargonized_pair(seed=0)
+    validations = [validate_msk_v1_packet(rec["msk_v1"]) for rec in batch]
+    all_ok = all(v["ok"] for v in validations)
+    return {
+        "count": len(batch),
+        "all_msk_v1_valid": all_ok,
+        "axes_covered": sorted({rec["axis"] for rec in batch}),
+        "dejargonized_halt_match": pair_formal["expected_halt"] == pair_plain["expected_halt"],
+        "records": batch,
+    }
 
 if __name__ == "__main__":
     main()

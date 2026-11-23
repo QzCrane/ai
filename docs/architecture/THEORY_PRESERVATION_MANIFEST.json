@@ -1,0 +1,735 @@
+{
+  "manifest_version": "v35.0",
+  "target_document": "docs/whitepapers/world_cognition_unified_model.md",
+  "governance_rule": "Every ACTIVE theory/mechanism/falsification entry MUST have its required_anchor present in target_document; any removed entry MUST switch status to MERGED_INTO or FALSIFIED_BY with explicit disposition_target (zero silent evaporation).",
+  "entries": [
+    {
+      "id": "AX-01",
+      "domain": "axiom",
+      "status": "ACTIVE",
+      "required_anchor": "轴 I｜对称、守恒与相变破缺",
+      "source_ref": "world_cognition_unified_model.md#L1",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AX-02",
+      "domain": "axiom",
+      "status": "ACTIVE",
+      "required_anchor": "轴 II｜观察、耗散与不可逆流",
+      "source_ref": "world_cognition_unified_model.md#L1",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AX-03",
+      "domain": "axiom",
+      "status": "ACTIVE",
+      "required_anchor": "轴 III｜有限构造与自指边界",
+      "source_ref": "world_cognition_unified_model.md#L1",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AX-04",
+      "domain": "axiom",
+      "status": "ACTIVE",
+      "required_anchor": "轴 IV｜价值、权力与规范主权",
+      "source_ref": "world_cognition_unified_model.md#L1",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AX-05",
+      "domain": "axiom",
+      "status": "ACTIVE",
+      "required_anchor": "轴 V｜符号接地与跨主体协调",
+      "source_ref": "world_cognition_unified_model.md#L1",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AI-GOOD-REGULATOR",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "优良调节器定理",
+      "source_ref": "ai_repo:v14.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AI-5-EMERGENCE",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "宇宙五层涌现阶梯",
+      "source_ref": "ai_repo:v14.3",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AI-TRIANGULATION",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "跨域三角定位律",
+      "source_ref": "ai_repo:v14.3",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "AI-DOMAIN-COLLAPSE",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "领域特征坍缩",
+      "source_ref": "ai_repo:v14.3",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "AI-ENDOGENOUS-CONSISTENCY",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "内生自洽律",
+      "source_ref": "ai_repo:v14.3",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AI-4D-BITEMPORAL",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "四维双时态",
+      "source_ref": "ai_repo:v17.0",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "AI-BACKPRESSURE-QUAD",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "背压四难不可能定理",
+      "source_ref": "ai_repo:v18.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AI-CONTROL-DATA-CUT",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "控制-数据割序",
+      "source_ref": "ai_repo:v18.0",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "AI-RIVERBED-FLOW",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "河床与水流三尺度互塑",
+      "source_ref": "ai_repo:v18.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "AI-HYPERGRAPH",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "层级带类型超图",
+      "source_ref": "ai_repo:v14.0",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "AI-ADEPTS-BLIND",
+      "domain": "ai_cognitive_physics",
+      "status": "ACTIVE",
+      "required_anchor": "ADEPTS 30.6%",
+      "source_ref": "ai_repo:v14.3",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "FND-ZAVE-JACKSON",
+      "domain": "sec_theory_foundation",
+      "status": "ACTIVE",
+      "required_anchor": "Zave–Jackson",
+      "source_ref": "sec_repo:docs/作者/第一层语言.md#L49",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "FND-FELLEISEN",
+      "domain": "sec_theory_foundation",
+      "status": "ACTIVE",
+      "required_anchor": "Felleisen 局部消去",
+      "source_ref": "sec_repo:docs/作者/第一层语言.md#L53",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "FND-COGNITIVE-DIM",
+      "domain": "sec_theory_foundation",
+      "status": "ACTIVE",
+      "required_anchor": "Green & Blackwell 认知维度",
+      "source_ref": "sec_repo:docs/作者/第一层语言.md#L55",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "FND-COUSOT",
+      "domain": "sec_theory_foundation",
+      "status": "ACTIVE",
+      "required_anchor": "抽象解释",
+      "source_ref": "sec_repo:docs/作者/第一层语言.md#L54",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "FND-LAMPORT",
+      "domain": "sec_theory_foundation",
+      "status": "ACTIVE",
+      "required_anchor": "Lamport",
+      "source_ref": "sec_repo:docs/作者/第一层语言.md#L51",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "SEC-6-MODALITIES",
+      "domain": "sec_intent_ontology",
+      "status": "ACTIVE",
+      "required_anchor": "achieve / maintain / avoid / oblige / permit / prefer",
+      "source_ref": "sec_repo:docs/作者/需求含义与实现责任.md#L32",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "SEC-NORM-VS-AVOID",
+      "domain": "sec_intent_ontology",
+      "status": "ACTIVE",
+      "required_anchor": "规范禁止与行为避免严格正交",
+      "source_ref": "sec_repo:docs/作者/需求含义与实现责任.md#L41",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "SEC-5-AUTHOR-CONSTRUCTS",
+      "domain": "sec_intent_ontology",
+      "status": "ACTIVE",
+      "required_anchor": "定义 / 成员采用 / 连接 / 要求 / 稀疏实现控制",
+      "source_ref": "sec_repo:docs/作者/第一层语言.md#L115",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "SEC-INFO0-INFO7",
+      "domain": "sec_information_arch",
+      "status": "ACTIVE",
+      "required_anchor": "INFO0–INFO7",
+      "source_ref": "sec_repo:docs/信息/全体系信息结构.md#L35",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "SEC-CONSTRUCTIVE-WITNESS",
+      "domain": "sec_intent_ontology",
+      "status": "ACTIVE",
+      "required_anchor": "构造见证五要素",
+      "source_ref": "sec_repo:docs/作者/组合/抽象与开放定义.md#L57",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "SEC-3-TASK-OBJECTS",
+      "domain": "sec_intent_ontology",
+      "status": "ACTIVE",
+      "required_anchor": "产品行为 / 工程变更 / 现实执行动作",
+      "source_ref": "sec_repo:docs/作者/组合/跨软件需求合同.md#L38",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "SEC-4-PRESERVATION-MODES",
+      "domain": "sec_intent_ontology",
+      "status": "ACTIVE",
+      "required_anchor": "NoWrite / SameValue / SameBehavior / SamePresentation",
+      "source_ref": "sec_repo:docs/作者/组合/跨软件需求合同.md#L79",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "SEC-19-SHAPES",
+      "domain": "sec_intent_ontology",
+      "status": "ACTIVE",
+      "required_anchor": "19 种跨软件需求语义形状",
+      "source_ref": "sec_repo:docs/作者/需求含义与实现责任.md#L171",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "SEC-ANTI-EXTREMES",
+      "domain": "sec_intent_ontology",
+      "status": "ACTIVE",
+      "required_anchor": "568 个 D",
+      "source_ref": "sec_repo:docs/决策/设计理由-目标与核心.md#L29",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "CIV-01-OPERATIONAL",
+      "domain": "civilization_hourglass",
+      "status": "ACTIVE",
+      "required_anchor": "RISC",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "CIV-02-FORMAL",
+      "domain": "civilization_hourglass",
+      "status": "ACTIVE",
+      "required_anchor": "公理—范畴—形式证明",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "CIV-03-EFT",
+      "domain": "civilization_hourglass",
+      "status": "ACTIVE",
+      "required_anchor": "重整化群",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "CIV-04-IMMUNE",
+      "domain": "civilization_hourglass",
+      "status": "ACTIVE",
+      "required_anchor": "V(D)J 重排",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "CIV-05-COMMONLAW",
+      "domain": "civilization_hourglass",
+      "status": "ACTIVE",
+      "required_anchor": "普通法判例与成文法典",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "CIV-06-FEDERATION",
+      "domain": "civilization_hourglass",
+      "status": "ACTIVE",
+      "required_anchor": "复式记账",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "CIV-07-NEURAL",
+      "domain": "civilization_hourglass",
+      "status": "ACTIVE",
+      "required_anchor": "神经压缩与吸引子流形",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "KERNEL-FRACTAL",
+      "domain": "unified_kernel",
+      "status": "ACTIVE",
+      "required_anchor": "\\mathcal{K}(s, \\Sigma_s)",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "KERNEL-6-ESSENCES",
+      "domain": "unified_kernel",
+      "status": "ACTIVE",
+      "required_anchor": "意图行为本质层",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE"
+    },
+    {
+      "id": "KERNEL-MSK-V1",
+      "domain": "unified_kernel",
+      "status": "ACTIVE",
+      "required_anchor": "precedent_open_texture",
+      "source_ref": "world_cognition_unified_model.md#3.1",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "FAL-01-FLUX-BLANKET",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "Gray–Scott",
+      "source_ref": "https://arxiv.org/abs/2610.27235",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "FAL-02-EFE-LOCK",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "2610.19046",
+      "source_ref": "https://arxiv.org/abs/2610.19046",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "FAL-03-GROKKING",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "2610.35112",
+      "source_ref": "https://arxiv.org/abs/2610.35112",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "FAL-04-RAG-DECLINE",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "46.4%",
+      "source_ref": "https://arxiv.org/abs/2610.28340",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "FAL-05-UNANIMOUS-ERR",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "0.696 AUROC",
+      "source_ref": "https://arxiv.org/abs/2610.07570",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "FAL-06-LINEAR-COLLAPSE",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "1.3B–8B",
+      "source_ref": "https://arxiv.org/pdf/2611.24963",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "FAL-07-WILD-AI-LOSS",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "95.5%",
+      "source_ref": "https://arxiv.org/abs/2609.40295",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "FAL-08-RIEMANN-FRACTURE",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "克雷所",
+      "source_ref": "https://emeraldbook.org/news/nov-2126/",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "CALC-FOUR-STATE-ALGEBRA",
+      "domain": "operational_calculus",
+      "status": "ACTIVE",
+      "required_anchor": "冲突阻断蕴含",
+      "source_ref": "https://arxiv.org/html/2609.11174v3",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "FAL-09-SILENT-SIDE-PICK",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "2610.38296",
+      "source_ref": "https://arxiv.org/html/2610.38296",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "CALC-JOINT-BIDIR-REPAIR",
+      "domain": "external_user_protocol",
+      "status": "ACTIVE",
+      "required_anchor": "2611.24037",
+      "source_ref": "https://arxiv.org/html/2611.24037v1",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "CALC-ARIELI-AVRON-BILATTICE",
+      "domain": "operational_calculus",
+      "status": "ACTIVE",
+      "required_anchor": "Arieli–Avron",
+      "source_ref": "https://arxiv.org/html/2503.20679v1",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "CIV-NARROW-WAIST-LAW",
+      "domain": "civilization_hourglass",
+      "status": "ACTIVE",
+      "required_anchor": "窄束腰演进律",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "CIV-08-CRYPTO-ZERO-KNOWLEDGE",
+      "domain": "civilization_hourglass",
+      "status": "ACTIVE",
+      "required_anchor": "密码学/零知识与无信任机制设计",
+      "source_ref": "world_cognition_unified_model.md#3.0",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "BOUNDARY-STOCHASTIC-CBF-SIMPLEX",
+      "domain": "physics_boundary",
+      "status": "ACTIVE",
+      "required_anchor": "Simplex 回退切换层",
+      "source_ref": "https://arxiv.org/html/2610.39547v1",
+      "arch_layer": "LAYER_D_L2_L3_PHYSICAL_EXECUTION"
+    },
+    {
+      "id": "FAL-10-REDTEAM-V28",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "2610.37984",
+      "source_ref": "https://arxiv.org/abs/2610.37984",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "META-EXCLUSION-CLOSURE-LAW",
+      "domain": "meta_methodology",
+      "status": "ACTIVE",
+      "required_anchor": "排除创造闭合",
+      "source_ref": "world_cognition_unified_model.md#3.1B",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "META-SHARED-CARRIER-O-K",
+      "domain": "meta_methodology",
+      "status": "ACTIVE",
+      "required_anchor": "共享载体",
+      "source_ref": "world_cognition_unified_model.md#3.1B",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "META-CONTROL-VS-DOMAIN-OPEN",
+      "domain": "meta_methodology",
+      "status": "ACTIVE",
+      "required_anchor": "控制结构闭合",
+      "source_ref": "world_cognition_unified_model.md#3.1B",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "META-MVSL-CLOSURE",
+      "domain": "meta_methodology",
+      "status": "ACTIVE",
+      "required_anchor": "Minimum Viable Semantic Leverage",
+      "source_ref": "world_cognition_unified_model.md#3.1B",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "STRAT-OFFENSIVE-NARROW-WAIST",
+      "domain": "strategic_paradigm",
+      "status": "ACTIVE",
+      "required_anchor": "立法与雕塑",
+      "source_ref": "world_cognition_unified_model.md#3.1B",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "FAL-11-SATISFIX-AGENT-DRIFT",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "2611.16289",
+      "source_ref": "https://arxiv.org/abs/2611.16289",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN"
+    },
+    {
+      "id": "CALC-M0-FIVE-GATE-PROTOCOL",
+      "domain": "operational_calculus",
+      "status": "ACTIVE",
+      "required_anchor": "M0 -> M1",
+      "source_ref": "world_cognition_unified_model.md#3.1B",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "COMP-BOHM-JACOPINI",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Böhm–Jacopini",
+      "source_ref": "world_cognition_unified_model.md#3.1C",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "COMP-CHURCH-TURING",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Church–Turing",
+      "source_ref": "world_cognition_unified_model.md#3.1C",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "COMP-ALPERN-SCHNEIDER",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Alpern–Schneider",
+      "source_ref": "world_cognition_unified_model.md#3.1C",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "COMP-DEONTIC-LOGIC",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Deontic",
+      "source_ref": "world_cognition_unified_model.md#3.1C",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "COMP-ASSUME-GUARANTEE",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Assume–Guarantee",
+      "source_ref": "world_cognition_unified_model.md#3.1C",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "COMP-CONCURRENCY-CALM-FLP",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "CALM",
+      "source_ref": "world_cognition_unified_model.md#3.1C",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    },
+    {
+      "id": "COMP-CONTINUOUS-GPAC-BSS",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "GPAC",
+      "source_ref": "world_cognition_unified_model.md#3.1C",
+      "arch_layer": "LAYER_A_META_WORLD"
+    },
+    {
+      "id": "SURF-TEXT-GRAPH-PROJECTION",
+      "domain": "sec_intent_ontology",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE",
+      "title": "L0 文本同源单向架构图谱与 Mermaid 确定性投影",
+      "status": "ACTIVE",
+      "required_anchor": "文本同源单向投影",
+      "disposition_target": null
+    },
+    {
+      "id": "EXEC-ZERO-AI-DETERMINISTIC-COMPILE",
+      "domain": "physical_execution_compiler",
+      "arch_layer": "LAYER_D_L2_L3_PHYSICAL_EXECUTION",
+      "title": "工具内零 AI 纯确定性编译铁律（L0→L1→L2→L3）",
+      "status": "ACTIVE",
+      "required_anchor": "零 AI 纯确定性编译铁律",
+      "disposition_target": null
+    },
+    {
+      "id": "EXEC-DLF-LOWERING-BOUNDARY",
+      "domain": "physical_execution_compiler",
+      "arch_layer": "LAYER_D_L2_L3_PHYSICAL_EXECUTION",
+      "title": "零 AI 条件下的可确定性降维片段（DLF）边界",
+      "status": "ACTIVE",
+      "required_anchor": "可确定性降维片段",
+      "disposition_target": null
+    },
+    {
+      "id": "EXEC-RUST-AFFINE-DETERMINISM",
+      "domain": "physical_execution_compiler",
+      "arch_layer": "LAYER_D_L2_L3_PHYSICAL_EXECUTION",
+      "title": "L3 Rust 仿射所有权与 BTree 逐位确定性执行基座",
+      "status": "ACTIVE",
+      "required_anchor": "Rust 仿射所有权与 BTree 确定性",
+      "disposition_target": null
+    },
+    {
+      "id": "EXEC-EXTERN-CAPABILITY-HATCH",
+      "domain": "physical_execution_compiler",
+      "arch_layer": "LAYER_D_L2_L3_PHYSICAL_EXECUTION",
+      "title": "受 R5 权限审计的 extern capability 底层逃生舱",
+      "status": "ACTIVE",
+      "required_anchor": "extern capability 逃生舱",
+      "disposition_target": null
+    },
+    {
+      "id": "USER-EXTERNAL-AI-FIREWALL",
+      "domain": "external_user_protocol",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN",
+      "title": "外部使用者防火墙铁律（人类与 AI 仅作为编译器外部使用者）",
+      "status": "ACTIVE",
+      "required_anchor": "外部使用者防火墙铁律",
+      "disposition_target": null
+    },
+    {
+      "id": "CALC-4D-BITEMPORAL-EVALUATOR",
+      "domain": "operational_calculus",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "4D 双时态可执行求值器（fact/obs/norm/judge 切面与法不溯及既往）",
+      "status": "ACTIVE",
+      "required_anchor": "4D 双时态可执行求值器",
+      "disposition_target": null
+    },
+    {
+      "id": "CALC-CHISHOLM-CTD-DEONTIC",
+      "domain": "operational_calculus",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "Chisholm 反事实违约补偿分层状态机与 R3 硬红线不可抵消律",
+      "status": "ACTIVE",
+      "required_anchor": "Chisholm 反事实违约补偿演算",
+      "disposition_target": null
+    },
+    {
+      "id": "GOV-EPOCH-MIGRATION-EXT-USER",
+      "domain": "external_user_protocol",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN",
+      "title": "跨 Epoch 离线本体迁移门禁与外部 AI 使用者零内部术语泄漏协议",
+      "status": "ACTIVE",
+      "required_anchor": "跨 Epoch 离线本体迁移与外部使用者协议",
+      "disposition_target": null
+    },
+    {
+      "id": "EXEC-DLF-FORMAL-BNF-BOUNDARY",
+      "domain": "physical_execution_compiler",
+      "arch_layer": "LAYER_D_L2_L3_PHYSICAL_EXECUTION",
+      "title": "DLF 可确定性降维片段形式化 BNF 文法与五条充要判定边界定理",
+      "status": "ACTIVE",
+      "required_anchor": "DLF 形式化 BNF 与充要判定边界",
+      "source_ref": "world_cognition_unified_model.md#3.1F",
+      "disposition_target": null
+    },
+    {
+      "id": "CALC-5GATE-BITEMPORAL-CHISHOLM-ADJUDICATION",
+      "domain": "operational_calculus",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "5-Gate 双时态与 Chisholm 归属裁决（归入 M1 标准确定性演算库、守卫 M0 五原语不膨胀）",
+      "status": "ACTIVE",
+      "required_anchor": "5-Gate 双时态与 Chisholm 归属裁决",
+      "source_ref": "world_cognition_unified_model.md#3.1F",
+      "disposition_target": null
+    },
+    {
+      "id": "COMP-C-LIKE-5PRIM-CORE-CLOSURE",
+      "domain": "computation_theory_core",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "类 C 5-Primitive 内核封闭定理（收敛于控制结构而非开放业务领域，具体业务仅作反例压力测试集）",
+      "status": "ACTIVE",
+      "required_anchor": "类 C 5-Primitive 内核封闭定理",
+      "source_ref": "world_cognition_unified_model.md#3.1F",
+      "disposition_target": null
+    },
+    {
+      "id": "ARCH-CONCEPTUAL-UNIFICATION-ORTHOGONAL-MAP",
+      "domain": "meta_methodology",
+      "arch_layer": "LAYER_A_META_WORLD",
+      "title": "极简三联概念大统一与 M0/M1 ⊥ L0–L3 正交坐标映射（内核本体 / 物理边界 / 运行与演化护栏）",
+      "status": "ACTIVE",
+      "required_anchor": "极简三联统一压缩视图",
+      "source_ref": "world_cognition_unified_model.md#3.1G",
+      "disposition_target": null
+    },
+    {
+      "id": "EXEC-LEAN4-DEBRUIJN-CHECKER-SYNTHESIS",
+      "domain": "physical_execution_compiler",
+      "arch_layer": "LAYER_D_L2_L3_PHYSICAL_EXECUTION",
+      "title": "Lean 4 第一性原理悟性融合（de Bruijn 不可信前端 vs 极小独立复验器 kernel_checker、PTXLean4 非空真性防空洞与拒绝依赖类型/Mathlib 热路径）",
+      "status": "ACTIVE",
+      "required_anchor": "Lean 4 第一性原理悟性融合",
+      "source_ref": "world_cognition_unified_model.md#3.1G",
+      "disposition_target": null
+    },
+    {
+      "id": "WORKFLOW-WHEEL-FIRST-ANTI-NIH-LAW",
+      "domain": "meta_methodology",
+      "arch_layer": "LAYER_A_META_WORLD",
+      "title": "轮子优先（Wheel-First）五步工作循环与反 NIH 铁律（优先复用成熟轮子，.gift 永不膨胀为通用编程语言）",
+      "status": "ACTIVE",
+      "required_anchor": "轮子优先（Wheel-First）五步工作循环与反 NIH 铁律",
+      "source_ref": "world_cognition_unified_model.md#3.1H",
+      "disposition_target": null
+    },
+    {
+      "id": "SURF-RUST-PURE-SUBSET-BRIDGE-SYN",
+      "domain": "intent_surface_syntax",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE",
+      "title": "基于 syn 静态审计的 Rust 纯子集桥接与 .gift 薄意图层边界（复杂集合/泛型纯逻辑外置桥接）",
+      "status": "ACTIVE",
+      "required_anchor": "Rust 纯子集桥接（`syn`）与薄意图层边界",
+      "source_ref": "world_cognition_unified_model.md#3.1H",
+      "disposition_target": null
+    },
+    {
+      "id": "COMP-PL-FORMAL-TEN-BENCHMARK-LANDSCAPE",
+      "domain": "computation_theory_core",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "PL/形式化全谱系十大标杆横向审计（Verus/Aeneas/Dafny/Quint-TLA+/Alloy/Koka-Effekt/Flix/Salsa/egglog/Z3-OR-Tools 四分裁决）",
+      "status": "ACTIVE",
+      "required_anchor": "PL/形式化全谱系十大标杆横向审计",
+      "source_ref": "world_cognition_unified_model.md#3.1H",
+      "disposition_target": null
+    }
+  ],
+  "layer_schema": {
+    "LAYER_A_META_WORLD": "元方法论、世界认知公理、文明窄腰定律与连续/物理边界元定律",
+    "LAYER_B_L0_INTENT_SURFACE": "L0 人类/CTO 意图表面语法、六维本质、认知维度与文本同源单向图谱投影",
+    "LAYER_C_L1_DETERMINISTIC_KERNEL": "L1 确定性语义与五原语控制内核、四值双格、CSP/MUS、4D 时态与计算理论核心",
+    "LAYER_D_L2_L3_PHYSICAL_EXECUTION": "L2/L3 零 AI 纯确定性降维、Rust 仿射所有权单目标编译与 extern capability 逃生舱",
+    "LAYER_E_EXTERNAL_USERS_AI_BRAIN": "严格位于编译器之外的外部使用者（人类 + 外部 AI/ai_repo 大脑）与 2026-Q4 实证证伪台账"
+  }
+}

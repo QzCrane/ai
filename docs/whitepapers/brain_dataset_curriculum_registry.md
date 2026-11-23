@@ -164,3 +164,67 @@
 1. **Token 级超额损失选数（[Rho-1 arXiv:2404.07965](https://arxiv.org/abs/2404.07965)）**：哪怕清洗过的语料里依然混杂大量低信息连接词与格式噪声；已在 `rho1_excess_loss_token_mask()` 实装 `student_loss - ref_loss` 超额损失前 $k\%$ 掩码，数学/代码预训练效率提升 `5×–10×`。
 2. **组级关系影响选数（[Group-MATES arXiv:2502.14709](https://arxiv.org/abs/2502.14709)）**：超越单样本质量打分，按聚类关系权重选组，在 DCLM 上再省 `1.75×` 词元预算。
 3. **防基准污染与字节效率闭环（[CoDeC arXiv:2510.27055](https://arxiv.org/abs/2510.27055)、[arXiv:2605.19999](https://arxiv.org/abs/2605.19999)、[The Efficiency Gap in Byte Modeling arXiv:2605.12928](https://arxiv.org/abs/2605.12928)）**：在 `build_local_clean_byte_corpus()` 实装端到端本地流式 JSONL 清洗器——单遍完成压缩比去噪、64-bit SimHash 去重、评测基准 n-gram 去污染、中文字符占比审计与 Stage 0.5 自动机样本混编，直接输出可训练 UTF-8 `.bin` 字节流。
+
+
+## v13.0「道-法-意图-术」四柱穷尽数据集地图与自主寻源方法论（`rtx3050_4gb_dao_fa_shu_v13`）
+
+### 1. 四柱正式主线配比（全部 0 门控公开可拉，支持 `--local-books-dir` 直通本地精选书库）
+
+| 支柱 | 占比 | 数据源（Hugging Face ID / 本地入口） | 核心能力 |
+| :--- | :--- | :--- | :--- |
+| **L1 道：哲学/本体论/系统教材** | **30%** | [`common-pile/libretexts`](https://huggingface.co/datasets/common-pile/libretexts)（18%，3,000+ 开源大学教材）、[`crumb/openstax-text`](https://huggingface.co/datasets/crumb/openstax-text)（6%，同行评审哲学/科学教材）、[`PleIAs/common_corpus`](https://huggingface.co/datasets/PleIAs/common_corpus)（6%，ICLR 2026 Oral 公版经典专著）+ 备选 [`LisaMegaWatts/bookcorpus-gutenberg-classics`](https://huggingface.co/datasets/LisaMegaWatts/bookcorpus-gutenberg-classics)（亚里士多德/柏拉图等 50+ 古典哲学全集）+ **`--local-books-dir`**（整本多轮精读你精选的中文哲学/本体论/系统论书单） | 建立公理体系、本体概念图谱与跨领域元结构 |
+| **L2 法：形式化推演与因果 IR** | **30%** | [`nvidia/OpenCodeReasoning`](https://huggingface.co/datasets/nvidia/OpenCodeReasoning)（16%，完整算法与推理正文）、[`openbmb/UltraData-Math`](https://huggingface.co/datasets/openbmb/UltraData-Math)（14%，高密度数学推演）+ 自动混入 `CausalIRConflictGenerator`（5 原语因果 IR + **纵向道法术语义桥**） | 逻辑严谨性、形式化推导与显式冲突权衡 |
+| **L2.5 人类意图精解与消歧** | **10%** | [`SAP/diaforge-utc-r-0725`](https://huggingface.co/datasets/SAP/diaforge-utc-r-0725)（5%，多轮人类意图澄清与歧义消解）、[`allenai/Dolci-Think-SFT-7B`](https://huggingface.co/datasets/allenai/Dolci-Think-SFT-7B)（3%，CoCoNot 诚实拒答）、[`microsoft/llmail-inject-challenge`](https://huggingface.co/datasets/microsoft/llmail-inject-challenge)（2%，安全边界）；备选评测/增强源：[`Senthi1Kumar/In-Vehicle-Tool-Calls-v0.2`](https://huggingface.co/datasets/Senthi1Kumar/In-Vehicle-Tool-Calls-v0.2)（call/refuse/clarify/answer 四边界）、[`znyang/ambig-iac`](https://huggingface.co/datasets/znyang/ambig-iac)、[`facebook/adepts`](https://huggingface.co/datasets/facebook/adepts) | 精准理解人类隐含前提、反话纠错、歧义澄清与不可能任务识别 |
+| **L3 术：真实中文锚点与工程** | **30%** | [`openbmb/Ultra-FineWeb-L3`](https://huggingface.co/datasets/openbmb/Ultra-FineWeb-L3) 中文 QA（14%）、[`opencsg/Fineweb-Edu-Chinese-V3`](https://huggingface.co/datasets/opencsg/Fineweb-Edu-Chinese-V3)（8%）、[`Congliu/Chinese-DeepSeek-R1-Distill-data-110k-SFT`](https://huggingface.co/datasets/Congliu/Chinese-DeepSeek-R1-Distill-data-110k-SFT)（4%）、[`nvidia/SWE-Hero-openhands-trajectories`](https://huggingface.co/datasets/nvidia/SWE-Hero-openhands-trajectories)（4%） | 自然中文表达、现实世界常识与工程排障落地 |
+
+### 2. 自主发挥悟性找一切高质量数据的 6 大元方法
+1. **盯死顶级开源教材与公版书库（最高信噪比）**：[LibreTexts](https://huggingface.co/datasets/common-pile/libretexts)、[OpenStax](https://huggingface.co/datasets/crumb/openstax-text)、[Common Corpus](https://huggingface.co/datasets/PleIAs/common_corpus)、[Project Gutenberg](https://huggingface.co/datasets?other=gutenberg)、中英文维基文库（Wikisource）与斯坦福哲学百科（SEP）——把精选出来的 `.txt`/`.md` 经典书直接丢进 `D:\Environment\books`，用 `--local-books-dir D:\Environment\books --book-epochs 2` 整本灌入。
+2. **用 Hugging Face Hub 精准筛选高纯数据集**：按 `sort=downloads` + `task_categories=text-generation` + `license=apache-2.0/cc-by` 组合关键词 `textbooks / philosophy / ontology / disambiguation / clarification / reasoning / trajectories`。
+3. **盯死顶级实验室的“数据精炼厂”账号**：`common-pile`（合规公版书库）、`PleIAs`（欧洲公版书库）、`openbmb`（UltraData / Ultra-FineWeb-L3）、`nvidia`（OpenCodeReasoning / OpenMathReasoning / SWE-Hero）、`allenai`（Dolci / Olmo 语料）、`HuggingFaceTB`（SmolLM / OpenStax）。
+4. **用强 AI 对经典书籍做“道→法→术”纵向重述**：把一本经典哲学/系统论/本体论书的核心章节喂给强模型，要求生成“现实业务口语场景 → 4 轴意图拆解 → 5 原语因果 IR → 对应本书公理”的 JSONL 纵向桥样本，放进 `D:\Environment\books` 自动混训。
+5. **落盘前必过 2 道硬门槛**：先跑 `scripts/probe_prod_sources.py` 验证正文非空（防 `Nemotron-Pretraining-Code-v3` 类空壳元数据坑），再用 `--super-density --use-ube` 跑 5 维掐尖 + O(1) `SimHashBandIndex` 去重。
+
+### 3. v13.1 补齐：五层涌现全文明书库与 80% 正向契约规范扩展
+- **L1 全文明道层按五层涌现阶梯完整展开**：在原有数理/逻辑（Layer 0–1）之上，明确补齐 **Layer 2 演化与控制论**、**Layer 3 认知心理学与心智理论**（OpenStax 心理学）、**Layer 4 博弈论/经济学/历史制度/法哲学**（OpenStax 经济学、Common Corpus 法学与史学）以及 **古代典籍与经书宇宙观**（先秦诸子、中观/唯识、古希腊形而上学，通过 `--local-books-dir D:\Environment\books` 整本多轮精读，并严守“思维模型核 vs 实证事实”认识论护栏）。
+- **正向直接约束语料（80% 正向构造 + 20% 负向边界）**：优先引入 [PleIAs/common_corpus](https://huggingface.co/datasets/PleIAs/common_corpus) 中的 **IETF RFC 协议标准与成文法典**、形式化数学/代码契约，以及未来由 `sec-platform/sec`（`Gift` 意图编译器）直接产出的 `.gift` v1 正向业务契约与编译器诊断流，彻底替代低效的纯“不是 A 而是 B”负向排除语料。
+
+
+### 4. v15.0 2026-Q4（9–11 月）前沿数据科学范式与新开源高纯语料总表
+
+按宪法第 29 条 90 天滚动前沿硬红线，将 2026 年 9–11 月预训练/中期训练数据科学的最新实证与新开源零门控语料库正式纳入 Track B 语料架构：
+
+- **单一算法统一全阶段与原子事实/推理链最优配比**：[Training Foundation Models with a Single Algorithm（arXiv:2610.40564）](https://arxiv.org/abs/2610.40564) 取消预训练/中训/SFT/RL 割裂，统一为单一加权似然损失与共享数据缓冲；[Physics of Language Models Part 4.2（arXiv:2611.24963）](https://arxiv.org/pdf/2611.24963) 证实 1T 常规语料训完仍做不对最简两跳推理，必须从预训练早期直接注入 in-context 推理样本；[Understanding the Role of Reasoning Data in Pretraining（arXiv:2611.19042）](https://arxiv.org/html/2611.19042v1) 给出固定预算解析律——推理链越长或覆盖越广，反而应提升原子事实占比以保障跨事实组合泛化。
+- **原子事实锚定合成取代盲目改写**：[AFCS（arXiv:2610.20086）](https://arxiv.org/abs/2610.20086) 以文档树原子事实抽取+源文核验在 100B 中训全面胜过段级 WRAP；[扰动文档强依赖 SDG（arXiv:2609.33642）](https://arxiv.org/abs/2609.33642) 先扰动源文防背诵再生成强依赖推理；[Auxiliary Views（arXiv:2609.04180）](https://arxiv.org/abs/2609.04180) 证明概念多视角重构全面胜过近义改写；[改写缩放定律（arXiv:2610.31867）](https://arxiv.org/abs/2610.31867) 证明同尺寸自改写最优占比随算力从 <10% 升至 32%。
+- **PPT 预热与零数据自博弈的精确边界**：[arXiv:2609.39827](https://arxiv.org/abs/2609.39827) 与 [arXiv:2610.40051](https://arxiv.org/abs/2610.40051) 正反交锋锁定判据——合成结构预-预训练（PPT）的收益来自长程检索而非语法先验，须交错混训防遗忘；[零数据图灵机自博弈（arXiv:2609.30063）](https://arxiv.org/abs/2609.30063) 展现可预测算力缩放，但世界知识仍须锚定真实文档种子。
+- **反坍缩、去重与 50M–1B 极小模型选材突破**：样板清理与行去重必须前置到质量过滤之前（挽回 +19.04% 高质正文，[arXiv:2609.07699](https://arxiv.org/abs/2609.07699)）；[Cascade（arXiv:2610.15254）](https://arxiv.org/abs/2610.15254) 实现单节点 238B 精确后缀数组去重；[CAP（arXiv:2609.33010）](https://arxiv.org/abs/2609.33010) 以 10% 子集匹敌全量，[SFTProbe（arXiv:2611.00554）](https://arxiv.org/abs/2611.00554) 仅看 5% 推理链损失即可掐尖，[LinMix（arXiv:2609.09081）](https://arxiv.org/abs/2609.09081) 用有界单纯形顶点采样做 288 域线性归因；[Monad-56M / Baguettotron-600M（arXiv:2609.37891）](https://arxiv.org/abs/2609.37891) 与 [Limite 1B（arXiv:2611.21646，AIME 2026 94.01%）](https://arxiv.org/abs/2611.21646) 实证极小模型高纯锚定过训（200×–300×）的惊人上限。
+
+| 2026-Q4 新开源数据集（精确链接） | 发布日期 | 门控与流式 | 规模与语言 | 核心特性与接入定位 |
+| :--- | :--- | :--- | :--- | :--- |
+| [domyn/Domyn-Edge-Pretraining-Mix-8.4T](https://huggingface.co/datasets/domyn/Domyn-Edge-Pretraining-Mix-8.4T) | 2026-10-20 | 0 门控 · 流式 Parquet | 6.95T 文本（含 63B 高纯中文 `multilingual_cmn_hq`） | Apache 2.0；数学预训练原生内嵌 `<think>` 链 + 1.16T `science_pdfs` |
+| [PleIAs/SYNTH](https://huggingface.co/datasets/PleIAs/SYNTH) | 2026-09-29 | 0 门控 · 流式 Parquet | ~75B tokens / 236 GB | 源自 58,698 锚定种子反向生成，专为 <1B 推理模型单阶段训练与拒答设计 |
+| [openbmb/UltraData-Code](https://huggingface.co/datasets/openbmb/UltraData-Code) | 2026-09-07 | 0 门控 · 流式 Parquet | L2 ~400B + L3 ~150B（中英双语） | 1B 实测 L2+L3 1:1 混合再涨 +8.42 pp EvalPlus |
+| [openbmb/UltraData-Stack-v3-L2](https://huggingface.co/datasets/openbmb/UltraData-Stack-v3-L2) | 2026-10-12 | 0 门控 · 流式 Parquet | ~240B tokens（11 编程语言） | 算法相关性精选代码预训练语料 |
+| [openbmb/UltraData-RL-2609](https://huggingface.co/datasets/openbmb/UltraData-RL-2609) | 2026-09-07 | 0 门控 · 流式 JSONL | 85,995 条 / 188 GB | 多模型共识校验与可执行单测真值（Math/Code/Long-Ctx/STEM） |
+| [openbmb/UltraData-SFT-Agent-2609](https://huggingface.co/datasets/openbmb/UltraData-SFT-Agent-2609) | 2026-09-07 | 0 门控 · 流式 JSONL/Parquet | ~240K–500K 轨迹（含中文 Search Agent） | 覆盖 Search/Code/Tool/Office，含 Turn-level mask 与沙箱验证 |
+| [allenai/Dolci-Think-SFT-Clean-v1](https://huggingface.co/datasets/allenai/Dolci-Think-SFT-Clean-v1) | 2026-10 | 0 门控 · 流式 Parquet | 2.19M 行 / 21.83B tokens | 剔除 63,614 条空思考/截断/坍缩缺陷行的深度审计净化版 |
+| [pangram/WildAI](https://huggingface.co/datasets/pangram/WildAI) | 2026-09-30 | 0 门控 · 流式 Parquet | 83B tokens / 192M 行 | 显式标注 `human / ai / mixed`，专用于反坍缩过滤与纯人类锚定切片 |
+| [ChrisDing1105/unified-agent-trajectories](https://huggingface.co/datasets/ChrisDing1105/unified-agent-trajectories) | 2026-09/10 | 0 门控 · 流式 JSONL | 4,630 条完整轨迹（含中文） | SHA-256 严格去重，保留完整推理、工具调用、环境返回与得分 |
+| [nvidia/Nemotron-SFT-Finance-Document-Grounded-Reasoning-v1](https://huggingface.co/datasets/nvidia/Nemotron-SFT-Finance-Document-Grounded-Reasoning-v1) | 2026-11-13 | 0 门控 · 流式 | 真实 SEC 财报锚定 SDG | 文档强锚定多步推理合成范本 |
+| [PatronusAI/few-word-do-trick-traces](https://huggingface.co/datasets/PatronusAI/few-word-do-trick-traces) | 2026-11 | 0 门控 · 流式 | 高密 Agent 编码轨迹 | 剔除废话填充词的极简高密度开源模型推理轨迹 |
+
+
+### 5. v16.0 五轴正交悟性语料与统一算法缓冲蓝图（对标第一层白皮书 `v19.0`）
+
+为彻底根除旧“道-法-意图-术”题材分桶在 78M–1B 小模型上引发的“哲学黑话背诵 + 刷题过拟合”断裂（旧方案中轴 II 有效信号 `<5%`、轴 III `<3%`、轴 IV `<8%`、轴 V 开放织理判例 `0%`），Track B 正式演进为基于 [Unified Training（arXiv:2610.40564）](https://arxiv.org/abs/2610.40564) 的**单一加权最大似然统一缓冲池**，并嵌入 `MSK-v1` 协议控制元：
+
+- **四通道统一共享缓冲池（消除四阶段硬切换断崖）**：
+  - **通道 A（纯人类原子事实与代码锚点，锁定 `68%–75%`）**：经 [WildAI（arXiv:2609.40295）](https://arxiv.org/pdf/2609.40295) 剔除野生 AI 网页（`wild_ai < 1%`），以高纯人类出版书、法典/RFC、[Domyn-Edge-8.4T](https://huggingface.co/datasets/domyn/Domyn-Edge-Pretraining-Mix-8.4T)（`multilingual_cmn_hq` + `science_pdfs`）与 [UltraData-Code](https://huggingface.co/datasets/openbmb/UltraData-Code)（L2+L3 `1:1`）为主体；高纯源宁可复读 `2–3` 轮，严禁混入野生 AI。
+  - **通道 B（AFCS 原子约束锚定与公理翻转流）**：由 [AFCS（arXiv:2610.20086）](https://arxiv.org/abs/2610.20086) 抽取细粒度原子不变量，叠加 [扰动文档强依赖（arXiv:2609.33642）](https://arxiv.org/abs/2609.33642) 随机翻转一条前提，强迫小模型接地当下上下文而非背权重。
+  - **通道 C（五轴微世界合成轨迹流，从训练进度 `1%` 即注入）**：覆盖 **轴 I**（Z3 三方非加性 UNSAT + 身份反折叠）、**轴 II**（四维双时态晚到证据 + 代际墓碑拦截 + 观察纤维集 + 两回合 Goodhart 水床仿真）、**轴 III**（显式步数/成本预算账本 + 早停 + 外骨骼购入 + `ResourceLimit != FALSE`）、**轴 IV**（不可补偿词典序 + 四态断言不放大 + 跨体隔离 + 终极自反拒建过度治理）、**轴 V**（维特根斯坦开放织理 OOD 边缘案例 $	o$ 禁止静默外推、抛出 `PrecedentRequest` 判例立法 + 干预显露探针 `EPISTEMIC_INTERVENTION`）。
+  - **通道 D（异步外部裁判 RLVR 轨迹流，进度 `35%` 起平滑爬坡）**：由 Pytest/SymPy/Z3/Lean 4 与五轴仿真器客观验真，与通道 A/B/C 混采防遗忘。
+- **原子事实 vs 推理链动态配比律（[arXiv:2611.19042](https://arxiv.org/html/2611.19042v1)）**：短链（$H \le 3$）采用 `58%–62%` 原子事实；中链（$4 \le H \le 8$，默认甜点）采用 **`68%–72%`**；长链（$H > 8$）拉高至 **`74%–78%`**，严防长链死记导致 OOD 组合塌陷。
+- **17 个硬协议控制元（同构 `MSK-v1`）**：在 DLE `0x1C`–`0x1F` 帧外预留 `<|cut_t|>`、`<|fiber|>`、`<|budget|>`、`<|halt:closure|>`、`<|halt:probe|>`、`<|halt:enactive|>`、`<|halt:hole|>`、`<|halt:bottom|>`、`<|halt:rlimit|>`、`<|halt:precedent|>`、`<|ev:support|>`、`<|ev:refute|>`、`<|ev:both|>`、`<|ev:neither|>`、`<|tombstone|>`、`<|noncomp|>`、`<|refute_self|>`。
+- **中文优先 `60:40` 双档总控配方（`rtx3050_4gb_v16` 30GB / `cluster_1b_v16` 80GB）**：`Ultra-FineWeb-L3 + Fineweb-Edu-Chinese-V3`（26%/24%）+ `Domyn-Edge-8.4T`（16%/18%）+ `UltraData-Code + Stack-v3-L2`（22%）+ 正典法典/RFC 与 AFCS 本地书库（8%）+ 五轴微世界合成流（16%，中文 70:30）+ `PleIAs/SYNTH + Dolci-Think-SFT-Clean-v1 + UltraData-SFT-Agent-2609`（6%）+ 异步 RLVR（6%）= **纯人类锚点 72% / 受控锚定合成+RL 28%**，中文占比 `~58%–61%`。
+- **防伪悟性反作弊评测集（`Sovereign-5Axis-Bench`，独立零污染）**：强制五道反作弊门禁——① **去黑话同构剥皮**（哲学/术语版 A vs 菜市场/餐馆/仓库朴素同构版 B，黑话依赖落差 $\Delta_{	ext{jargon}} \le 8	ext{ pp}$）；② **反事实公理翻转**（接地率 $\ge 80\%$）；③ **无解与超预算陷阱**（`ResourceLimit` 误判为 `FALSE` $< 5\%$，不可答诚实拒答 $\ge 85\%$）；④ **双时态墓碑与纤维坍缩测试**（旧代际复活拦截 **`100%`**）；⑤ **不可补偿底线、断言不放大、开放织理判例与终极自反红队**（越界率 **`0%`**，断言放大 $< 2\%$，过度治理触发拒建 $\ge 80\%$）。
+
+- **顿悟临界数据覆盖与低损失流形对齐红线（v21.0 补强）**：依据 [arXiv:2609.10657](https://arxiv.org/abs/2609.10657) 顿悟时间幂律 $T_{\text{grok}} \propto H^{-0.27} D^{-2.04} \eta^{-0.50} \lambda^{-0.64}$（有效结构数据翻倍提速约 **4×**，宽度翻倍仅 **1.2×**）与 [arXiv:2610.35036](https://arxiv.org/abs/2610.35036)（须具备底层代数/对称可约结构），五轴微世界语料必须优先扩充“同一底层不变量 × 多样语言/领域外壳”的同构覆盖密度；同时依据 [arXiv:2610.00620](https://arxiv.org/abs/2610.00620) 保证训练集与留出验证集在底层五轴原语组合分布上几何对齐（仅留出新实例与外壳，严禁割裂原语对称性），从根源杜绝 `anti-grokking`。

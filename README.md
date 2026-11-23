@@ -1,8 +1,15 @@
+<!-- CTO-SSOT-MAP -->
+> **最新全方案全景入口（机器索引见 `ARCHITECTURE_MAP.json`）**
+> - **Layer 1 确定性控制核（零 PyTorch 依赖）**：`src/kernel`（核心实现 `src/brain/world_kernel_engine.py`），通过 `resolve_gift_kernel_binary()`（优先读取 `GIFT_KERNEL_BIN`）与 `sec_repo` 的 `gift-author-kernel --emit-m0` 解耦联调。
+> - **Layer 2 神经提案器（Route B，GAP-10 Hold）**：`src/neural`（3:1 Looped DeltaNet+HLA + CPU-Pinned Engram；先在 2B Q4+QLoRA 底模验证洞察数据与外骨骼闭环，不盲目用 4GB 显卡从头预训练）。
+> - **Layer 3 外骨骼运行时**：`src/runtime`（Wake-Sleep、外骨骼桥接、五轴微世界）。
+> - **9 份文档分层**：活架构总纲 3 份（`README.md` / `SYSTEM_CONSTITUTION.md` / `ARCHITECTURE_DECISIONS.md`）、结构图与统一模型 2 份、**高频检索参考库 4 份**（`docs/whitepapers/` 下 4 份大型白皮书/注册表，保留供按需检索而非日常手改）。
+
 # Sovereign AI — Route B Pure AI Brain & Deterministic Agent Harness (v10.32)
 
 本仓库包含从第一性原理出发的自研主权 AI 全栈架构研究与可执行代码，严格执行**「纯 AI 大脑本体（`src/brain/`）」与「确定性外骨骼 / Agent Harness（`src/harness/`）」双轨解耦**，并由 `SYSTEM_CONSTITUTION.md`（七章 28 条最高元约束，含第 27 条全仓四层活性与反腐烂强制审计律）与 `docs/whitepapers/brain_paper_organ_registry.md`（2236 条零重复文献统一字典，98.4% 为 2025–2026 前沿文献）全链路兜底。
 
-## 全工程单源真相（SSOT）信息地图（严格锁定 8 份 `.md`，零重复职责）
+## 全工程单源真相（SSOT）信息地图（严格锁定 9 份 `.md`，零重复职责）
 
 | 层级 | 文件路径 | 唯一职责（想查什么就只看这份） |
 | :--- | :--- | :--- |
@@ -10,7 +17,8 @@
 | **L1 总入口与规范** | [`SYSTEM_CONSTITUTION.md`](SYSTEM_CONSTITUTION.md) | 七章 28 条最高工程与科研元规范（含第 27 条轮子/语料/论文四层活性反腐烂铁律） |
 | **L2 架构裁决与拓扑** | [`docs/architecture/ARCHITECTURE_DECISIONS.md`](docs/architecture/ARCHITECTURE_DECISIONS.md) | **唯一架构决策与全链路追踪中枢（`ADR-001`–`ADR-013`：`✅既定主干 / ⚔️同位待PK / ❌淘汰` × `Phase 1/2/3/Scale-Up`）** |
 | **L2 架构裁决与拓扑** | [`docs/architecture/ARCHITECTURE_DIAGRAMS.md`](docs/architecture/ARCHITECTURE_DIAGRAMS.md) | 唯一纯文本 Mermaid 系统拓扑图与活体模块映射（v10.32，`repo_doctor.py` 硬门禁强制同步） |
-| **L3 深度设计母本** | [`docs/whitepapers/sovereign_ai_brain_whitepaper.md`](docs/whitepapers/sovereign_ai_brain_whitepaper.md) | 纯 AI 大脑第一性原理、正文演进 `0.0D`、硬件屋顶线与 2236 条权威参考文献母本 |
+| **L3 第一层理论母本** | [`docs/whitepapers/world_cognition_unified_model.md`](docs/whitepapers/world_cognition_unified_model.md) | 跨工程（`ai`+`gift`）《世界—认知内生统一模型》超级白皮书（与硬件/框架解耦） |
+| **L3 第二层实现母本** | [`docs/whitepapers/sovereign_ai_brain_whitepaper.md`](docs/whitepapers/sovereign_ai_brain_whitepaper.md) | 纯 AI 大脑第一性原理、正文演进 `0.0D`、硬件屋顶线与 2236 条权威参考文献母本 |
 | **L3 深度设计母本** | [`docs/whitepapers/deterministic_agent_harness_whitepaper.md`](docs/whitepapers/deterministic_agent_harness_whitepaper.md) | 确定性外骨骼 / Agent Harness 工程协议与安全红线母本 |
 | **L4 数据字典** | [`docs/whitepapers/brain_paper_organ_registry.md`](docs/whitepapers/brain_paper_organ_registry.md) | 2236 条文献统一 3 大裁决 × 6 细分字典（`✅既定主干` 175 | `⚔️待PK/扩展` 234 | `❌淘汰/禁令` 493） |
 | **L4 数据字典** | [`docs/whitepapers/brain_dataset_curriculum_registry.md`](docs/whitepapers/brain_dataset_curriculum_registry.md) | 预训练语料、ADR-013 反投毒清洗、HF 存活/Gated 门禁与四阶段数据课程字典 |
@@ -67,6 +75,7 @@ ai/
 │   │   ├── ARCHITECTURE_DECISIONS.md             # 唯一两维正交 CTO 架构决策与追踪中枢（ADR-001~013）
 │   │   └── ARCHITECTURE_DIAGRAMS.md              # 6 张纯文本 Mermaid 活体工程架构图（v10.32，CI 强校验）
 │   └── whitepapers/
+│       ├── world_cognition_unified_model.md      # 第一层：跨工程《世界—认知内生统一模型》超级白皮书（v14.0）
 │       ├── sovereign_ai_brain_whitepaper.md      # 纯 AI 大脑唯一主白皮书（2236 条零重复文献）
 │       ├── brain_paper_organ_registry.md         # 12 器官 × 3 大裁决 × 6 细分统一字典（2236 条）
 │       ├── brain_dataset_curriculum_registry.md  # 2026 四阶段数据集课程与 ADR-013 反投毒字典（v10.32）
@@ -86,7 +95,7 @@ ai/
 
 ## 本地验证与原型晋级速查
 
-- **一键 CTO 体检与全量单测**：`python3 scripts/repo_doctor.py --run-tests`（强制校验 8 份 `.md` 上限、AST 零死类/零死函数、Mermaid 架构图同步、ADR-001~013、2236 条文献闭环与离线三线活性门禁）
+- **一键 CTO 体检与全量单测**：`python3 scripts/repo_doctor.py --run-tests`（强制校验 9 份 `.md` 上限、AST 零死类/零死函数、Mermaid 架构图同步、ADR-001~013、2236 条文献闭环与离线三线活性门禁）
 - **在线三线活性防腐烂巡检（GitHub API + HF Hub API + arXiv 年份审计）**：`python3 scripts/repo_doctor.py --audit-freshness`
 - **RTX 3050 4GB 生产环境一键装轮子**：`pip install -r requirements-rtx3050.txt`
 - **RTX 3050 4GB 烟雾验证**（待用户解除 `GAP-10` 后）：`pip install -e ".[cuda,dev]" && python3 src/brain/sovereign_brain_pytorch.py --config rtx3050_4gb_65m --steps 20`
@@ -109,3 +118,4 @@ ai/
 - **最新原生 Windows 依赖栈（零 C 盘写入，全锁 `D:\Environment`）**：推荐 **Python `3.15.2` / `3.14`**（[升级说明](https://blog.codercops.com/blog/python-3-10-end-of-life-upgrade-to-3-14-2026)）+ **[PyTorch `2.15.0`](https://pytorch.org/blog/pytorch-2-15-release-blog/)（`cu134` 最新 / `cu132` 备选）** + 官方 **[`triton-windows` `3.9.0.post30`](https://github.com/triton-lang/triton-windows)** + **[`flash-linear-attention` `0.6.0` + `liger-kernel` `0.8.5`](https://pypi.org/project/fla-core/0.5.2/)** + **[`transformers` `5.24.0` + `datasets` `5.2.0` + `torchao` `0.18.0` + `safetensors` `0.8.0` + `hf-xet` `1.8.0`](https://pypi.org/project/transformers/)** / `huggingface-hub` / `datasets` / `safetensors` / `torchao` / `liger-kernel`（严禁安装 `bitsandbytes`）。
 - **一键装机与自检**：`powershell -ExecutionPolicy Bypass -File scripts\setup_windows_d_drive.ps1`（自动锁定 `D:\Environment\.cache`、按 `nvidia-smi` 自动选 CUDA wheel、跑 GPU/Triton 与全仓 `repo_doctor.py --run-tests`）。
 - **一键 200MB 掐尖冒烟 + 3050 4GB 实测**：`powershell -ExecutionPolicy Bypass -File scripts\run_smoke_windows.ps1`（默认走零门控 `rtx3050_4gb_super_dense_v11`：80% 开源 Tier-S 实时 5 维掐尖 + 20% 内生 5 原语因果冲突/拒答燃料，随后以 `np.memmap` 零内存膨胀直接喂入 `sovereign_brain_pytorch.py --data-bin` 跑 20 步实测并打印峰值显存与吞吐）。
+- **v13.0「道-法-意图-术」四柱主线（`rtx3050_4gb_dao_fa_shu_v13`）**：30% L1 哲学/本体论/系统科学教材（`LibreTexts`+`OpenStax`+`CommonCorpus`+`--local-books-dir` 本地经典书单整本精读）+ 30% L2 形式化推演与纵向语义桥 + 10% L2.5 人类意图 4 轴消歧（`SAP/diaforge-utc-r-0725`+`Dolci-Think`）+ 30% L3 真实中文与工程锚点。

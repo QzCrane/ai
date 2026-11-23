@@ -62,6 +62,8 @@ def audit_zero_dead_code() -> dict:
             "UniversalByteCodec", "DecomposedUncertainty", "SplitConformalAbstentionCalibrator",
             "VersionedWeightSnapshot", "ConditionalFailurePlaybook",
         }),
+        ("five_axis_microworld.py", {"FiveAxisMicroworldGenerator"}),
+        ("world_kernel_engine.py", {"EvidenceBit", "NamedConstraint", "FiniteDomainCSPSolver", "DependencyGraph", "FourDTimeCut", "BitemporalFactLedger", "ChisholmDeonticEngine"}),
     ]
     dead_classes = {}
     for fname, roots in core_specs:
@@ -243,7 +245,7 @@ def audit_ssot_governance() -> dict:
     ]
     missing_diag = [t for t in required_diag_tokens if t not in diag]
     diagrams_synced = len(missing_diag) == 0
-    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 8
+    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
     graph_res = audit_architecture_graph()
     return {
         "ok": (
@@ -261,7 +263,7 @@ def audit_ssot_governance() -> dict:
         "diagrams_synced": diagrams_synced,
         "missing_diagram_tokens": missing_diag,
         "benchmark_summary_synced": bench_ok,
-        "md_file_count_locked_at_8": md_locked,
+        "md_file_count_locked_at_9": md_locked,
         "architecture_graph_ast_verified": graph_res,
     }
 
@@ -332,9 +334,679 @@ def audit_three_pillar_freshness(online: bool = False) -> dict:
         "papers": papers,
     }
 
+
+def audit_anti_drift_and_slimming() -> dict:
+    """Rule 30 (v23.0): Zero-magic-number structural invariants gate (zero-loss, orthogonal fields, natural cleavage)."""
+    l1_txt = (REPO_ROOT / "docs" / "whitepapers" / "world_cognition_unified_model.md").read_text(encoding="utf-8")
+    required_zero_loss_anchors = (
+        "Gray–Scott", "0.696 AUROC", "95.5%", "6/6 vs 基线 0/12",
+        "ADEPTS 30.6%", "复式记账", "V(D)J", "诺特定理", "重整化群",
+        "evidence_both", "precedent_open_texture", "blast_radius_cap", "25 万页", "克雷所",
+        "跨域三角定位律", "领域特征坍缩", "内生自洽律", "宇宙五层涌现阶梯", "四维双时态",
+        "背压四难不可能定理", "控制-数据割序", "河床与水流三尺度互塑", "核心—表面双层可用性权衡律", "意图行为本质层", "Telos", "Grounding",
+    )
+    missing_anchors = [a for a in required_zero_loss_anchors if a not in l1_txt]
+    zero_loss_ok = len(missing_anchors) == 0
+
+    const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+    const_tokens = ("第 30 条", "第 31 条", "数字三源合法律", "核心—表面双层可用性权衡律", "全原则·全约束·全目标统一总纲", "Step 4.5")
+    const_ok = all(t in const_txt for t in const_tokens)
+
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from src.brain.five_axis_microworld import (
+        FiveAxisMicroworldGenerator,
+        desugar_human_surface_to_msk,
+        audit_core_surface_four_rulers,
+        lift_conflict_across_layers,
+        validate_layer_descent_chain,
+        validate_layered_kernel_packet,
+    )
+
+    sample = FiveAxisMicroworldGenerator().generate_axis1_non_additive_triad(seed=0)["msk_v1"]
+    clean_l0 = validate_layered_kernel_packet(sample, "L0_INTENT", step_budget_remaining=1)
+    leaked_pkt = dict(sample)
+    leaked_pkt["Constraint"] = {**sample["Constraint"], "payload": {"detail": "acquire mutex on vram"}}
+    bad_l0 = validate_layered_kernel_packet(leaked_pkt, "L0_INTENT", step_budget_remaining=1)
+    undeclared_pkt = dict(sample)
+    undeclared_pkt["Anchor"] = {**sample["Anchor"], "junk_field": True}
+    bad_schema = validate_layered_kernel_packet(undeclared_pkt, "L0_INTENT", step_budget_remaining=1)
+    budget_fail = validate_layered_kernel_packet(sample, "L3_EXECUTION", step_budget_remaining=0)
+    chain_ok = validate_layer_descent_chain(["L0_INTENT", "L1_COORDINATION", "L2_DECIDABLE_IR", "L3_EXECUTION"])
+    chain_cycle = validate_layer_descent_chain(["L0_INTENT", "L1_COORDINATION", "L0_INTENT"])
+    lifted = lift_conflict_across_layers("vram_oom", "L3_EXECUTION", "L0_INTENT")
+    desugared = desugar_human_surface_to_msk({"entity": "order", "hard_rule": "no_oversell", "action": "buy", "fallback": "owner_review"})
+    desugar_ok = validate_layered_kernel_packet(desugared, "L0_INTENT", step_budget_remaining=1)["ok"]
+
+    layered_ok = bool(
+        clean_l0["ok"]
+        and (not bad_l0["ok"])
+        and any("layer_hiding_violation" in e for e in bad_l0["errors"])
+        and (not bad_schema["ok"])
+        and any("undeclared_non_orthogonal_fields" in e for e in bad_schema["errors"])
+        and (not budget_fail["ok"])
+        and budget_fail["halt_tag"] == "<|halt:rlimit|>"
+        and chain_ok["ok"]
+        and (not chain_cycle["ok"])
+        and lifted["ok"]
+        and len(lifted["leaked_tokens"]) == 0
+        and desugar_ok
+    )
+    four_rulers = audit_core_surface_four_rulers()
+    return {
+        "ok": bool(zero_loss_ok and const_ok and layered_ok and four_rulers["ok"]),
+        "zero_loss_anchors_ok": zero_loss_ok,
+        "missing_anchors": missing_anchors,
+        "constitution_v23_locked": const_ok,
+        "four_rulers_gate": four_rulers,
+        "structural_invariants_ok": layered_ok,
+    }
+
+
+def audit_theory_preservation_manifest() -> dict:
+    """Rule 32 (v26.0): Machine-checkable Theory Manifest + Full Git History Union Zero-Evaporation Gate."""
+    mpath = REPO_ROOT / "docs" / "architecture" / "THEORY_PRESERVATION_MANIFEST.json"
+    if not mpath.exists():
+        return {"ok": False, "errors": ["Missing THEORY_PRESERVATION_MANIFEST.json"]}
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    target_rel = manifest["target_document"]
+    target_txt = (REPO_ROOT / target_rel).read_text(encoding="utf-8")
+    errors: list[str] = []
+    valid_layers = set(manifest.get("layer_schema", {}).keys())
+    if len(valid_layers) != 5:
+        errors.append(f"invalid_layer_schema_count:{len(valid_layers)}")
+    layer_distribution: dict[str, int] = {k: 0 for k in sorted(valid_layers)}
+    active_checked = 0
+    for entry in manifest.get("entries", []):
+        eid = entry.get("id", "UNKNOWN")
+        st = entry.get("status")
+        if st == "ACTIVE":
+            active_checked += 1
+            anc = entry.get("required_anchor", "")
+            if not anc or anc not in target_txt:
+                errors.append(f"missing_active_theory_anchor:{eid}:{anc}")
+            al = entry.get("arch_layer")
+            if al not in valid_layers:
+                errors.append(f"invalid_or_missing_arch_layer:{eid}:{al}")
+            else:
+                layer_distribution[al] += 1
+        elif st in ("MERGED_INTO", "FALSIFIED_BY"):
+            if not entry.get("disposition_target"):
+                errors.append(f"missing_disposition_target:{eid}")
+        else:
+            errors.append(f"invalid_status:{eid}:{st}")
+
+    # Full Git history union check for URLs and arXiv IDs (zero silent evaporation)
+    git_union_urls: set[str] = set()
+    git_union_arxiv: set[str] = set()
+    commits = subprocess.check_output(
+        ["git", "log", "--pretty=format:%h", "--", target_rel], cwd=REPO_ROOT, text=True
+    ).splitlines()
+    for sha in commits:
+        hist_txt = subprocess.check_output(["git", "show", f"{sha}:{target_rel}"], cwd=REPO_ROOT, text=True)
+        git_union_urls.update(re.findall(r"https?://[^\s\)\]>]+", hist_txt))
+        git_union_arxiv.update(re.findall(r"arXiv:(\d{4}\.\d{4,5})", hist_txt))
+
+    head_urls = set(re.findall(r"https?://[^\s\)\]>]+", target_txt))
+    head_arxiv = set(re.findall(r"arXiv:(\d{4}\.\d{4,5})", target_txt))
+    evaporated_urls = sorted(git_union_urls - head_urls)
+    evaporated_arxiv = sorted(git_union_arxiv - head_arxiv)
+    if evaporated_urls:
+        errors.append(f"evaporated_historical_urls:{len(evaporated_urls)}")
+    if evaporated_arxiv:
+        errors.append(f"evaporated_historical_arxiv:{len(evaporated_arxiv)}")
+
+    comp_ids = {e.get("id") for e in manifest.get("entries", []) if e.get("domain") == "computation_theory_core" and e.get("status") == "ACTIVE"}
+    required_comp_ids = {
+        "COMP-BOHM-JACOPINI", "COMP-CHURCH-TURING", "COMP-ALPERN-SCHNEIDER",
+        "COMP-DEONTIC-LOGIC", "COMP-ASSUME-GUARANTEE", "COMP-CONCURRENCY-CALM-FLP",
+        "COMP-CONTINUOUS-GPAC-BSS",
+    }
+    missing_comp = sorted(required_comp_ids - comp_ids)
+    if missing_comp:
+        errors.append(f"missing_computation_theory_core:{','.join(missing_comp)}")
+
+    return {
+        "ok": len(errors) == 0,
+        "manifest_version": manifest.get("manifest_version"),
+        "active_theories_verified": active_checked,
+        "layer_distribution": layer_distribution,
+        "git_commits_audited": len(commits),
+        "evaporated_urls": evaporated_urls,
+        "evaporated_arxiv": evaporated_arxiv,
+        "errors": errors,
+    }
+
+
+def audit_executable_world_engine() -> dict:
+    """Rule 33 / Step 5.5 (v28.0): Independent property-based, real CSP/MUS, and adversarial gate (zero mocks)."""
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from src.brain.world_kernel_engine import (
+        BOTH, NEITHER, REFUTE, SUPPORT, BitemporalFactLedger, ChisholmDeonticEngine, ChisholmNormSpec,
+        DependencyGraph, EvidenceBit, FiniteDomainCSPSolver, FourDTimeCut, NamedConstraint,
+    )
+    from src.brain.five_axis_microworld import (
+        DEFAULT_FOUR_LAYER_PROFILES, desugar_intent_essence_to_msk, validate_epoch_migration,
+        validate_external_user_protocol, validate_layer_dag, validate_layered_kernel_packet,
+    )
+
+    vals = (SUPPORT, REFUTE, BOTH, NEITHER)
+    # 1. Exhaustive Arieli-Avron bilattice laws
+    bilattice_ok = (
+        all(a.weak_implies(a).s == 1 for a in vals)
+        and all(a.strong_implies(b) == b.neg().strong_implies(a.neg()) for a in vals for b in vals)
+        and BOTH.conflict_guard(REFUTE) == (BOTH, True)
+        and EvidenceBit.exists_eval([BOTH], domain_complete=False) == BOTH
+        and EvidenceBit.forall_eval([], domain_complete=True) == NEITHER
+    )
+
+    # 2. Real CSP/MUS/MCS solver (non-additive 3-constraint allocation conflict)
+    solver = FiniteDomainCSPSolver()
+    domains = {"slot_a": [1, 2], "slot_b": [1, 2]}
+    c1 = NamedConstraint("a_eq_1", ("slot_a",), lambda a: a["slot_a"] == 1)
+    c2 = NamedConstraint("b_eq_1", ("slot_b",), lambda a: a["slot_b"] == 1)
+    c3 = NamedConstraint("disjoint", ("slot_a", "slot_b"), lambda a: a["slot_a"] != a["slot_b"])
+    c4 = NamedConstraint("benign_bound", ("slot_a",), lambda a: a["slot_a"] <= 2)
+    mus_res = solver.extract_mus_and_safe_subset(domains, [c1, c2, c3, c4])
+    sat_after_relax = solver.solve(domains, [c1, c3, c4])
+    csp_ok = (
+        mus_res["status"] == "UNSAT"
+        and set(mus_res["unsat_core"]) == {"a_eq_1", "b_eq_1", "disjoint"}
+        and len(mus_res["safe_subset"]) == 3
+        and sat_after_relax["status"] == "SAT"
+        and sat_after_relax["witness"]["slot_a"] != sat_after_relax["witness"]["slot_b"]
+    )
+
+    # 3. Real positive + negative dependency closure invalidation
+    dg = DependencyGraph()
+    dg.facts["price"] = 100
+    dg.record_derivation("quote", 100, reads=["price"], neg_reads=["override_discount"])
+    dg.record_derivation("unrelated", 1, reads=["other"])
+    inv = dg.mutate_fact("override_discount", 0.9)
+    dep_ok = inv["invalidated"] == ["quote"] and dg.derived["unrelated"]["valid"]
+
+    # 4. Adversarial hiding bypass check (snake_case + CJK) & diamond DAG topology
+    pkt = desugar_intent_essence_to_msk({"telos": "checkout", "boundary": "no_oversell", "premise": "p", "intervention": "vram_4gb_hard_cap", "authority": "owner", "grounding": "显存"})
+    adv_hiding_ok = (not validate_layered_kernel_packet(pkt, "L0_INTENT", step_budget_remaining=1)["ok"]) and pkt["Judgment"]["status"]["tag"] == "gap"
+    diamond_profiles = {
+        **DEFAULT_FOUR_LAYER_PROFILES,
+        "L1_CONSENSUS": {"forbidden_lower_tokens": frozenset({"cuda", "vram"})},
+        "L1_KERNEL": {"forbidden_lower_tokens": frozenset({"raft", "wal"})},
+    }
+    dag_ok = validate_layer_dag([("L0_INTENT", "L1_CONSENSUS"), ("L0_INTENT", "L1_KERNEL"), ("L1_CONSENSUS", "L3_EXECUTION"), ("L1_KERNEL", "L3_EXECUTION")], profiles=diamond_profiles)["ok"]
+
+    # 5. Real 4D Bitemporal Ledger (non-retroactivity + late obs)
+    ledger = BitemporalFactLedger()
+    ledger.register_norm("price_floor", 1, effective_from=1, effective_to=10, recorded_at=1, predicate=lambda v: v >= 108)
+    ledger.register_norm("price_floor", 2, effective_from=10, effective_to=None, recorded_at=10, predicate=lambda v: v >= 120)
+    ledger.append_fact("order_paid", 108, valid_from=5, recorded_at=5, generation=1)
+    q4d = ledger.query_at(FourDTimeCut(5, 12, 10, 12), "order_paid", norm_id="price_floor")
+    bitemporal_4d_ok = bool(
+        q4d.retroactive_norm_detected
+        and q4d.compliant_at_fact_time == SUPPORT
+        and q4d.compliant_at_norm_time == REFUTE
+        and q4d.primary_verdict == SUPPORT
+    )
+
+    # 6. Real Chisholm CTD Engine + R3 hard-redline dominance
+    ch_spec = ChisholmNormSpec(
+        norm_id="delivery_ctd",
+        primary_obligation="deliver_on_time",
+        compliant_followup="send_receipt",
+        contrary_to_duty_compensation="issue_delay_voucher",
+        hard_redline_guards=(NamedConstraint("no_forge_audit", ("forge_audit",), lambda a: not a["forge_audit"], hard=True),),
+        soft_preferences=(NamedConstraint("low_cost", ("cost",), lambda a: a["cost"] <= 10, hard=False, priority=1_000_000),),
+    )
+    ch_eng = ChisholmDeonticEngine()
+    ch_ctd = ch_eng.evaluate(ch_spec, {"forge_audit": False, "cost": 50}, primary_observed=REFUTE, compensation_observed=SUPPORT)
+    ch_r3 = ch_eng.evaluate(ch_spec, {"forge_audit": True, "cost": 0}, primary_observed=SUPPORT, followup_observed=SUPPORT)
+    chisholm_ctd_r3_ok = bool(
+        ch_ctd.state == "CTD_COMPENSATION_ACTIVE"
+        and ch_ctd.explosion_prevented
+        and "send_receipt" in ch_ctd.suppressed_obligations
+        and ch_r3.state == "HARD_REDLINE_HALT"
+    )
+
+    # 7. Cross-Epoch migration + External AI User protocol
+    ep_compat = validate_epoch_migration(
+        {"epoch": 1, "fields": {"id": {"type": "str", "required": True}}, "invariants": ["R1"]},
+        {"epoch": 2, "fields": {"id": {"type": "str", "required": True}, "tag": {"type": "str", "required": True, "default": "v2"}}, "invariants": ["R1"]},
+        [{"id": "a1"}],
+    )
+    ep_break = validate_epoch_migration(
+        {"epoch": 1, "fields": {"id": {"type": "str", "required": True}}, "invariants": ["R1"]},
+        {"epoch": 2, "fields": {"id": {"type": "str", "required": True}}, "invariants": []},
+        [{"id": "a1"}],
+    )
+    ext_ok = validate_external_user_protocol(
+        {"zero_ai_inside_compiler": True, "ai_role": "EXTERNAL_USER_ONLY"},
+        {"message": "业务契约校验通过"},
+    )
+    ext_bad = validate_external_user_protocol(
+        {"zero_ai_inside_compiler": False, "ai_role": "EXTERNAL_USER_ONLY"},
+        {"message": "hir_arena overflow"},
+    )
+    epoch_ext_ok = bool(
+        ep_compat["decision"] == "MIGRATE_COMPAT"
+        and ep_break["decision"] == "HALT_BREAKING"
+        and ext_ok["ok"]
+        and (not ext_bad["ok"])
+    )
+
+    return {
+        "ok": bool(bilattice_ok and csp_ok and dep_ok and adv_hiding_ok and dag_ok and bitemporal_4d_ok and chisholm_ctd_r3_ok and epoch_ext_ok),
+        "bilattice_laws_ok": bilattice_ok,
+        "real_csp_mus_ok": csp_ok,
+        "dep_closure_invalidation_ok": dep_ok,
+        "adversarial_hiding_and_diamond_dag_ok": bool(adv_hiding_ok and dag_ok),
+        "bitemporal_4d_ok": bitemporal_4d_ok,
+        "chisholm_ctd_r3_ok": chisholm_ctd_r3_ok,
+        "epoch_migration_and_ext_user_ok": epoch_ext_ok,
+    }
+
+
+
+
+def audit_v33_convergence_closure() -> dict:
+    """v33.0 convergence closure gate: verifies C-like 5-primitive core closure lock,
+    DLF formal BNF & boundary spec, 5-Gate bitemporal/Chisholm adjudication, 9-MD lock,
+    and manifest v33.0 upgrade."""
+    l1_txt = (REPO_ROOT / "docs" / "whitepapers" / "world_cognition_unified_model.md").read_text(encoding="utf-8")
+    const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+    mpath = REPO_ROOT / "docs" / "architecture" / "THEORY_PRESERVATION_MANIFEST.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    entries = {e.get("id"): e for e in manifest.get("entries", [])}
+    errors: list[str] = []
+
+    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    if not md_locked:
+        errors.append("md_file_count_not_locked_at_9")
+
+    zero_ai_const_ok = all(
+        tok in const_txt for tok in ("zero_ai_inside_compiler: true", "EXTERNAL_USER_ONLY", "零 AI 纯确定性编译铁律")
+    )
+    if not zero_ai_const_ok:
+        errors.append("zero_ai_constitution_lock_missing")
+
+    core_tokens = (
+        "类 C 5-Primitive 内核封闭定理",
+        "收敛于控制结构而非开放业务领域",
+        "反例压力测试集",
+        "core_closure_locked",
+    )
+    core_entry = entries.get("COMP-C-LIKE-5PRIM-CORE-CLOSURE", {})
+    core_closure_locked = bool(
+        all(t in l1_txt for t in core_tokens)
+        and core_entry.get("status") == "ACTIVE"
+        and core_entry.get("arch_layer") == "LAYER_C_L1_DETERMINISTIC_KERNEL"
+        and md_locked
+        and zero_ai_const_ok
+    )
+    if not core_closure_locked:
+        errors.append("core_closure_locked_failed")
+
+    dlf_tokens = (
+        "DLF 形式化 BNF 与充要判定边界",
+        "DLF_Program ::=",
+        "TransitionDecl ::=",
+        "EffectAuthClause ::=",
+        "ExecutableDeterministic",
+        "PureDeclarativeContract",
+        "HaltedOutsideDlf",
+    )
+    dlf_entry = entries.get("EXEC-DLF-FORMAL-BNF-BOUNDARY", {})
+    dlf_formal_spec_present = bool(
+        all(t in l1_txt for t in dlf_tokens)
+        and dlf_entry.get("status") == "ACTIVE"
+        and dlf_entry.get("arch_layer") == "LAYER_D_L2_L3_PHYSICAL_EXECUTION"
+    )
+    if not dlf_formal_spec_present:
+        errors.append("dlf_formal_spec_present_failed")
+
+    five_gate_tokens = (
+        "5-Gate 双时态与 Chisholm 归属裁决",
+        "FIVE_GATE_ADJUDICATION",
+        "M1_STANDARD_CALCULUS_LIB",
+        "BitemporalFactLedger",
+        "ChisholmDeonticEngine",
+    )
+    fg_entry = entries.get("CALC-5GATE-BITEMPORAL-CHISHOLM-ADJUDICATION", {})
+    five_gate_adjudication_present = bool(
+        all(t in l1_txt for t in five_gate_tokens)
+        and fg_entry.get("status") == "ACTIVE"
+        and fg_entry.get("arch_layer") == "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    )
+    if not five_gate_adjudication_present:
+        errors.append("five_gate_adjudication_present_failed")
+
+    active_cnt = sum(1 for e in manifest.get("entries", []) if e.get("status") == "ACTIVE")
+    raw_ver = str(manifest.get("manifest_version", "v0")).lstrip("v")
+    major_ver = int(raw_ver.split(".")[0]) if raw_ver.split(".")[0].isdigit() else 0
+    manifest_v33_upgraded = bool(major_ver >= 33 and active_cnt >= 82)
+    if not manifest_v33_upgraded:
+        errors.append(f"manifest_v33_upgrade_failed:{manifest.get('manifest_version')}:{active_cnt}")
+
+    return {
+        "ok": bool(
+            core_closure_locked
+            and dlf_formal_spec_present
+            and five_gate_adjudication_present
+            and manifest_v33_upgraded
+            and not errors
+        ),
+        "core_closure_locked": core_closure_locked,
+        "dlf_formal_spec_present": dlf_formal_spec_present,
+        "five_gate_adjudication_present": five_gate_adjudication_present,
+        "manifest_v33_upgraded": manifest_v33_upgraded,
+        "md_file_count_locked_at_9": md_locked,
+        "errors": errors,
+    }
+
+
+
+def audit_v34_unification_and_lean_synthesis() -> dict:
+    """v34.0 conceptual unification, M0/M1 vs L0-L3 orthogonal map & Lean 4 de Bruijn synthesis gate."""
+    l1_txt = (REPO_ROOT / "docs" / "whitepapers" / "world_cognition_unified_model.md").read_text(encoding="utf-8")
+    const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+    mpath = REPO_ROOT / "docs" / "architecture" / "THEORY_PRESERVATION_MANIFEST.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    entries = {e.get("id"): e for e in manifest.get("entries", [])}
+    errors: list[str] = []
+
+    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    if not md_locked:
+        errors.append("md_file_count_not_locked_at_9")
+
+    ortho_tokens = (
+        "### 3.1G",
+        "正交坐标清晰分离",
+        "L0–L3",
+        "空间架构栈",
+        "M0 / M1",
+        "演化代际",
+        "v33.0→v34.0",
+    )
+    ortho_entry = entries.get("ARCH-CONCEPTUAL-UNIFICATION-ORTHOGONAL-MAP", {})
+    orthogonal_map_verified = bool(
+        all(t in l1_txt for t in ortho_tokens)
+        and ortho_entry.get("status") == "ACTIVE"
+        and ortho_entry.get("arch_layer") == "LAYER_A_META_WORLD"
+    )
+    if not orthogonal_map_verified:
+        errors.append("orthogonal_map_verification_failed")
+
+    triad_tokens = (
+        "极简三联统一压缩视图",
+        "内核本体",
+        "物理边界",
+        "离散有限 + 离线立法 + 诚实停机",
+        "运行与演化护栏",
+        "日常写 `.gift` 完全无需背诵",
+    )
+    triad_unification_verified = bool(all(t in l1_txt for t in triad_tokens))
+    if not triad_unification_verified:
+        errors.append("triad_unification_verification_failed")
+
+    lean_tokens = (
+        "Lean 4 第一性原理悟性融合",
+        "de Bruijn",
+        "kernel_checker",
+        "PTXLean4",
+        "非空真性",
+        "证书可复验",
+        "依赖类型",
+        "宇宙多态",
+        "Mathlib",
+    )
+    lean_entry = entries.get("EXEC-LEAN4-DEBRUIJN-CHECKER-SYNTHESIS", {})
+    lean4_debruijn_synthesis_verified = bool(
+        all(t in l1_txt for t in lean_tokens)
+        and lean_entry.get("status") == "ACTIVE"
+        and lean_entry.get("arch_layer") == "LAYER_D_L2_L3_PHYSICAL_EXECUTION"
+    )
+    if not lean4_debruijn_synthesis_verified:
+        errors.append("lean4_debruijn_synthesis_verification_failed")
+
+    const_v34_tokens = (
+        "v34.0",
+        "极简三联",
+        "正交坐标",
+        "de Bruijn",
+        "kernel_checker",
+        "PTXLean4",
+        "非空真性",
+        "依赖类型",
+        "Mathlib",
+        "zero_ai_inside_compiler: true",
+        "EXTERNAL_USER_ONLY",
+        "v34_unification_and_lean_synthesis",
+    )
+    constitution_v34_synced = bool(all(t in const_txt for t in const_v34_tokens))
+    if not constitution_v34_synced:
+        errors.append("constitution_v34_sync_failed")
+
+    active_cnt = sum(1 for e in manifest.get("entries", []) if e.get("status") == "ACTIVE")
+    raw_ver = str(manifest.get("manifest_version", "v0")).lstrip("v")
+    major_ver = int(raw_ver.split(".")[0]) if raw_ver.split(".")[0].isdigit() else 0
+    manifest_v34_upgraded = bool(major_ver >= 34 and active_cnt >= 84)
+    if not manifest_v34_upgraded:
+        errors.append(f"manifest_v34_upgrade_failed:{manifest.get('manifest_version')}:{active_cnt}")
+
+    return {
+        "ok": bool(
+            md_locked
+            and orthogonal_map_verified
+            and triad_unification_verified
+            and lean4_debruijn_synthesis_verified
+            and constitution_v34_synced
+            and manifest_v34_upgraded
+            and not errors
+        ),
+        "orthogonal_map_verified": orthogonal_map_verified,
+        "triad_unification_verified": triad_unification_verified,
+        "lean4_debruijn_synthesis_verified": lean4_debruijn_synthesis_verified,
+        "constitution_v34_synced": constitution_v34_synced,
+        "manifest_v34_upgraded": manifest_v34_upgraded,
+        "md_file_count_locked_at_9": md_locked,
+        "errors": errors,
+    }
+
+
+
+def audit_v35_wheel_first_and_pl_landscape() -> dict:
+    """v35.0 Wheel-First Anti-NIH loop, Lean 4 tiered boundary correction & 10-benchmark PL landscape gate."""
+    l1_txt = (REPO_ROOT / "docs" / "whitepapers" / "world_cognition_unified_model.md").read_text(encoding="utf-8")
+    const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+    mpath = REPO_ROOT / "docs" / "architecture" / "THEORY_PRESERVATION_MANIFEST.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    entries = {e.get("id"): e for e in manifest.get("entries", [])}
+    errors: list[str] = []
+
+    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    if not md_locked:
+        errors.append("md_file_count_not_locked_at_9")
+
+    lean_tiered_tokens = (
+        "日常业务编译热路径",
+        "离线元证明",
+        "交互式 Tactic",
+        "Refinement Types",
+        "Verus",
+        "Dafny",
+    )
+    sec_31g = l1_txt.split("### 3.1G", 1)[1].split("### 3.1H", 1)[0] if ("### 3.1G" in l1_txt and "### 3.1H" in l1_txt) else ""
+    rule34_sec = const_txt.split("## Rule 34:", 1)[1] if "## Rule 34:" in const_txt else ""
+    lean4_tiered_correction_verified = bool(
+        all(t in sec_31g for t in lean_tiered_tokens)
+        and all(t in rule34_sec for t in lean_tiered_tokens)
+        and "坚决拒绝（3 项）" not in sec_31g
+        and "坚决拒绝依赖类型" not in rule34_sec
+    )
+    if not lean4_tiered_correction_verified:
+        errors.append("lean4_tiered_correction_failed")
+
+    const_v35_tokens = (
+        "v35.0",
+        "Wheel-First",
+        "五步工作循环",
+        "反 NIH",
+        "绝不重造通用编程语言",
+        "syn",
+        "SMT-LIB2",
+        "Z3",
+        "OR-Tools",
+        "LSP 3.17",
+        "Salsa",
+        "egglog",
+        "zero_ai_inside_compiler: true",
+        "EXTERNAL_USER_ONLY",
+        "v35_wheel_first_and_pl_landscape",
+    )
+    wheel_first_constitution_synced = bool(all(t in const_txt for t in const_v35_tokens))
+    if not wheel_first_constitution_synced:
+        errors.append("wheel_first_constitution_sync_failed")
+
+    pl_tokens = (
+        "### 3.1H",
+        "轮子优先（Wheel-First）五步工作循环与反 NIH 铁律",
+        "Rust 纯子集桥接（`syn`）与薄意图层边界",
+        "PL/形式化全谱系十大标杆横向审计",
+        "Verus",
+        "Aeneas",
+        "Dafny",
+        "Quint",
+        "TLA+",
+        "Alloy",
+        "Koka",
+        "Effekt",
+        "Flix",
+        "Salsa",
+        "egglog",
+        "Z3",
+        "OR-Tools",
+        "直接复用轮子",
+        "吸收思想",
+        "归属离线层",
+        "排除边界",
+        "v34.0→v35.0",
+    )
+    pl_landscape_ten_benchmarks_verified = bool(all(t in l1_txt for t in pl_tokens))
+    if not pl_landscape_ten_benchmarks_verified:
+        errors.append("pl_landscape_ten_benchmarks_failed")
+
+    expected_v35_entries = {
+        "WORKFLOW-WHEEL-FIRST-ANTI-NIH-LAW": "LAYER_A_META_WORLD",
+        "SURF-RUST-PURE-SUBSET-BRIDGE-SYN": "LAYER_B_L0_INTENT_SURFACE",
+        "COMP-PL-FORMAL-TEN-BENCHMARK-LANDSCAPE": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+    }
+    entries_ok = all(
+        entries.get(eid, {}).get("status") == "ACTIVE" and entries.get(eid, {}).get("arch_layer") == layer
+        for eid, layer in expected_v35_entries.items()
+    )
+    active_cnt = sum(1 for e in manifest.get("entries", []) if e.get("status") == "ACTIVE")
+    raw_ver = str(manifest.get("manifest_version", "v0")).lstrip("v")
+    major_ver = int(raw_ver.split(".")[0]) if raw_ver.split(".")[0].isdigit() else 0
+    manifest_v35_upgraded = bool(major_ver >= 35 and active_cnt >= 87 and entries_ok)
+    if not manifest_v35_upgraded:
+        errors.append(f"manifest_v35_upgrade_failed:{manifest.get('manifest_version')}:{active_cnt}:{entries_ok}")
+
+    return {
+        "ok": bool(
+            md_locked
+            and lean4_tiered_correction_verified
+            and wheel_first_constitution_synced
+            and pl_landscape_ten_benchmarks_verified
+            and manifest_v35_upgraded
+            and not errors
+        ),
+        "lean4_tiered_correction_verified": lean4_tiered_correction_verified,
+        "wheel_first_constitution_synced": wheel_first_constitution_synced,
+        "pl_landscape_ten_benchmarks_verified": pl_landscape_ten_benchmarks_verified,
+        "manifest_v35_upgraded": manifest_v35_upgraded,
+        "md_file_count_locked_at_9": md_locked,
+        "errors": errors,
+    }
+
+
+def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_missing: bool = False) -> dict:
+    """Cross-repo governance sync gate verifying sec_repo M0_BOUNDARY_AXIOMS.md,
+    BOUNDARY_MANIFEST.json (Rust-Only M1+ & JS M0 Freeze), and CLI protocols."""
+    import os
+    sec_root = sec_repo_root or Path(os.environ.get("SEC_REPO_ROOT", str(REPO_ROOT.parent / "sec_repo")))
+    const_text = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+    ai_const_errors = [
+        f"ai_constitution_missing:{ctok}"
+        for ctok in ("Rust-Only", "零 AI 纯确定性编译铁律", "EXTERNAL_USER_ONLY")
+        if ctok not in const_text
+    ]
+    if not sec_root.exists():
+        errs = list(ai_const_errors)
+        if not allow_missing:
+            errs.append("sec_repo_not_found")
+        return {
+            "ok": len(errs) == 0,
+            "mode": "standalone_ai_repo_only",
+            "sec_repo_found": False,
+            "sec_repo_root": str(sec_root),
+            "ai_constitution_zero_ai_enforced": len(ai_const_errors) == 0,
+            "errors": errs,
+        }
+    errors = []
+    axioms_path = sec_root / "crates" / "gift-author-kernel" / "M0_BOUNDARY_AXIOMS.md"
+    bm_path = sec_root / "BOUNDARY_MANIFEST.json"
+    main_rs_path = sec_root / "crates" / "gift-author-kernel" / "src" / "main.rs"
+    const_text = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+
+    for req_p in (axioms_path, bm_path, main_rs_path):
+        if not req_p.exists():
+            errors.append(f"missing_sec_file:{req_p.name}")
+
+    if not errors:
+        ax_text = axioms_path.read_text(encoding="utf-8")
+        for tok in ("mathcal{A}_1", "R1–R6", "Rust-Only", "FROZEN_COMPAT_ONLY", "Zero-AI-Inside-Compiler Iron Law", "EXTERNAL_USER_ONLY"):
+            if tok not in ax_text:
+                errors.append(f"sec_axioms_missing:{tok}")
+        for ctok in ("Rust-Only", "零 AI 纯确定性编译铁律", "EXTERNAL_USER_ONLY"):
+            if ctok not in const_text:
+                errors.append(f"ai_constitution_missing:{ctok}")
+
+        bm = json.loads(bm_path.read_text(encoding="utf-8"))
+        pol = bm.get("target_evolution_policy", {})
+        if pol.get("m0_js_policy") != "FROZEN_COMPAT_ONLY":
+            errors.append("sec_manifest_m0_js_policy_not_frozen")
+        if pol.get("m1_primary_target") != "rust_only":
+            errors.append("sec_manifest_m1_primary_target_not_rust_only")
+        if pol.get("m1_js_expansion") != "FORBIDDEN":
+            errors.append("sec_manifest_m1_js_expansion_not_forbidden")
+        if pol.get("zero_ai_inside_compiler") is not True:
+            errors.append("sec_manifest_zero_ai_inside_compiler_not_true")
+        if pol.get("ai_role") != "EXTERNAL_USER_ONLY":
+            errors.append("sec_manifest_ai_role_not_external_user_only")
+        if pol.get("architecture_graph_projection") != "DETERMINISTIC_BTREE_MERMAID":
+            errors.append("sec_manifest_graph_projection_not_deterministic")
+
+        main_text = main_rs_path.read_text(encoding="utf-8")
+        for flag in ("--emit-m0", "--emit-m0-rust-only", "--compile-gift"):
+            if flag not in main_text:
+                errors.append(f"sec_cli_missing_flag:{flag}")
+
+    return {
+        "ok": len(errors) == 0,
+        "sec_repo_found": True,
+        "sec_repo_root": str(sec_root),
+        "rust_only_m1_enforced": len(errors) == 0,
+        "zero_ai_enforced": len(errors) == 0,
+        "errors": errors,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=f"Sovereign AI Brain CTO Repo Doctor ({REPO_VERSION})")
     ap.add_argument("--run-tests", action="store_true", help="Also run full 3-tier unittest suite")
+    ap.add_argument("--sec-repo", type=str, default=None, help="Path to sibling sec_repo for cross-repo governance sync")
+    ap.add_argument("--allow-missing-sec-repo", action="store_true", help="Allow skipping cross-repo check when sec_repo is absent (standalone default)")
+    ap.add_argument("--require-sec-repo", action="store_true", help="Hard-fail if sibling sec_repo is absent")
     ap.add_argument("--compile-adr", action="store_true", help="Compile ARCHITECTURE_DECISIONS.md from ARCHITECTURE_GRAPH.json")
     ap.add_argument("--audit-table", action="store_true", help="Print zero-processing full closure audit table directly from ARCHITECTURE_GRAPH.json")
     ap.add_argument("--trace", type=str, default=None, help="Reverse-lookup any ADR, class, test, or arXiv ID in ARCHITECTURE_GRAPH.json")
@@ -361,6 +1033,14 @@ def main() -> int:
     ast_res = audit_zero_dead_code()
     ssot_res = audit_ssot_governance()
     fresh_res = audit_three_pillar_freshness(online=args.audit_freshness)
+    slim_res = audit_anti_drift_and_slimming()
+    theory_res = audit_theory_preservation_manifest()
+    engine_res = audit_executable_world_engine()
+    v33_res = audit_v33_convergence_closure()
+    v34_res = audit_v34_unification_and_lean_synthesis()
+    v35_res = audit_v35_wheel_first_and_pl_landscape()
+    allow_missing_sec = True if (args.allow_missing_sec_repo or not args.require_sec_repo) else False
+    cross_repo_res = audit_cross_repo_governance_sync(Path(args.sec_repo) if args.sec_repo else None, allow_missing=allow_missing_sec)
     tests_ok = True
     if args.run_tests:
         proc = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-q"], cwd=REPO_ROOT)
@@ -371,8 +1051,15 @@ def main() -> int:
         "ast_zero_dead_code": ast_res,
         "ssot_governance": ssot_res,
         "freshness_and_anti_rot": fresh_res,
+        "anti_drift_and_slimming": slim_res,
+        "theory_preservation_manifest": theory_res,
+        "executable_world_engine": engine_res,
+        "v33_convergence_closure": v33_res,
+        "v34_unification_and_lean_synthesis": v34_res,
+        "v35_wheel_first_and_pl_landscape": v35_res,
+        "cross_repo_governance_sync": cross_repo_res,
         "tests_passed": tests_ok if args.run_tests else "skipped",
-        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and tests_ok),
+        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and slim_res["ok"] and theory_res["ok"] and engine_res["ok"] and v33_res["ok"] and v34_res["ok"] and v35_res["ok"] and cross_repo_res["ok"] and tests_ok),
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0 if report["overall_healthy"] else 1

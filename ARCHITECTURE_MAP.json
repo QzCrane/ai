@@ -1,0 +1,52 @@
+{
+  "schema": "ai_repo.cto-architecture-map/1",
+  "active_full_plan_ssot": {
+    "layer_1_deterministic_control_kernel": {
+      "package": "src/kernel (backed by src/brain/world_kernel_engine.py)",
+      "torch_dependency": false,
+      "m0_primitives": [
+        "State & Invariant",
+        "Transition & Explicit Side-Effect/Authority Boundary",
+        "Belnap-Dunn 4-Valued Bilattice + Lexicographic MUS/MCS Blame",
+        "Positive/Negative Transitive Dependency Closure & Monotonic Tombstones",
+        "Honest Halting & Sovereignty Escalation (UnresolvedHole / ResourceLimit / 5-way Verdict)"
+      ],
+      "cross_repo_contract": "GIFT_KERNEL_BIN -> gift-author-kernel --emit-m0 (JSON stdin/stdout + dual Rust/JS differential probes)"
+    },
+    "layer_2_neural_proposer_route_b": {
+      "package": "src/neural (backed by src/brain/{sovereign_brain_pytorch,training_engine,prepare_seed_corpus,config_profiles}.py)",
+      "backbone": "Sandwich Looped 3:1 (3x OscillatoryDualDeltaNet + 1x HoPEHLAAttention) + Mid-Layer CPU-Pinned Engram",
+      "execution_strategy": "Two-step: (1) validate insight data + Engram + Wake-Sleep/GracefulRL on 2B Q4+QLoRA base model; (2) hold 4GB from-scratch pretraining (GAP-10 Hold) until Step 1 proves gain."
+    },
+    "layer_3_runtime_exoskeleton": {
+      "package": "src/runtime (backed by src/brain/{wake_sleep_runtime,exoskeleton_bridge,ecosystem_backends,five_axis_microworld}.py)"
+    }
+  },
+  "documentation_tiering_locked_at_9_md": {
+    "living_architecture_docs": [
+      "README.md",
+      "SYSTEM_CONSTITUTION.md",
+      "docs/architecture/ARCHITECTURE_DECISIONS.md"
+    ],
+    "diagrams_and_unified_model": [
+      "docs/architecture/ARCHITECTURE_DIAGRAMS.md",
+      "docs/whitepapers/world_cognition_unified_model.md"
+    ],
+    "high_frequency_reference_corpus_readonly": [
+      "docs/whitepapers/brain_dataset_curriculum_registry.md",
+      "docs/whitepapers/brain_paper_organ_registry.md",
+      "docs/whitepapers/deterministic_agent_harness_whitepaper.md",
+      "docs/whitepapers/sovereign_ai_brain_whitepaper.md"
+    ]
+  },
+  "m0_sufficiency_decision_rubric": {
+    "m0_is_sufficient_when": [
+      "Domain logic is finite-state or bounded-horizon discrete control (orders, permissions, workflows, ledgers, configs, state machines).",
+      "Side effects and authority checks are explicit external capabilities (host_grant).",
+      "Conflicts must halt honestly with MUS/MCS blame instead of silently guessing."
+    ],
+    "m1_expansion_required_only_when": [
+      "Real user workloads repeatedly hit OutsideM0Carrier on a concrete irreducible feature (e.g., set/map ops, higher-order combinators, async/IO ports) AND pass all 5 M0->M1 gates."
+    ]
+  }
+}

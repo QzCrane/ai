@@ -331,7 +331,7 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
 
     def test_192_sga_sparse_live_and_8_md_lock(self) -> None:
         md_files = [p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]
-        self.assertEqual(len(md_files), 8, f"Expected exactly 8 .md files, got {[p.name for p in md_files]}")
+        self.assertEqual(len(md_files), 9, f"Expected exactly 9 .md files, got {[p.name for p in md_files]}")
         bsrc = (REPO_ROOT / "src" / "brain" / "sovereign_brain_pytorch.py").read_text(encoding="utf-8")
         self.assertIn("ffn_sparsity_thresh: float = 0.0", bsrc)
         self.assertIn("gate_act.abs() >= self.ffn_sparsity_thresh", bsrc)
@@ -2434,6 +2434,455 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
             self.assertIn("ms/step=", proc.stdout)
             self.assertIn("tok/s=", proc.stdout)
 
+
+    def test_244_v13_dao_fa_shu_curriculum_semantic_bridge_and_local_books(self) -> None:
+        """v13.0 Gate: Verify Dao-Fa-Intent-Shu 4-pillar profile, 4-axis human intent vertical semantic bridge, and --local-books-dir multi-epoch ingestion."""
+        import subprocess, sys, tempfile
+        from pathlib import Path
+        from src.brain.prepare_seed_corpus import (
+            CORPUS_PROFILES,
+            CausalIRConflictGenerator,
+            iter_local_books_corpus,
+        )
+
+        # 1. Verify rtx3050_4gb_dao_fa_shu_v13 profile composition & weight sum
+        self.assertIn("rtx3050_4gb_dao_fa_shu_v13", CORPUS_PROFILES)
+        prof = CORPUS_PROFILES["rtx3050_4gb_dao_fa_shu_v13"]
+        hf_ids = {s.hf_id for s in prof.sources}
+        self.assertIn("common-pile/libretexts", hf_ids)
+        self.assertIn("crumb/openstax-text", hf_ids)
+        self.assertIn("PleIAs/common_corpus", hf_ids)
+        self.assertIn("SAP/diaforge-utc-r-0725", hf_ids)
+        self.assertAlmostEqual(sum(s.weight for s in prof.sources), 1.0, places=4)
+
+        # 2. Verify vertical Dao-Fa-Intent-Shu semantic bridge
+        gen = CausalIRConflictGenerator()
+        for seed in range(3):
+            b = gen.generate_vertical_bridge_case(seed=seed)
+            self.assertIn("[人类口语/术]", b["text"])
+            self.assertIn("[4轴意图精解]", b["text"])
+            self.assertIn("[5原语因果IR/法]", b["text"])
+            self.assertIn("[第一性原理/道]", b["text"])
+
+        # 3. Verify local books multi-epoch full-text ingestion
+        with tempfile.TemporaryDirectory() as td:
+            bdir = Path(td)
+            (bdir / "ontology_intro.md").write_text("Being qua being and causal invariants.", encoding="utf-8")
+            rows = iter_local_books_corpus(str(bdir), repeat_epochs=2)
+            self.assertEqual(len(rows), 2)
+            self.assertIn("[Book:ontology_intro]", rows[0]["text"])
+
+        # 4. Verify CLI exposes --local-books-dir
+        repo = Path(__file__).resolve().parents[1]
+        out = subprocess.check_output(
+            [sys.executable, str(repo / "src/brain/prepare_seed_corpus.py"), "--help"],
+            text=True,
+        )
+        self.assertIn("--local-books-dir", out)
+
+
+    def test_245_v14_two_layer_whitepaper_split_and_9_md_lock(self) -> None:
+        """v14.0 Gate: Verify independent Layer 1 Super-Model whitepaper (hardware-decoupled), Layer 2 separation, and 9 .md lock."""
+        from pathlib import Path
+
+        repo = Path(__file__).resolve().parents[1]
+        md_files = [p for p in repo.rglob("*.md") if ".git" not in p.parts]
+        self.assertEqual(len(md_files), 9)
+
+        l1_path = repo / "docs/whitepapers/world_cognition_unified_model.md"
+        l2_path = repo / "docs/whitepapers/sovereign_ai_brain_whitepaper.md"
+        self.assertTrue(l1_path.is_file())
+        l1 = l1_path.read_text(encoding="utf-8")
+        l2 = l2_path.read_text(encoding="utf-8")
+
+        # Layer 1 must contain unified super-model pillars & zero hardware/framework coupling in its theory body
+        for token in (
+            "优良调节器定理",
+            "层级带类型超图",
+            "自然解理",
+            "UnresolvedHole",
+            "Minimal Complete Contract Sketch",
+            "ContractInterface",
+            "同构唯一性闭合",
+        ):
+            self.assertIn(token, l1)
+        for forbidden_hw in ("triton-windows", "cu134", "PyTorch"):
+            self.assertNotIn(forbidden_hw, l1)
+
+        # Layer 2 must explicitly reference Layer 1 whitepaper
+        self.assertIn("world_cognition_unified_model.md", l2)
+
+
+
+    def test_246_v19_msk_v1_and_five_axis_microworld_gate(self):
+        """v19.1 Gate: Verify executable MSK-v1 validator, 5-axis microworld generator,
+        arXiv:2611.19042 atomic-vs-reasoning monotonicity, and rtx3050_4gb_v16 profile."""
+        import sys
+        from pathlib import Path
+        brain_dir = str(Path(__file__).resolve().parents[1] / "src" / "brain")
+        if brain_dir not in sys.path:
+            sys.path.insert(0, brain_dir)
+        from five_axis_microworld import FiveAxisMicroworldGenerator, PROTOCOL_TOKENS, validate_msk_v1_packet
+        from prepare_seed_corpus import (
+            CORPUS_PROFILES,
+            compute_atomic_reasoning_ratio,
+            generate_verified_five_axis_corpus_slice,
+            get_eval_suite_manifest,
+        )
+
+        # 1. Verify all 17 protocol tokens & live 5-axis verified slice
+        self.assertEqual(len(PROTOCOL_TOKENS), 17)
+        res = generate_verified_five_axis_corpus_slice(n_per_axis=2)
+        self.assertEqual(res["count"], 10)
+        self.assertTrue(res["all_msk_v1_valid"])
+        self.assertEqual(len(res["axes_covered"]), 5)
+        self.assertTrue(res["dejargonized_halt_match"])
+
+        # 2. Verify negative MSK-v1 rejections (float64 generation & authority escalation)
+        bad_pkt = dict(res["records"][0]["msk_v1"])
+        bad_pkt["Anchor"] = {**bad_pkt["Anchor"], "generation": 1.0}
+        bad_pkt["Transition"] = {**bad_pkt["Transition"], "authority_req": "host_grant", "minted_by": "model_permit"}
+        v_bad = validate_msk_v1_packet(bad_pkt)
+        self.assertFalse(v_bad["ok"])
+        self.assertIn("anchor.generation_must_be_exact_int_string", v_bad["errors"])
+        self.assertIn("authority_violation:model_permit_cannot_mint_host_grant", v_bad["errors"])
+
+        # 3. Verify arXiv:2611.19042 atomic-vs-reasoning ratio monotonicity
+        r_short = compute_atomic_reasoning_ratio(hop_h=2, holdout_q=0.5)
+        r_mid = compute_atomic_reasoning_ratio(hop_h=6, holdout_q=0.5)
+        r_long = compute_atomic_reasoning_ratio(hop_h=12, holdout_q=0.5)
+        self.assertLess(r_short["atomic_fact_share"], r_mid["atomic_fact_share"])
+        self.assertLess(r_mid["atomic_fact_share"], r_long["atomic_fact_share"])
+
+        # 4. Verify rtx3050_4gb_v16 profile & Sovereign-5Axis-Bench registration
+        self.assertIn("rtx3050_4gb_v16", CORPUS_PROFILES)
+        w_sum = sum(s.weight for s in CORPUS_PROFILES["rtx3050_4gb_v16"].sources)
+        self.assertAlmostEqual(w_sum, 1.0, places=2)
+        self.assertIn("sovereign_5axis_bench", get_eval_suite_manifest())
+
+        # 5. Verify de-jargonized isomorphic pairs across all 5 axes
+        gen = FiveAxisMicroworldGenerator()
+        for s in range(5):
+            pf, pp = gen.generate_dejargonized_pair(seed=s)
+            self.assertEqual(pf["axis"], pp["axis"])
+            self.assertEqual(pf["expected_halt"], pp["expected_halt"])
+            self.assertNotEqual(pf["prompt"], pp["prompt"])
+
+    def test_247_v23_zero_magic_number_structural_invariants_gate(self):
+        """v23.0 Gate: Verify zero-loss preservation, zero magic constants, orthogonal schema enforcement,
+        natural-cleavage monotonicity (arbitrary valid layer count), acyclic budgeted descent, and lossless lifting."""
+        import sys
+        from pathlib import Path
+        l1_txt = (REPO_ROOT / "docs" / "whitepapers" / "world_cognition_unified_model.md").read_text(encoding="utf-8")
+        for anchor in (
+            r"\mathcal{K}(s, \Sigma_s)", "Gray–Scott", "0.696 AUROC", "95.5%",
+            "6/6 vs 基线 0/12", "ADEPTS 30.6%", "复式记账", "V(D)J", "诺特定理",
+            "重整化群", "evidence_both", "precedent_open_texture", "blast_radius_cap", "25 万页", "克雷所",
+            "跨域三角定位律", "领域特征坍缩", "宇宙五层涌现阶梯", "四维双时态", "背压四难不可能定理",
+            "河床与水流三尺度互塑", "核心—表面双层可用性权衡律",
+        ):
+            self.assertIn(anchor, l1_txt)
+        self.assertNotIn("$\n" + "eq$", l1_txt)
+
+        const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+        for tok in ("第 30 条", "第 31 条", "数字三源合法律", "核心—表面双层可用性权衡律", "全原则·全约束·全目标统一总纲", "Step 0", "Step 4.5"):
+            self.assertIn(tok, const_txt)
+
+        brain_dir = str(Path(__file__).resolve().parents[1] / "src" / "brain")
+        if brain_dir not in sys.path:
+            sys.path.insert(0, brain_dir)
+        from five_axis_microworld import (
+            DEFAULT_FOUR_LAYER_PROFILES,
+            FiveAxisMicroworldGenerator,
+            lift_conflict_across_layers,
+            validate_layer_descent_chain,
+            validate_layered_kernel_packet,
+        )
+
+        # 1. Clean L0 packet passes; lower-layer token leakage is physically blocked
+        pkt = FiveAxisMicroworldGenerator().generate_axis1_non_additive_triad(seed=1)["msk_v1"]
+        self.assertTrue(validate_layered_kernel_packet(pkt, "L0_INTENT", step_budget_remaining=1)["ok"])
+
+        leaked = dict(pkt)
+        leaked["Constraint"] = {**pkt["Constraint"], "payload": {"note": "use mutex and sql wal"}}
+        res_leak = validate_layered_kernel_packet(leaked, "L0_INTENT", step_budget_remaining=1)
+        self.assertFalse(res_leak["ok"])
+        self.assertTrue(any("layer_hiding_violation:L0_INTENT" in e for e in res_leak["errors"]))
+
+        # 2. Undeclared non-orthogonal field rejected (without any arbitrary numeric cap)
+        junk = dict(pkt)
+        junk["Anchor"] = {**pkt["Anchor"], "decorative_unused_field": 123}
+        res_junk = validate_layered_kernel_packet(junk, "L1_COORDINATION", step_budget_remaining=1)
+        self.assertFalse(res_junk["ok"])
+        self.assertTrue(any("undeclared_non_orthogonal_fields:Anchor" in e for e in res_junk["errors"]))
+
+        # 3. Caller physical budget exhaustion halts with <|halt:rlimit|>
+        res_rlimit = validate_layered_kernel_packet(pkt, "L3_EXECUTION", step_budget_remaining=0)
+        self.assertFalse(res_rlimit["ok"])
+        self.assertEqual(res_rlimit["halt_tag"], "<|halt:rlimit|>")
+
+        # 4. Natural-cleavage monotonicity supports 2-layer, 4-layer, or 5-layer systems, rejects empty wrapper & cycles
+        self.assertTrue(validate_layer_descent_chain(["L0_INTENT", "L3_EXECUTION"])["ok"])
+        self.assertTrue(validate_layer_descent_chain(["L0_INTENT", "L1_COORDINATION", "L2_DECIDABLE_IR", "L3_EXECUTION"])["ok"])
+        self.assertFalse(validate_layer_descent_chain(["L0_INTENT", "L1_COORDINATION", "L0_INTENT"])["ok"])
+        empty_wrapper_profiles = {
+            **DEFAULT_FOUR_LAYER_PROFILES,
+            "L0_WRAPPER": {**DEFAULT_FOUR_LAYER_PROFILES["L0_INTENT"]},
+        }
+        res_wrap = validate_layer_descent_chain(["L0_INTENT", "L0_WRAPPER"], profiles=empty_wrapper_profiles)
+        self.assertFalse(res_wrap["ok"])
+        self.assertTrue(any("no_natural_cleavage_shift" in e for e in res_wrap["errors"]))
+
+        # 5. Lossless conflict lifting L3 -> L0 with zero leaked lower-layer tokens
+        lifted = lift_conflict_across_layers("mutex_contention", "L3_EXECUTION", "L0_INTENT")
+        self.assertTrue(lifted["ok"])
+        self.assertEqual(lifted["leaked_tokens"], [])
+        self.assertIn("强一致", lifted["lifted_tradeoff"])
+
+        # 6. Human ergonomic surface lossless desugaring -> L0-valid MSK-v1
+        from five_axis_microworld import desugar_human_surface_to_msk, desugar_intent_essence_to_msk
+        essence_msk = desugar_intent_essence_to_msk({"telos": "safe_checkout", "boundary": "no_oversell", "premise": "stock_verified", "intervention": "reserve_stock", "authority": "merchant", "grounding": "retail_policy"})
+        self.assertTrue(validate_layered_kernel_packet(essence_msk, "L0_INTENT", step_budget_remaining=1)["ok"])
+        surface_msk = desugar_human_surface_to_msk({"entity": "inventory", "hard_rule": "no_negative_stock", "action": "deduct", "fallback": "queue_approval"})
+        self.assertTrue(validate_layered_kernel_packet(surface_msk, "L0_INTENT", step_budget_remaining=1)["ok"])
+
+    def test_248_v26_theory_manifest_git_union_and_sec_modalities_gate(self):
+        """v26.0 Gate: Verify THEORY_PRESERVATION_MANIFEST.json (all ACTIVE theories + Git union zero evaporation),
+        Rule 32 in SYSTEM_CONSTITUTION.md, and sec 6 irreducible intent modalities orthogonality."""
+        import json, sys
+        from pathlib import Path
+        mpath = REPO_ROOT / "docs" / "architecture" / "THEORY_PRESERVATION_MANIFEST.json"
+        self.assertTrue(mpath.exists())
+        manifest = json.loads(mpath.read_text(encoding="utf-8"))
+        self.assertGreaterEqual(len(manifest["entries"]), 45)
+
+        const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+        self.assertIn("第 32 条", const_txt)
+        self.assertIn("THEORY_PRESERVATION_MANIFEST.json", const_txt)
+
+        scripts_dir = str(REPO_ROOT / "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        from repo_doctor import audit_theory_preservation_manifest
+        res = audit_theory_preservation_manifest()
+        self.assertTrue(res["ok"], f"Theory preservation gate failed: {res}")
+        self.assertEqual(res["evaporated_urls"], [])
+        self.assertEqual(res["evaporated_arxiv"], [])
+
+        brain_dir = str(REPO_ROOT / "src" / "brain")
+        if brain_dir not in sys.path:
+            sys.path.insert(0, brain_dir)
+        from five_axis_microworld import INTENT_SIX_MODALITIES, validate_intent_modality_orthogonality
+        self.assertEqual(set(INTENT_SIX_MODALITIES.keys()), {"achieve", "maintain", "avoid", "oblige", "permit", "prefer"})
+        self.assertTrue(validate_intent_modality_orthogonality({"modality": "oblige", "issuer_ref": "law", "bearer_role": "merchant", "open_ended": True})["ok"])
+        self.assertFalse(validate_intent_modality_orthogonality({"modality": "maintain", "is_norm_policy": True})["ok"])
+        self.assertFalse(validate_intent_modality_orthogonality({"modality": "permit", "mints_host_grant": True})["ok"])
+        self.assertFalse(validate_intent_modality_orthogonality({"modality": "oblige", "issuer_ref": "law", "bearer_role": "merchant", "open_ended": True, "ongoing": True})["ok"])
+
+
+    def test_249_v28_true_bilattice_real_csp_mus_and_adversarial_gates(self):
+        """v28.0 Red-Team Remediation Gate: Verify true Belnap-Dunn bilattice (Arieli-Avron implications,
+        fixed quantifiers), real CSP/MUS/MCS solver, real DependencyGraph, adversarial snake_case/CJK hiding,
+        and diamond DAG layer topology (zero mock lambdas)."""
+        from src.brain.world_kernel_engine import (
+            BOTH, NEITHER, REFUTE, SUPPORT, DependencyGraph, EvidenceBit, FiniteDomainCSPSolver, NamedConstraint,
+        )
+        from src.brain.five_axis_microworld import (
+            DEFAULT_FOUR_LAYER_PROFILES, desugar_intent_essence_to_msk, validate_layer_dag, validate_layered_kernel_packet,
+        )
+
+        vals = (SUPPORT, REFUTE, BOTH, NEITHER)
+        # 1. Knowledge order (consensus / gullibility) & Arieli-Avron implication algebraic laws
+        self.assertEqual(SUPPORT.consensus(REFUTE), NEITHER)
+        self.assertEqual(SUPPORT.gullibility(REFUTE), BOTH)
+        for a in vals:
+            self.assertEqual(a.weak_implies(a).s, 1)  # Reflexivity under D_BD = {T, B}
+            for b in vals:
+                # Strong implication satisfies contraposition
+                self.assertEqual(a.strong_implies(b), b.neg().strong_implies(a.neg()))
+                # MP under D_BD for weak_implies
+                if a.s == 1 and a.weak_implies(b).s == 1:
+                    self.assertEqual(b.s, 1)
+
+        # Conflict guard never collapses BOTH into SUPPORT/REFUTE and blocks B & N bypass
+        self.assertEqual(BOTH.conflict_guard(REFUTE), (BOTH, True))
+        self.assertEqual(BOTH.conflict_guard(BOTH), (BOTH, True))
+        self.assertEqual(NEITHER.conflict_guard(BOTH), (BOTH, True))
+
+        # Fixed quantifiers: never erase BOTH into SUPPORT on incomplete domain; never vacuous-truth empty domain
+        self.assertEqual(EvidenceBit.exists_eval([BOTH], domain_complete=False), BOTH)
+        self.assertEqual(EvidenceBit.forall_eval([BOTH], domain_complete=False), BOTH)
+        self.assertEqual(EvidenceBit.forall_eval([], domain_complete=True), NEITHER)
+        self.assertEqual(EvidenceBit.forall_eval([SUPPORT, SUPPORT], domain_complete=False), NEITHER)
+
+        # 2. Real backtracking CSP solver + MUS / safe_subset extraction + metered resource limit
+        solver = FiniteDomainCSPSolver()
+        domains = {"x": [1, 2], "y": [1, 2], "z": [1, 2]}
+        c1 = NamedConstraint("x_eq_1", ("x",), lambda a: a["x"] == 1)
+        c2 = NamedConstraint("y_eq_1", ("y",), lambda a: a["y"] == 1)
+        c3 = NamedConstraint("x_neq_y", ("x", "y"), lambda a: a["x"] != a["y"])
+        c4 = NamedConstraint("z_ge_1", ("z",), lambda a: a["z"] >= 1)
+        mus = solver.extract_mus_and_safe_subset(domains, [c1, c2, c3, c4])
+        self.assertEqual(mus["status"], "UNSAT")
+        self.assertEqual(set(mus["unsat_core"]), {"x_eq_1", "y_eq_1", "x_neq_y"})
+        self.assertNotIn("z_ge_1", mus["unsat_core"])
+        self.assertEqual(solver.solve(domains, [c1, c3, c4])["status"], "SAT")
+        self.assertEqual(solver.solve({"a": range(10), "b": range(10)}, [NamedConstraint("never", ("a", "b"), lambda x: False)], node_budget=5)["status"], "RESOURCE_LIMIT")
+
+        # 3. Real positive + negative dependency closure invalidation
+        dg = DependencyGraph()
+        dg.facts["base"] = 10
+        dg.record_derivation("d_pos", 10, reads=["base"])
+        dg.record_derivation("d_neg", 10, reads=[], neg_reads=["tombstone"])
+        dg.record_derivation("d_clean", 99, reads=["other"])
+        inv1 = dg.mutate_fact("tombstone", True)
+        self.assertEqual(inv1["invalidated"], ["d_neg"])
+        self.assertTrue(dg.derived["d_pos"]["valid"])
+        self.assertTrue(dg.derived["d_clean"]["valid"])
+
+        # 4. Adversarial snake_case & Chinese hiding enforcement + unverified desugar honesty + diamond DAG
+        evasive = desugar_intent_essence_to_msk({"telos": "pay", "boundary": "no_oversell", "premise": "p", "intervention": "vram_4gb_hard_cap", "authority": "owner", "grounding": "互斥锁"})
+        self.assertEqual(evasive["Judgment"]["status"]["tag"], "gap")  # Never fabricates support before verification
+        res_ev = validate_layered_kernel_packet(evasive, "L0_INTENT", step_budget_remaining=1)
+        self.assertFalse(res_ev["ok"])
+        self.assertTrue(any("vram" in e and "互斥锁" in e for e in res_ev["errors"]))
+
+        diamond_profiles = {
+            **DEFAULT_FOUR_LAYER_PROFILES,
+            "L1_CONSENSUS": {"forbidden_lower_tokens": frozenset({"cuda", "vram"})},
+            "L1_KERNEL": {"forbidden_lower_tokens": frozenset({"raft", "wal"})},
+        }
+        self.assertTrue(validate_layer_dag([("L0_INTENT", "L1_CONSENSUS"), ("L0_INTENT", "L1_KERNEL"), ("L1_CONSENSUS", "L3_EXECUTION"), ("L1_KERNEL", "L3_EXECUTION")], profiles=diamond_profiles)["ok"])
+        self.assertFalse(validate_layer_dag([("L0_INTENT", "L1_CONSENSUS"), ("L1_CONSENSUS", "L0_INTENT")], profiles=diamond_profiles)["ok"])
+
+
+    def test_250_v30_dual_repo_sync_computation_theory_and_four_rulers_gate(self):
+        from scripts.repo_doctor import (
+            audit_theory_preservation_manifest,
+            audit_cross_repo_governance_sync,
+        )
+        from src.brain.five_axis_microworld import audit_core_surface_four_rulers
+
+        man = audit_theory_preservation_manifest()
+        self.assertTrue(man["ok"], man)
+        self.assertGreaterEqual(man["active_theories_verified"], 76)
+        self.assertEqual(len(man["layer_distribution"]), 5)
+        self.assertEqual(sum(man["layer_distribution"].values()), man["active_theories_verified"])
+
+        rulers = audit_core_surface_four_rulers()
+        self.assertTrue(rulers["ok"], rulers)
+        self.assertTrue(rulers["felleisen_non_expansion_ok"])
+        self.assertTrue(rulers["change_locality_ok"])
+        self.assertTrue(rulers["lossless_desugaring_ok"])
+        self.assertTrue(rulers["zero_jargon_conflict_lifting_ok"])
+
+        sync = audit_cross_repo_governance_sync(allow_missing=True)
+        self.assertTrue(sync["ok"], sync)
+        if sync.get("sec_repo_found"):
+            self.assertTrue(sync["zero_ai_enforced"])
+
+    def test_251_v32_bitemporal_chisholm_epoch_migration_and_external_user_protocol(self):
+        from src.brain.world_kernel_engine import (
+            BOTH, NEITHER, REFUTE, SUPPORT, BitemporalFactLedger, ChisholmDeonticEngine, ChisholmNormSpec,
+            FourDTimeCut, NamedConstraint,
+        )
+        from src.brain.five_axis_microworld import validate_epoch_migration, validate_external_user_protocol
+        from scripts.repo_doctor import (
+            audit_executable_world_engine, audit_theory_preservation_manifest, audit_zero_dead_code,
+        )
+
+        # A. 4D Bitemporal Ledger (non-retroactivity, late obs, tombstone anti-resurrection, conflict)
+        def norm_v1_min_108(val): return val >= 108
+        def norm_v2_min_120(val): return val >= 120
+
+        ledger = BitemporalFactLedger()
+        ledger.register_norm("produce_price", 1, effective_from=1, effective_to=10, recorded_at=1, predicate=norm_v1_min_108)
+        ledger.register_norm("produce_price", 2, effective_from=10, effective_to=None, recorded_at=10, predicate=norm_v2_min_120)
+        ledger.append_fact("order_1", 108, valid_from=5, recorded_at=5, generation=1)
+
+        r_retro = ledger.query_at(FourDTimeCut(5, 12, 10, 12), "order_1", norm_id="produce_price")
+        self.assertTrue(r_retro.retroactive_norm_detected)
+        self.assertEqual(r_retro.norm_temporal_status, "RETROACTIVE_NORM_DRIFT")
+        self.assertEqual(r_retro.compliant_at_fact_time, SUPPORT)
+        self.assertEqual(r_retro.compliant_at_norm_time, REFUTE)
+        self.assertEqual(r_retro.primary_verdict, SUPPORT)
+
+        ledger.append_fact("order_late", 108, valid_from=5, recorded_at=12, generation=1)
+        r_late = ledger.query_at(FourDTimeCut(5, 7, 5, 12), "order_late")
+        self.assertEqual(r_late.fact_status, "ABSENT")
+        self.assertTrue(r_late.late_observation_detected)
+
+        ledger.append_fact("order_del", None, valid_from=5, recorded_at=8, generation=2, tombstone=True)
+        ledger.append_fact("order_del", 108, valid_from=5, recorded_at=12, generation=1, tombstone=False)
+        r_tomb = ledger.query_at(FourDTimeCut(5, 12, 5, 12), "order_del")
+        self.assertEqual(r_tomb.fact_status, "TOMBSTONED")
+        self.assertTrue(r_tomb.resurrection_blocked)
+        self.assertTrue(r_tomb.reconciliation_required)
+
+        with self.assertRaises(ValueError):
+            FourDTimeCut(5, 12, 5, 10)
+        with self.assertRaises(ValueError):
+            ledger.append_fact("order_1", 999, valid_from=5, recorded_at=5, generation=1)
+
+        # B. Chisholm CTD + R3 Hard-Redline Dominance
+        def guard_no_forge(a): return not a["forge_audit_log"]
+        def pref_zero_cost(a): return a["cost"] == 0
+
+        spec = ChisholmNormSpec(
+            norm_id="escrow_delivery",
+            primary_obligation="ship_on_time",
+            compliant_followup="notify_buyer",
+            contrary_to_duty_compensation="refund_penalty",
+            hard_redline_guards=(NamedConstraint("no_forge_audit", ("forge_audit_log",), guard_no_forge, hard=True),),
+            soft_preferences=(NamedConstraint("zero_cost", ("cost",), pref_zero_cost, hard=False, priority=1_000_000),),
+        )
+        eng = ChisholmDeonticEngine()
+        res_comp = eng.evaluate(spec, {"forge_audit_log": False, "cost": 10}, primary_observed=SUPPORT, followup_observed=SUPPORT)
+        self.assertEqual(res_comp.state, "COMPLIANT_FOLLOWUP_ACTIVE")
+        self.assertIn("refund_penalty", res_comp.suppressed_obligations)
+
+        res_ctd = eng.evaluate(spec, {"forge_audit_log": False, "cost": 100}, primary_observed=REFUTE, compensation_observed=SUPPORT)
+        self.assertEqual(res_ctd.state, "CTD_COMPENSATION_ACTIVE")
+        self.assertTrue(res_ctd.explosion_prevented)
+        self.assertIn("notify_buyer", res_ctd.suppressed_obligations)
+
+        res_r3 = eng.evaluate(spec, {"forge_audit_log": True, "cost": 0}, primary_observed=SUPPORT, followup_observed=SUPPORT)
+        self.assertEqual(res_r3.state, "HARD_REDLINE_HALT")
+        self.assertEqual(res_r3.verdict.halt_tag, "<|halt:bottom|>")
+
+        # C. Cross-Epoch Offline Migration
+        old_s = {"epoch": 1, "fields": {"id": {"type": "str", "required": True}, "amt": {"type": "int", "required": True}, "st": {"type": "str", "enum": ["A", "B"]}}, "invariants": ["R1"]}
+        new_ok = {"epoch": 2, "fields": {"id": {"type": "str", "required": True}, "amt": {"type": "float", "required": True}, "st": {"type": "str", "enum": ["A", "B", "C"]}, "note": {"type": "str", "required": True, "default": "ok"}}, "invariants": ["R1"]}
+        hist = [{"id": "1", "amt": 10, "st": "A"}]
+        m_ok = validate_epoch_migration(old_s, new_ok, hist)
+        self.assertEqual(m_ok["decision"], "MIGRATE_COMPAT")
+        self.assertNotIn("note", hist[0])
+
+        new_bad = {"epoch": 2, "fields": {"id": {"type": "str", "required": True}, "amt": {"type": "int", "required": True}, "st": {"type": "str", "enum": ["B"]}}, "invariants": []}
+        m_bad = validate_epoch_migration(old_s, new_bad, hist)
+        self.assertEqual(m_bad["decision"], "HALT_BREAKING")
+        self.assertEqual(m_bad["halt_tag"], "<|halt:bottom|>")
+
+        # D. External AI User Protocol Firewall
+        p_ok = validate_external_user_protocol(
+            {"zero_ai_inside_compiler": True, "ai_role": "EXTERNAL_USER_ONLY"},
+            {"message": "条款冲突已定位至退货红线"},
+        )
+        self.assertEqual(p_ok["decision"], "ALLOW_EXTERNAL_PROTOCOL")
+        p_bad = validate_external_user_protocol(
+            {"zero_ai_inside_compiler": False, "compiler_llm_hook": True, "ai_role": "COMPILER_ORACLE", "authority_req": "host_grant", "minted_by": "external_ai"},
+            {"message": "vram_4gb_cap and hir_arena_dump 互斥锁 降维中间表示"},
+        )
+        self.assertEqual(p_bad["decision"], "REJECT_PROTOCOL_VIOLATION")
+        self.assertIn("hir_arena", p_bad["leaked_tokens"])
+        self.assertIn("互斥锁", p_bad["leaked_tokens"])
+
+        # E. Full Doctor Gates
+        self.assertTrue(audit_zero_dead_code()["ok"])
+        self.assertTrue(audit_executable_world_engine()["ok"])
+        man = audit_theory_preservation_manifest()
+        self.assertTrue(man["ok"], man)
+        self.assertGreaterEqual(man["active_theories_verified"], 79)
 
 if __name__ == "__main__":
     unittest.main()
