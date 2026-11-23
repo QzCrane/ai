@@ -173,6 +173,19 @@ MSK-v1 (ContractInterface — orthogonal & live-consumed fields, zero arbitrary 
 - **跨 Epoch 离线本体迁移与外部使用者协议**：在 `five_axis_microworld.py` 实装 `validate_epoch_migration`（严格区分 `MIGRATE_COMPAT` 与 `HALT_BREAKING`，拦截历史字段删除、类型/枚举收窄、无默认值新增必填字段与静默删除硬不变量）与 `validate_external_user_protocol`（机检 `zero_ai_inside_compiler: true`、`ai_role == "EXTERNAL_USER_ONLY"`、禁外部 AI 铸造 `host_grant` 及零内部编译术语泄漏）。
 - **`sec_repo` M1 Stage 3 四项物理闭合**：实装 `DlfClass` 三态零 AI 降维分类器、`linear authority` / `once authority` 零成本仿射租约（`pub struct <Name>Lease { _private: () }`，无 `Clone`/`Copy`，由 `rustc --edition 2024` 静态以 E0382 阻断二次重放）、CALM 单调性静态协调点分类（`CalmReport` 未授权写操作诚实停机）、纯 `BTreeMap`/`BTreeSet` 确定性 `ArchitectureGraphDiff`，并修复多跳嵌套 Profile 糖链 5 处边界归因漏洞。
 
+### 3.1F v33.0 理论收敛收口：DLF 形式化 BNF、5-Gate 归属裁决与类 C 5-Primitive 内核封闭定理
+- **DLF 形式化 BNF 与充要判定边界**：在 `zero_ai_inside_compiler: true` 与 `ai_role: "EXTERNAL_USER_ONLY"` 铁律下，可确定性降维片段（DLF）以无歧义 LL(1) BNF 严格刻画：
+  ```bnf
+  DLF_Program ::= Decl*
+  Decl ::= StateDecl | InvariantDecl | TransitionDecl | ExternCapDecl | DecisionDecl
+  TransitionDecl ::= 'transition' Ident '(' Params ')' ('apply' DetExpr | 'contract_only') GuardClause* EffectAuthClause?
+  DetExpr ::= Literal | Var | RecordCtor | RecordUpdate | MatchExhaustive | PureOp(DetExpr*) | CapCall(Ident, DetExpr*)
+  EffectAuthClause ::= 'effect' EffectSet 'authority' ('model_permit' | 'host_grant' | 'linear' 'authority' | 'once' 'authority')
+  ```
+  **充要判定边界定理**：规格 $P \in 	ext{DLF}$ 当且仅当同时满足五条机检充要条件：① 所有 `decide`/`hole` 槽均已由外部主权者绑定（或显式进入 `PureDeclarativeContract` 契约骨架模式）；② `apply` 体仅含有限离散全函数、穷举 `match` 与有界迭代（守 $\mathcal{A}_1$ 零浮点/零连续 ODE 与 R6 `ResourceLimit`）；③ 凡含 `effect` 的变迁或 `extern capability` 必具显式 `authority`（R5）且非单调跨分区写操作具备 CALM 显式协调屏障；④ 零未声明自由变量与循环定义；⑤ 零编译器内 AI/启发式补全。满足 ①–⑤ 且含完整 `apply` 体 $\iff$ `ExecutableDeterministic`；省略 `apply` 体但满足 ②–⑤ $\iff$ `PureDeclarativeContract`；违反任一条 $\iff$ `HaltedOutsideDlf`（诚实停机并零黑话上浮归因）。
+- **5-Gate 双时态与 Chisholm 归属裁决（`FIVE_GATE_ADJUDICATION: M1_STANDARD_CALCULUS_LIB`）**：针对 `BitemporalFactLedger`（4D 双时态）与 `ChisholmDeonticEngine`（Chisholm 反事实违约补偿）是否晋升 M0 内核原语，按 M0→M1 五闸门逐项终审：① **Gate 1（Felleisen 不可消除性）**：4D 双时态可由原语 1（不可变带时戳状态）+ 原语 4（单调墓碑与代际防复活）局部保义编码，Chisholm CTD 可由原语 1（分层状态位）+ 原语 2（受守卫变迁）+ 原语 3（R3 硬红线词典序优先与四态双格）局部保义编码——两者均**可局部消去**，未突破五原语表达力上界；② **Gate 2（可判定与预算退出）**：均属有限离散可判定片段且受 R6 预算截断（通过）；③ **Gate 3（正交与活体消费）**：已在 `world_kernel_engine.py` 活体运行且零死代码，但属五原语组合派生而非第 6 个正交核原语；④ **Gate 4（外部对抗属性测试）**：已由 `test_251`/`test_252` 独立验证（通过）；⑤ **Gate 5（M0 逐位零回归）**：外置后 M0 逐位零回归（通过）。**终审裁决**：4D 双时态与 Chisholm CTD 永久归属 **M1 标准确定性演算库（`M1_STANDARD_CALCULUS_LIB`，位于 `LAYER_C_L1_DETERMINISTIC_KERNEL`）**，绝不膨胀 M0 五原语控制骨架。
+- **类 C 5-Primitive 内核封闭定理（`core_closure_locked: true`）**：如同 C 语言凭 **Böhm–Jacopini + Church–Turing** 在通用离散计算结构上永久封闭、而不靠穷举人类所有行业软件证明完备性；本统一内核严格**收敛于控制结构而非开放业务领域**。一切离散可控系统的规范—认识控制语义均完整投影至 5 个不可约正交控制原语（状态与不变量 / 显式变迁与副作用权限边界 / Belnap–Dunn 四值双格与 MUS-MCS 冲突归因 / 正负传递依赖闭包与单调墓碑 / 诚实停机与主权移交），内核外不可判定/连续/开放语用域由 $\mathcal{A}_1$–$\mathcal{A}_5$ 显式拒收。**具体业务场景（订单、清结算、供应链、风控等）绝不作为内核穷举吸收对象，仅作为两类有限外部检验工具**：① **反例压力测试集**（用于攻击五原语封闭假设，若现不可局部编码反例须过 5-Gate 证伪）；② **L0 表面语法糖的 Green & Blackwell 认知维度可用性标尺**。
+
 ### 4.1 自我推翻与跃迁全记录
 
 | 阶段 | 旧形态 | 致命反例与诊断 | 跃迁新形态 |
@@ -188,6 +201,8 @@ MSK-v1 (ContractInterface — orthogonal & live-consumed fields, zero arbitrary 
 | **v28.0→v29.0（第七次跃迁｜Turns 91–139 全量合流）** | 仅停留在单库理论与防守型窄腰评估，尚未融合元方法论、进攻型三范式与双仓实码闭合 | 5 路与 6 路并发战略淘汰 + 7 大师元方法论与 10 史案剖析证明：大统一发散必死，纯防守中间件无进攻张力 | 确立**排除创造闭合**、**共享载体 $O(K)$ 降维**、**控制结构闭合×领域内容开放**、**进攻型三范式（Reality Git / 立法与雕塑 / 可执行认知原语）**与双仓 7 轮 $\mathcal{M}_0$ 真机闭合（Variant/Match、Pure Constant、RecordUpdate/List、Local Mut/Loop、BTreeSet/Map、Nominal Types、Rust+JS 双目标、Multi-Module Workspace、Parameterized Polymorphism 与 CTO 三层解耦）。 |
 | **v30.0→v31.0（第八次跃迁｜零 AI 纯确定性终局架构与 76 条理论全分层映射）** | §3.1B 残留“编译器与 AI 雕塑实现”越界表述、70 条理论缺乏显式架构分层标注且 L2/L3 物理执行层理论空心（仅 1 条）、`sec_repo` 尚未支持 `extern capability` 逃生舱与确定性架构图谱投影 | 确立工具内零 AI 铁律（人/AI 均为外部使用者），三路并发审计 70 条理论全量分层并暴露 6 项真实理论空洞 | 固化**零 AI 纯确定性四层最终架构（L0→L1→L2→L3）**、**外部使用者防火墙铁律**、**文本同源单向投影（`ArchitectureGraph` + `Mermaid`）**与 **`extern capability` 逃生舱**；总账升级至 76 条全分层 `ACTIVE` 条目，`sec_repo` 实码落地 `diagram.rs` 与 `GiftCapabilities` trait 生成（223/223 Rust 测试含 `rustc` 真编译通过）。 |
 | **v31.0→v32.0（第九次跃迁｜六项理论与工程空洞全量闭合）** | 尚存在 DLF 分类器、仿射线性租约、CALM 协调判定、图谱增量 Diff、4D/Chisholm 可执行演算与跨 Epoch 迁移协议六项真实空洞 | 三路并发深入双仓源码审计并暴露多跳糖链 5 处真实归因漏洞与历史空洞 | 在 `sec_repo` 落地 `DlfClass`、零成本 ZST 仿射租约（`rustc` E0382 反重放真机证明）、`CalmReport`、`ArchitectureGraphDiff` 与多跳糖链修复（225/225 Rust 测试通过）；在 `ai_repo` 落地 `BitemporalFactLedger`、`ChisholmDeonticEngine`、`validate_epoch_migration` 与 `validate_external_user_protocol`（79 条 `ACTIVE` 全分层理论 + 265/265 Python 测试全绿）。 |
+
+| **v32.0→v33.0（第十次跃迁｜理论收敛收口与类 C 五原语内核封闭锁定）** | DLF 边界尚缺正式 BNF 充要刻画、4D 双时态与 Chisholm 尚未经 5-Gate 正式定性归属、内核封闭与开放业务边界未立形式化定理与机检门禁 | 以 M0→M1 五闸门与 Felleisen 局部消去完成最终理论收口，杜绝向 M0 塞入业务原语或第 6/7 原语导致概念发散 | 固化 **DLF 形式化 BNF 与充要判定边界**、**5-Gate 双时态与 Chisholm 归属裁决（`M1_STANDARD_CALCULUS_LIB`）** 与 **类 C 5-Primitive 内核封闭定理**（收敛于控制结构而非开放业务领域，具体业务仅作反例压力测试集）；总账升级至 `v33.0`（82 条全分层 `ACTIVE`），`repo_doctor.py` 新增 `v33_convergence_closure` 硬门禁，9-MD 锁与零历史 URL 蒸发 100% 保持。 |
 
 ### 4.2 2026-Q4 重大证伪清单（90 天滚动窗口，全量量化保留）
 

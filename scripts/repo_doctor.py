@@ -607,17 +607,123 @@ def audit_executable_world_engine() -> dict:
 
 
 
+
+def audit_v33_convergence_closure() -> dict:
+    """v33.0 convergence closure gate: verifies C-like 5-primitive core closure lock,
+    DLF formal BNF & boundary spec, 5-Gate bitemporal/Chisholm adjudication, 9-MD lock,
+    and manifest v33.0 upgrade."""
+    l1_txt = (REPO_ROOT / "docs" / "whitepapers" / "world_cognition_unified_model.md").read_text(encoding="utf-8")
+    const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+    mpath = REPO_ROOT / "docs" / "architecture" / "THEORY_PRESERVATION_MANIFEST.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    entries = {e.get("id"): e for e in manifest.get("entries", [])}
+    errors: list[str] = []
+
+    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    if not md_locked:
+        errors.append("md_file_count_not_locked_at_9")
+
+    zero_ai_const_ok = all(
+        tok in const_txt for tok in ("zero_ai_inside_compiler: true", "EXTERNAL_USER_ONLY", "零 AI 纯确定性编译铁律")
+    )
+    if not zero_ai_const_ok:
+        errors.append("zero_ai_constitution_lock_missing")
+
+    core_tokens = (
+        "类 C 5-Primitive 内核封闭定理",
+        "收敛于控制结构而非开放业务领域",
+        "反例压力测试集",
+        "core_closure_locked",
+    )
+    core_entry = entries.get("COMP-C-LIKE-5PRIM-CORE-CLOSURE", {})
+    core_closure_locked = bool(
+        all(t in l1_txt for t in core_tokens)
+        and core_entry.get("status") == "ACTIVE"
+        and core_entry.get("arch_layer") == "LAYER_C_L1_DETERMINISTIC_KERNEL"
+        and md_locked
+        and zero_ai_const_ok
+    )
+    if not core_closure_locked:
+        errors.append("core_closure_locked_failed")
+
+    dlf_tokens = (
+        "DLF 形式化 BNF 与充要判定边界",
+        "DLF_Program ::=",
+        "TransitionDecl ::=",
+        "EffectAuthClause ::=",
+        "ExecutableDeterministic",
+        "PureDeclarativeContract",
+        "HaltedOutsideDlf",
+    )
+    dlf_entry = entries.get("EXEC-DLF-FORMAL-BNF-BOUNDARY", {})
+    dlf_formal_spec_present = bool(
+        all(t in l1_txt for t in dlf_tokens)
+        and dlf_entry.get("status") == "ACTIVE"
+        and dlf_entry.get("arch_layer") == "LAYER_D_L2_L3_PHYSICAL_EXECUTION"
+    )
+    if not dlf_formal_spec_present:
+        errors.append("dlf_formal_spec_present_failed")
+
+    five_gate_tokens = (
+        "5-Gate 双时态与 Chisholm 归属裁决",
+        "FIVE_GATE_ADJUDICATION",
+        "M1_STANDARD_CALCULUS_LIB",
+        "BitemporalFactLedger",
+        "ChisholmDeonticEngine",
+    )
+    fg_entry = entries.get("CALC-5GATE-BITEMPORAL-CHISHOLM-ADJUDICATION", {})
+    five_gate_adjudication_present = bool(
+        all(t in l1_txt for t in five_gate_tokens)
+        and fg_entry.get("status") == "ACTIVE"
+        and fg_entry.get("arch_layer") == "LAYER_C_L1_DETERMINISTIC_KERNEL"
+    )
+    if not five_gate_adjudication_present:
+        errors.append("five_gate_adjudication_present_failed")
+
+    active_cnt = sum(1 for e in manifest.get("entries", []) if e.get("status") == "ACTIVE")
+    manifest_v33_upgraded = bool(manifest.get("manifest_version") == "v33.0" and active_cnt >= 82)
+    if not manifest_v33_upgraded:
+        errors.append(f"manifest_v33_upgrade_failed:{manifest.get('manifest_version')}:{active_cnt}")
+
+    return {
+        "ok": bool(
+            core_closure_locked
+            and dlf_formal_spec_present
+            and five_gate_adjudication_present
+            and manifest_v33_upgraded
+            and not errors
+        ),
+        "core_closure_locked": core_closure_locked,
+        "dlf_formal_spec_present": dlf_formal_spec_present,
+        "five_gate_adjudication_present": five_gate_adjudication_present,
+        "manifest_v33_upgraded": manifest_v33_upgraded,
+        "md_file_count_locked_at_9": md_locked,
+        "errors": errors,
+    }
+
+
 def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_missing: bool = False) -> dict:
     """Cross-repo governance sync gate verifying sec_repo M0_BOUNDARY_AXIOMS.md,
     BOUNDARY_MANIFEST.json (Rust-Only M1+ & JS M0 Freeze), and CLI protocols."""
     import os
     sec_root = sec_repo_root or Path(os.environ.get("SEC_REPO_ROOT", str(REPO_ROOT.parent / "sec_repo")))
+    const_text = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+    ai_const_errors = [
+        f"ai_constitution_missing:{ctok}"
+        for ctok in ("Rust-Only", "零 AI 纯确定性编译铁律", "EXTERNAL_USER_ONLY")
+        if ctok not in const_text
+    ]
     if not sec_root.exists():
+        errs = list(ai_const_errors)
+        if not allow_missing:
+            errs.append("sec_repo_not_found")
         return {
-            "ok": allow_missing,
+            "ok": len(errs) == 0,
+            "mode": "standalone_ai_repo_only",
             "sec_repo_found": False,
             "sec_repo_root": str(sec_root),
-            "errors": [] if allow_missing else ["sec_repo_not_found"],
+            "ai_constitution_zero_ai_enforced": len(ai_const_errors) == 0,
+            "errors": errs,
         }
     errors = []
     axioms_path = sec_root / "crates" / "gift-author-kernel" / "M0_BOUNDARY_AXIOMS.md"
@@ -672,7 +778,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=f"Sovereign AI Brain CTO Repo Doctor ({REPO_VERSION})")
     ap.add_argument("--run-tests", action="store_true", help="Also run full 3-tier unittest suite")
     ap.add_argument("--sec-repo", type=str, default=None, help="Path to sibling sec_repo for cross-repo governance sync")
-    ap.add_argument("--allow-missing-sec-repo", action="store_true", help="Allow skipping cross-repo check when sec_repo is absent")
+    ap.add_argument("--allow-missing-sec-repo", action="store_true", help="Allow skipping cross-repo check when sec_repo is absent (standalone default)")
+    ap.add_argument("--require-sec-repo", action="store_true", help="Hard-fail if sibling sec_repo is absent")
     ap.add_argument("--compile-adr", action="store_true", help="Compile ARCHITECTURE_DECISIONS.md from ARCHITECTURE_GRAPH.json")
     ap.add_argument("--audit-table", action="store_true", help="Print zero-processing full closure audit table directly from ARCHITECTURE_GRAPH.json")
     ap.add_argument("--trace", type=str, default=None, help="Reverse-lookup any ADR, class, test, or arXiv ID in ARCHITECTURE_GRAPH.json")
@@ -702,7 +809,9 @@ def main() -> int:
     slim_res = audit_anti_drift_and_slimming()
     theory_res = audit_theory_preservation_manifest()
     engine_res = audit_executable_world_engine()
-    cross_repo_res = audit_cross_repo_governance_sync(Path(args.sec_repo) if args.sec_repo else None, allow_missing=args.allow_missing_sec_repo)
+    v33_res = audit_v33_convergence_closure()
+    allow_missing_sec = True if (args.allow_missing_sec_repo or not args.require_sec_repo) else False
+    cross_repo_res = audit_cross_repo_governance_sync(Path(args.sec_repo) if args.sec_repo else None, allow_missing=allow_missing_sec)
     tests_ok = True
     if args.run_tests:
         proc = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-q"], cwd=REPO_ROOT)
@@ -716,9 +825,10 @@ def main() -> int:
         "anti_drift_and_slimming": slim_res,
         "theory_preservation_manifest": theory_res,
         "executable_world_engine": engine_res,
+        "v33_convergence_closure": v33_res,
         "cross_repo_governance_sync": cross_repo_res,
         "tests_passed": tests_ok if args.run_tests else "skipped",
-        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and slim_res["ok"] and theory_res["ok"] and engine_res["ok"] and cross_repo_res["ok"] and tests_ok),
+        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and slim_res["ok"] and theory_res["ok"] and engine_res["ok"] and v33_res["ok"] and cross_repo_res["ok"] and tests_ok),
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0 if report["overall_healthy"] else 1

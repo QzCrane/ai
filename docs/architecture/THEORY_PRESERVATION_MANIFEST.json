@@ -1,5 +1,5 @@
 {
-  "manifest_version": "v32.0",
+  "manifest_version": "v33.0",
   "target_document": "docs/whitepapers/world_cognition_unified_model.md",
   "governance_rule": "Every ACTIVE theory/mechanism/falsification entry MUST have its required_anchor present in target_document; any removed entry MUST switch status to MERGED_INTO or FALSIFIED_BY with explicit disposition_target (zero silent evaporation).",
   "entries": [
@@ -642,6 +642,36 @@
       "title": "跨 Epoch 离线本体迁移门禁与外部 AI 使用者零内部术语泄漏协议",
       "status": "ACTIVE",
       "required_anchor": "跨 Epoch 离线本体迁移与外部使用者协议",
+      "disposition_target": null
+    },
+    {
+      "id": "EXEC-DLF-FORMAL-BNF-BOUNDARY",
+      "domain": "physical_execution_compiler",
+      "arch_layer": "LAYER_D_L2_L3_PHYSICAL_EXECUTION",
+      "title": "DLF 可确定性降维片段形式化 BNF 文法与五条充要判定边界定理",
+      "status": "ACTIVE",
+      "required_anchor": "DLF 形式化 BNF 与充要判定边界",
+      "source_ref": "world_cognition_unified_model.md#3.1F",
+      "disposition_target": null
+    },
+    {
+      "id": "CALC-5GATE-BITEMPORAL-CHISHOLM-ADJUDICATION",
+      "domain": "operational_calculus",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "5-Gate 双时态与 Chisholm 归属裁决（归入 M1 标准确定性演算库、守卫 M0 五原语不膨胀）",
+      "status": "ACTIVE",
+      "required_anchor": "5-Gate 双时态与 Chisholm 归属裁决",
+      "source_ref": "world_cognition_unified_model.md#3.1F",
+      "disposition_target": null
+    },
+    {
+      "id": "COMP-C-LIKE-5PRIM-CORE-CLOSURE",
+      "domain": "computation_theory_core",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "类 C 5-Primitive 内核封闭定理（收敛于控制结构而非开放业务领域，具体业务仅作反例压力测试集）",
+      "status": "ACTIVE",
+      "required_anchor": "类 C 5-Primitive 内核封闭定理",
+      "source_ref": "world_cognition_unified_model.md#3.1F",
       "disposition_target": null
     }
   ],

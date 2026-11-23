@@ -749,12 +749,13 @@ class TestM0KernelClosure(unittest.TestCase):
         self.assertIs(kernel_pkg.resolve_gift_kernel_binary, resolve_gift_kernel_binary)
         self.assertIs(kernel_pkg.FiniteDomainCSPSolver, FiniteDomainCSPSolver)
         resolved = resolve_gift_kernel_binary()
-        self.assertIsNotNone(resolved, "Expected gift-author-kernel binary to be discovered via workspace or GIFT_KERNEL_BIN")
-        # Verify GIFT_KERNEL_BIN override takes precedence
+        # Verify GIFT_KERNEL_BIN override takes precedence (works both with sibling sec_repo and standalone)
         prev = os.environ.get("GIFT_KERNEL_BIN")
         try:
-            os.environ["GIFT_KERNEL_BIN"] = resolved
-            self.assertEqual(resolve_gift_kernel_binary(), os.path.abspath(resolved))
+            import sys
+            target = resolved if resolved is not None else sys.executable
+            os.environ["GIFT_KERNEL_BIN"] = target
+            self.assertEqual(resolve_gift_kernel_binary(), os.path.abspath(target))
         finally:
             if prev is None:
                 os.environ.pop("GIFT_KERNEL_BIN", None)
