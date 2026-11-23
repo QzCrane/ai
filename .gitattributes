@@ -1,0 +1,18 @@
+# Deterministic line endings across Windows (core.autocrlf=true), Linux and macOS checkouts.
+# Text blobs are stored LF in the index; the working tree follows the rules below.
+* text=auto eol=lf
+
+# Windows-native scripting hosts expect CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Never apply text conversion to binary payloads.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.zip binary
+*.pt binary
+*.pth binary
+*.safetensors binary
