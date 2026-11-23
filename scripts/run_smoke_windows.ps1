@@ -16,9 +16,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 $CacheRoot = Join-Path $EnvRoot ".cache"
-$VenvPy    = Join-Path $EnvRoot "venvs\sovereign_brain\Scripts\python.exe"
-$DataDir   = Join-Path $EnvRoot "data\seed_v12_smoke"
-$CkptPath  = Join-Path $EnvRoot "checkpoints\sovereign_rtx3050_smoke.pt"
+$VenvPy    = Join-Path $EnvRoot ".venvs\sovereign_brain\Scripts\python.exe"
+$DataDir   = Join-Path $EnvRoot ".data\seed_v12_smoke"
+$CkptPath  = Join-Path $EnvRoot ".checkpoints\sovereign_rtx3050_smoke.pt"
 
 if (-not (Test-Path $VenvPy)) {
     throw "Venv not found at $VenvPy. Run scripts\setup_windows_d_drive.ps1 first."
@@ -28,8 +28,8 @@ $env:HF_HOME          = Join-Path $CacheRoot "huggingface"
 $env:PIP_CACHE_DIR    = Join-Path $CacheRoot "pip"
 $env:TORCH_HOME       = Join-Path $CacheRoot "torch"
 $env:TRITON_CACHE_DIR = Join-Path $CacheRoot "triton"
-$env:TEMP             = Join-Path $CacheRoot "tmp"
-$env:TMP              = Join-Path $CacheRoot "tmp"
+$env:TEMP             = Join-Path $EnvRoot ".tmp"
+$env:TMP              = Join-Path $EnvRoot ".tmp"
 
 Write-Host "[1/3] Building ${TargetMB}MB super-density smoke slice (O(1) SimHash + 80% Tier-S real anchor + 20% Causal-IR/Abstention) ..." -ForegroundColor Cyan
 & $VenvPy src\brain\prepare_seed_corpus.py --profile rtx3050_4gb_super_dense_v11 --super-density --use-ube --target-mb $TargetMB --output-dir $DataDir

@@ -48,7 +48,7 @@ def probe_one(src) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--profile", default="rtx3050_4gb_prod_30gb")
-    ap.add_argument("--out", default="D:/Environment/logs/prod_sources.json")
+    ap.add_argument("--out", default="D:/Environment/.logs/prod_sources.json")
     args = ap.parse_args()
 
     prof = CORPUS_PROFILES[args.profile]

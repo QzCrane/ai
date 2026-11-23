@@ -27,7 +27,7 @@ $ErrorActionPreference = "Stop"
 
 # 1. Strictly pin ALL caches & temp dirs to D:\Environment\.cache (zero C-drive bloat)
 $CacheRoot = Join-Path $EnvRoot ".cache"
-$VenvDir   = Join-Path $EnvRoot "venvs\sovereign_brain"
+$VenvDir   = Join-Path $EnvRoot ".venvs\sovereign_brain"
 $Dirs = @(
     $CacheRoot,
     (Join-Path $CacheRoot "huggingface"),
@@ -35,9 +35,9 @@ $Dirs = @(
     (Join-Path $CacheRoot "torch"),
     (Join-Path $CacheRoot "triton"),
     (Join-Path $CacheRoot "uv"),
-    (Join-Path $CacheRoot "tmp"),
-    (Join-Path $EnvRoot "data"),
-    (Join-Path $EnvRoot "checkpoints")
+    (Join-Path $EnvRoot ".tmp"),
+    (Join-Path $EnvRoot ".data"),
+    (Join-Path $EnvRoot ".checkpoints")
 )
 foreach ($d in $Dirs) {
     if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }
@@ -48,8 +48,8 @@ $env:PIP_CACHE_DIR    = Join-Path $CacheRoot "pip"
 $env:TORCH_HOME       = Join-Path $CacheRoot "torch"
 $env:TRITON_CACHE_DIR = Join-Path $CacheRoot "triton"
 $env:UV_CACHE_DIR     = Join-Path $CacheRoot "uv"
-$env:TEMP             = Join-Path $CacheRoot "tmp"
-$env:TMP              = Join-Path $CacheRoot "tmp"
+$env:TEMP             = Join-Path $EnvRoot ".tmp"
+$env:TMP              = Join-Path $EnvRoot ".tmp"
 
 Write-Host "[v12.2] All caches locked under $CacheRoot (0 C-drive writes)" -ForegroundColor Cyan
 
