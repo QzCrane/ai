@@ -1,0 +1,59 @@
+{
+  "exp1_loo_neuro_symbolic_router": {
+    "n_trials_per_class": 50,
+    "loo_threshold_tau_sym": 0.72,
+    "overall_neuro_symbolic_routing_accuracy": 0.988,
+    "total_runtime_ms": 21.83,
+    "per_class": {
+      "smooth_linear": {
+        "expected_route": "LAYER2_CONTINUOUS",
+        "mean_closed_form_loo_error": 0.0,
+        "std_loo_error": 0.0,
+        "routing_accuracy": 1.0
+      },
+      "smooth_bilinear": {
+        "expected_route": "LAYER2_CONTINUOUS",
+        "mean_closed_form_loo_error": 0.0028,
+        "std_loo_error": 0.0012,
+        "routing_accuracy": 1.0
+      },
+      "smooth_cubic_weak": {
+        "expected_route": "LAYER2_CONTINUOUS",
+        "mean_closed_form_loo_error": 0.0003,
+        "std_loo_error": 0.0002,
+        "routing_accuracy": 1.0
+      },
+      "discrete_step_threshold": {
+        "expected_route": "LAYER1_SYMBOLIC",
+        "mean_closed_form_loo_error": 3.0256,
+        "std_loo_error": 2.7527,
+        "routing_accuracy": 0.94
+      },
+      "discrete_xor_parity3": {
+        "expected_route": "LAYER1_SYMBOLIC",
+        "mean_closed_form_loo_error": 5.1643,
+        "std_loo_error": 2.8546,
+        "routing_accuracy": 1.0
+      }
+    }
+  },
+  "exp2_conformal_prediction_abstention": {
+    "target_coverage_1_minus_alpha": 0.95,
+    "conformal_quantile_q_hat": 0.9089,
+    "empirical_test_coverage_on_500_unseen": 0.958,
+    "guarantee_satisfied": true,
+    "raw_argmax_accuracy_without_abstention": 0.8,
+    "committed_accuracy_with_conformal_gate": 0.9845,
+    "abstention_rate": 0.614,
+    "ambiguous_queries_caught_by_abstain_rate": 0.9695
+  },
+  "exp3_cbf_safe_online_adaptation": {
+    "adaptation_steps": 200,
+    "safety_barrier_B_max": 1.0,
+    "unfiltered_safety_violations": 200,
+    "unfiltered_max_norm": 17.5532,
+    "cbf_filtered_safety_violations": 0,
+    "cbf_filtered_max_norm": 1.0,
+    "zero_violation_invariant_proven": true
+  }
+}

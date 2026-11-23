@@ -1,0 +1,31 @@
+{
+  "backbone_version": "2.0_LAW1_3TO1_HYBRID",
+  "backbone_passed": true,
+  "dense_quadratic_softmax_layers": 0,
+  "hybrid_ratio": "3x DualDeltaNet : 1x GatedSparseExactRecall",
+  "sparse_recall_edge_density": 0.1279,
+  "mhc_row_col_max_err": 0.0,
+  "erm_halted_at_loop": 6,
+  "erm_energies": [
+    0.575448,
+    0.197223,
+    0.105748,
+    0.082603,
+    0.075665,
+    0.06175
+  ],
+  "muon_train_loss_start": 5.9727,
+  "muon_train_loss_end": 1.4495,
+  "target_4gb_vram_budget": {
+    "architecture": "Sovereign 3:1 Non-Transformer Hybrid (Byte + Canon + 18x DualDeltaNet + 6x GatedSparseRecall + mHC + MoR/ERM + Off-Core Engram)",
+    "dense_quadratic_softmax_layers": 0,
+    "dual_deltanet_layers": 18,
+    "gated_sparse_recall_layers": 6,
+    "target_neural_params_B": 1.8,
+    "q4_weights_gb": 0.922,
+    "bitnet_158_weights_gb": 0.369,
+    "recurrent_plus_sparse_kv_mb": 27.0,
+    "off_core_engram_ram_gb": 1.0,
+    "fits_4gb_vram_with_huge_headroom": true
+  }
+}

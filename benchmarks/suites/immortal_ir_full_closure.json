@@ -1,0 +1,84 @@
+{
+  "primitives": {
+    "prim_safe_mean": {
+      "primitive_id": "prim_safe_mean",
+      "name": "safe_mean",
+      "domain": "numeric_stats",
+      "version": 2,
+      "code_source": "def safe_mean(xs):\n    return 0.0 if len(xs) == 0 else sum(xs) / len(xs)\n",
+      "ast_template": "def safe_mean(xs):\n    return 0.0 if len(xs) == 0 else sum(xs) / len(xs)\n",
+      "preconditions": [
+        "xs is list of numbers (empty allowed)"
+      ],
+      "postconditions": [
+        "returns arithmetic mean, or 0.0 if empty"
+      ],
+      "input_schema": {
+        "xs": "List[float]"
+      },
+      "provenance_task_ids": [
+        "stats_init",
+        "counterexample_empty_list"
+      ],
+      "unit_tests": [
+        {
+          "args": [
+            [
+              2,
+              4,
+              6
+            ]
+          ],
+          "expected": 4.0
+        },
+        {
+          "args": [
+            [
+              10
+            ]
+          ],
+          "expected": 10.0
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": 0.0
+        }
+      ],
+      "counterexamples": [
+        {
+          "args": [
+            []
+          ],
+          "expected": 0.0
+        }
+      ],
+      "verification_history": [],
+      "status": "active",
+      "rarity_critical": false,
+      "usage_count": 0,
+      "success_count": 0,
+      "created_at": 1795273089.5520642
+    }
+  },
+  "audit_log": [
+    {
+      "time": 1795273089.5004914,
+      "action": "register_v1",
+      "primitive_id": "prim_safe_mean",
+      "version": 1,
+      "hash": "099c3349d68055b6",
+      "rollback_snapshot": 0
+    },
+    {
+      "time": 1795273089.5521712,
+      "action": "counterexample_refinement",
+      "primitive_id": "prim_safe_mean",
+      "version": 2,
+      "hash": "8242779100e8f3c3",
+      "rollback_snapshot": 1
+    }
+  ],
+  "snapshot_count": 2
+}

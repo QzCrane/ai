@@ -1,0 +1,21 @@
+{
+  "consensus_submissions": {
+    "agent1_accepted": true,
+    "agent2_accepted": true,
+    "agent3_byzantine_blocked": true,
+    "agent3_block_reason": "ZeroDivisionError: division by zero",
+    "agent4_accepted": true,
+    "active_shared_primitives": 3
+  },
+  "dag_3node_branching_ood_result": {
+    "dag_nodes": [
+      "prim_sum_gt",
+      "prim_count_gt",
+      "prim_safe_div"
+    ],
+    "all_passed": true,
+    "pass_rate": 1.0,
+    "elapsed_ms": 46.226,
+    "dag_source": "def sum_gt(xs, thresh):\n    return sum([x for x in xs if x > thresh])\n\n\ndef count_gt(xs, thresh):\n    return len([x for x in xs if x > thresh])\n\n\ndef safe_div(num, den):\n    return 0.0 if den == 0 else num / den\n\n\ndef dag_ood_solve(xs):\n    val_a = sum_gt(xs, 10)\n    val_b = count_gt(xs, 10)\n    return safe_div(val_a, val_b)\n"
+  }
+}

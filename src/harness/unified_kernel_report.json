@@ -1,0 +1,45 @@
+{
+  "unified_kernel_version": "9.0",
+  "architecture_profile": "ROUTE_1_THREE_MASTER_EQ_UNIFIED_V9",
+  "default_active_modules": 11,
+  "tier1_mvp_modules": [
+    "LocalBackboneAdapter",
+    "UniversalSymbolFrontEnd",
+    "PhysicalMappingGuard+DualTrackVerifier",
+    "DeterministicEnvelopeRewindLog",
+    "AccumulateAnchorSleep+AntiCollapseLock"
+  ],
+  "tier2_armor_modules": [
+    "EnergyBudgetAnytimeController",
+    "CapabilityTaintMemoryGuard+BelnapB4",
+    "DecoupledGrammarBridge",
+    "MultiTurnConformalAbstentionGate",
+    "SimplexBehavioralContractShield",
+    "AuditHoldoutGate"
+  ],
+  "tier3_opt_in_plugins_catalog": 8,
+  "route1_chained_episodes_passed": true,
+  "tier3_opt_in_plugins_passed": true,
+  "unified_kernel_passed": true,
+  "chained_episode_summary": {
+    "e1_happy_path_6_stages": "EPISODE_COMMITTED",
+    "e2_belnap_halt": "HALTED_BELNAP_CONTRADICTION",
+    "e3_codespear_block": "BLOCKED_GRAMMAR_BRIDGE",
+    "e4_taint_conformal_abstain": "HALTED_CONFORMAL_ABSTAIN_ADVERSARIAL_EXCHANGEABILITY_BROKEN",
+    "e5_simplex_fallback": "DOWNGRADED_TO_SIMPLEX_SAFE_FALLBACK",
+    "e6_pmg_rewind": "REWOUND_AFTER_VERIFICATION_FAILURE",
+    "e7_dual_track_rubric": "EPISODE_COMMITTED",
+    "e8_sleep_promoted": [
+      "arbitrary_radix_decoder"
+    ],
+    "e8_sleep_rejected": {
+      "poisoned_invoice_skill": "BLOCKED_TAINTED_MEMORY_POISONING",
+      "circular_ungrounded_a": "CIRCULAR_UNGROUNDED_SYMBOL",
+      "overfit_lucky_skill": "BLOCKED_WINNERS_CURSE_OVERFIT"
+    },
+    "e9_dual_delta_engram_spillover_ok": true,
+    "e1_erm_ptrm_selected": "traj_ptrm_stochastic",
+    "e10_recursive_subgoal_decomp_ok": true,
+    "e11_asymmetric_sparse_sgd_fraction": 8e-05
+  }
+}

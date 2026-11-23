@@ -1,0 +1,150 @@
+{
+  "primitives": {
+    "prim_sum_gt": {
+      "primitive_id": "prim_sum_gt",
+      "name": "sum_gt",
+      "domain": "stats",
+      "version": 1,
+      "code_source": "def sum_gt(xs, thresh):\n    return sum([x for x in xs if x > thresh])\n",
+      "ast_template": "sum([x for x in xs if x > thresh])",
+      "preconditions": [
+        "xs: List[float]"
+      ],
+      "postconditions": [
+        "sum of elements > thresh"
+      ],
+      "input_schema": {
+        "xs": "List[float]",
+        "thresh": "float"
+      },
+      "provenance_task_ids": [
+        "agent1_t1"
+      ],
+      "unit_tests": [
+        {
+          "args": [
+            [
+              1,
+              5,
+              10
+            ],
+            4
+          ],
+          "expected": 15
+        }
+      ],
+      "counterexamples": [],
+      "verification_history": [],
+      "status": "active",
+      "rarity_critical": false,
+      "usage_count": 0,
+      "success_count": 0,
+      "created_at": 1795112521.1345198
+    },
+    "prim_count_gt": {
+      "primitive_id": "prim_count_gt",
+      "name": "count_gt",
+      "domain": "stats",
+      "version": 1,
+      "code_source": "def count_gt(xs, thresh):\n    return len([x for x in xs if x > thresh])\n",
+      "ast_template": "len([x for x in xs if x > thresh])",
+      "preconditions": [
+        "xs: List[float]"
+      ],
+      "postconditions": [
+        "count of elements > thresh"
+      ],
+      "input_schema": {
+        "xs": "List[float]",
+        "thresh": "float"
+      },
+      "provenance_task_ids": [
+        "agent2_t1"
+      ],
+      "unit_tests": [
+        {
+          "args": [
+            [
+              1,
+              5,
+              10
+            ],
+            4
+          ],
+          "expected": 2
+        }
+      ],
+      "counterexamples": [],
+      "verification_history": [],
+      "status": "active",
+      "rarity_critical": false,
+      "usage_count": 0,
+      "success_count": 0,
+      "created_at": 1795112521.1677413
+    },
+    "prim_safe_div": {
+      "primitive_id": "prim_safe_div",
+      "name": "safe_div",
+      "domain": "math",
+      "version": 1,
+      "code_source": "def safe_div(num, den):\n    return 0.0 if den == 0 else num / den\n",
+      "ast_template": "0.0 if den == 0 else num / den",
+      "preconditions": [
+        "num, den: float"
+      ],
+      "postconditions": [
+        "quotient or 0.0 if den==0"
+      ],
+      "input_schema": {
+        "num": "float",
+        "den": "float"
+      },
+      "provenance_task_ids": [
+        "agent4_verified"
+      ],
+      "unit_tests": [
+        {
+          "args": [
+            10,
+            2
+          ],
+          "expected": 5.0
+        }
+      ],
+      "counterexamples": [],
+      "verification_history": [],
+      "status": "active",
+      "rarity_critical": false,
+      "usage_count": 0,
+      "success_count": 0,
+      "created_at": 1795112521.2292583
+    }
+  },
+  "audit_log": [
+    {
+      "time": 1795112521.1674516,
+      "action": "consensus_merge_from_Agent_1_Honest",
+      "primitive_id": "prim_sum_gt",
+      "version": 1,
+      "hash": "c45cd4a5fa1bf085",
+      "rollback_snapshot": 0
+    },
+    {
+      "time": 1795112521.1984456,
+      "action": "consensus_merge_from_Agent_2_Honest",
+      "primitive_id": "prim_count_gt",
+      "version": 1,
+      "hash": "939e928282be2ec9",
+      "rollback_snapshot": 1
+    },
+    {
+      "time": 1795112521.259736,
+      "action": "consensus_merge_from_Agent_4_Honest",
+      "primitive_id": "prim_safe_div",
+      "version": 1,
+      "hash": "900cd32cae15c7a0",
+      "rollback_snapshot": 2
+    }
+  ],
+  "snapshot_count": 3
+}

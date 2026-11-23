@@ -1,0 +1,80 @@
+{
+  "all_6_suites_passed": true,
+  "suite_execution_results": {
+    "run_end_to_end_closed_loop_demo.py": {
+      "passed": true,
+      "elapsed_ms": 869.84
+    },
+    "run_stage2_and_stage4_verification.py": {
+      "passed": true,
+      "elapsed_ms": 451.29
+    },
+    "full_theory_closure_suite.py": {
+      "passed": true,
+      "elapsed_ms": 297.43
+    },
+    "pomdp_belief_exoskeleton.py": {
+      "passed": true,
+      "elapsed_ms": 108.83
+    },
+    "nonstationary_drift_and_temporal_memory.py": {
+      "passed": true,
+      "elapsed_ms": 107.98
+    },
+    "multi_agent_library_consensus.py": {
+      "passed": true,
+      "elapsed_ms": 207.7
+    },
+    "stress_test_capacity_and_ood_phase_transition.py": {
+      "passed": true,
+      "elapsed_ms": 245.5
+    },
+    "stress_test_particle_filter_and_cegis_scale.py": {
+      "passed": true,
+      "elapsed_ms": 246.83
+    },
+    "deep_research_loo_conformal_cbf_suite.py": {
+      "passed": true,
+      "elapsed_ms": 95.44
+    },
+    "unified_100step_stress_engine.py": {
+      "passed": true,
+      "elapsed_ms": 454.37
+    },
+    "deep_blindspots_ot_thresholdout_typed_dag.py": {
+      "passed": true,
+      "elapsed_ms": 136.87
+    },
+    "hippo_belnap_prospective_orthogonality_suite.py": {
+      "passed": true,
+      "elapsed_ms": 254.93
+    }
+  },
+  "hard_problems_summary": {
+    "total_hard_problems": 18,
+    "closed_in_theory_and_runnable_code": 11,
+    "closed_in_interface_pending_live_gpu_llm": 7,
+    "closed_ids": [
+      4,
+      6,
+      8,
+      9,
+      10,
+      12,
+      13,
+      14,
+      15,
+      16,
+      3
+    ],
+    "pending_live_llm_gpu_ids": [
+      1,
+      2,
+      5,
+      7,
+      11,
+      17,
+      18
+    ]
+  }
+}

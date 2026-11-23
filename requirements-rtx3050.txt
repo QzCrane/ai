@@ -1,0 +1,105 @@
+# Sovereign AI Brain — RTX 3050 4GB Native Windows & Linux Stack (v12.2, 2026-11-22 Verified Latest)
+# Recommended Native Windows Environment:
+#   - Python 3.15.2 (latest stable, verified live; fallback 3.14; PyTorch 2.15 supports 3.11-3.15)
+#   - PyTorch 2.15.0+cu134 (latest official CUDA wheel, requires driver >= R615; fallback cu132):
+#       pip install -U torch --index-url https://download.pytorch.org/whl/cu134
+#   - Official triton-lang/triton-windows 3.9.0.post30 (bundles ptxas + TinyCC; needs vc_redist.x64.exe)
+#   - One-click D:\Environment zero-C-drive bootstrap: scripts\setup_windows_d_drive.ps1
+#
+# Organized by 16 functional domains with explicit conflict & sovereignty arbitration:
+#   - REJECTED conflicts (DO NOT INSTALL):
+#       * bitsandbytes (superseded by PolarExpressMuon+TorchAO+AutoRound)
+#       * ollama (single-slot concurrency cap on hybrid linear-attention models; 52x slower than SGLang/vLLM)
+#       * daytona (OSS repo archived to private codebase June 2026; use Apache-2.0 E2B + Firecracker)
+#       * arize-phoenix (non-OSI Elastic License 2.0 + Dynatrace acquisition Oct 2026; use MIT Langfuse)
+
+# [Domain 1] GPU Kernels & Compilers (Native Windows cu134/cu132 + Linux; FA4 is Scale-Up Hopper/Blackwell only)
+torch>=2.15.0
+triton-windows>=3.9.0,<3.10.0; sys_platform == 'win32'
+numpy>=2.5.5
+scipy>=1.18.1
+flash-linear-attention>=0.6.0
+liger-kernel>=0.8.5
+cut-cross-entropy>=25.1.1
+# Serving & compiler backends:
+#   pip install -U flashinfer-python flashqla tilelang helion
+
+# [Domain 2] Quantization, QAT, Backbones & Checkpoints (bitsandbytes REJECTED)
+safetensors>=0.8.0
+torchao>=0.18.0
+transformers>=5.24.0
+tokenizers>=0.23.3
+huggingface-hub>=2.4.0
+hf-xet>=1.8.0
+# Optional offline PTQ challenger:
+#   pip install -U auto-round
+
+# [Domain 3] Microsecond Constrained Decoding (<tool_call> JSON/CFG; CoT unconstrained)
+xgrammar>=0.2.9
+# Optional Rust challenger:
+#   pip install -U llguidance
+
+# [Domain 4] Serving & Edge Inference (Ollama REJECTED for prod/hybrid)
+#   - Hybrid GPU server (primary):     pip install -U sglang   (or challenger: vllm)
+#   - Local CPU/GPU single-user edge:  source build ggml-org/llama.cpp & microsoft/BitNet (bitnet.cpp)
+#   - Mobile / WebGPU edge:            pip install -U executorch  (or mlc-llm)
+
+# [Domain 5] Distributed Training, Optimizers & Async RLVR (Scale-Up / Phase 2)
+#   - Multi-GPU pretraining (primary): pip install -U torchtitan
+#   - Distributed Muon (6x faster):    pip install -U git+https://github.com/microsoft/dion.git
+#   - RLVR / Async Agent RL:           pip install -U verl areal  (challengers: slime, skyrl, prime-rl, openrlhf)
+
+# [Domain 6] Corpus Curation & Deduplication (30GB local = DataTrove; 10T+ GPU = NeMo Curator)
+datasets>=5.2.0
+datatrove>=0.4.0
+# Scale-Up 10T+ GPU dedup only:
+#   pip install -U nemo-curator
+
+# [Domain 7] Real Contamination-Resistant Benchmarks & Agent Evals
+lm-eval>=0.4.7
+inspect-ai>=0.3.0
+evalplus>=0.3.1
+# Optional coding-agent control plane reference:
+#   pip install -U openhands
+
+# [Domain 8] Hardware-Isolated Agent Sandboxes & Sovereign Observability (Daytona & Arize Phoenix REJECTED)
+#   - Hardware microVM sandbox:        firecracker-microvm/firecracker + pip install -U e2b
+#   - MIT self-hosted tracing/evals:   pip install -U langfuse
+
+# [Domain 9] Streaming DataLoaders, Rust Data Ops & Synthetic Pipelines
+polars>=2.1.0
+duckdb>=2.0.1
+# Optional fast streaming & synthetic curation (install via `uv pip install -U`):
+#   uv pip install -U litdata mosaicml-streaming distilabel bespokelabs-curator
+
+# [Domain 10] KV Offload, Sovereign Experiment Tracking & Safety Guardrails
+swanlab>=0.10.6
+# Optional KV offload & guardrail stacks:
+#   uv pip install -U lmcache mooncake-transfer-engine trackio mlflow nemoguardrails
+
+# [Domain 11] Formal Math/Code Verifiers & STEM Document Ingestion
+z3-solver>=5.4.1.0
+# Optional RLVR formal/code oracles & STEM PDF parsers:
+#   Lean 4 (elan) + pantograph + bytedance/SandboxFusion
+#   uv pip install -U mineru docling
+
+# [Domain 12] Local 0-VRAM Vector Retrieval & MCP Interop
+usearch>=2.26.6
+mcp>=2.3.0
+# Optional server-scale vector DB:
+#   uv pip install -U qdrant-client
+
+# [Domain 13] Code AST, Repo Search & Deterministic Linting
+tree-sitter>=0.26.1
+ruff>=0.17.6
+
+# [Domain 14] Web Extraction & Browser Exoskeleton
+trafilatura>=2.3.1
+# Optional agent browsing:
+#   uv pip install -U crawl4ai playwright
+
+# [Domain 15] White-Box Mechanistic Interpretability (TransformerLens REJECTED for DeltaNet+HoPE)
+#   uv pip install -U nnsight sae-lens
+
+# [Domain 16] Optional 0-Cloud Local Edge Speech I/O (CPU-only)
+#   source build ggml-org/whisper.cpp + uv pip install -U kokoro

@@ -1,0 +1,27 @@
+{
+  "blindspot1_multimodal_bures_wasserstein_ot": {
+    "n_clusters": 3,
+    "D": 32,
+    "single_vector_dim_mse": 0.09735,
+    "clustered_bures_wasserstein_ot_mse": 4.795e-08,
+    "mse_reduction_factor": 2030441.0,
+    "ot_runtime_ms": 1.316
+  },
+  "blindspot2_anti_goodhart_thresholdout": {
+    "adaptive_rounds": 120,
+    "naive_static_holdout_reported_acc": 0.86,
+    "naive_true_unseen_acc": 0.518,
+    "naive_goodhart_inflation_gap": 0.342,
+    "thresholdout_plus_dynamic_seed_false_promotions": 0,
+    "goodhart_overfitting_blocked": true
+  },
+  "blindspot3_type_directed_dag_synthesis": {
+    "library_size": 16,
+    "untyped_brute_force_3node_dags": 4096,
+    "well_typed_candidate_dags": 32,
+    "type_directed_pruning_pct": 99.22,
+    "sandbox_attempts_to_solve_ood": 1,
+    "solved_dag_expression": "safe_div(sum_pos(xs), count_pos(xs))",
+    "synthesis_time_ms": 52.75
+  }
+}

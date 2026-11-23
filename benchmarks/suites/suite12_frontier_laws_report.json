@@ -1,0 +1,71 @@
+{
+  "suite": "Suite 12: Hippo + Belnap B4 + CoDe-LoRA Orthogonality Dilemma + Prospective Compression",
+  "all_passed": true,
+  "hippo_cls_paradox": {
+    "nomem_final_acc": 0.505,
+    "naive_phase1_peak_acc": 0.805,
+    "naive_final_acc": 0.6,
+    "naive_post_drift_trough_acc": 0.3975,
+    "naive_rose_then_dropped_below_nomem": true,
+    "hippo_final_acc": 1.0,
+    "naive_entries": 101,
+    "hippo_entries": 8,
+    "memory_compression_ratio": 12.62,
+    "curves": {
+      "nomem": [
+        0.53,
+        0.5075,
+        0.5575,
+        0.5825,
+        0.5025,
+        0.5075,
+        0.505
+      ],
+      "naive": [
+        0.6975,
+        0.7325,
+        0.805,
+        0.3975,
+        0.4575,
+        0.5175,
+        0.6
+      ],
+      "hippo": [
+        0.97,
+        1.0,
+        1.0,
+        0.8625,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  },
+  "belnap_b4_logic": {
+    "n_cases": 500,
+    "binary_silent_corruption_rate": 0.4,
+    "b4_conflict_isolation_rate": 1.0,
+    "b4_unknown_probe_routing_rate": 1.0,
+    "bilattice_associativity_verified": true,
+    "paraconsistent_non_explosion_verified": true
+  },
+  "code_lora_orthogonality_dilemma": {
+    "naive_avg_mse": 2.80518,
+    "strict_olora_avg_mse": 0.92641,
+    "code_lora_avg_mse": 0.12308,
+    "code_error_reduction_vs_olora_pct": 86.71,
+    "code_beats_both_naive_and_olora": true,
+    "nusa_theorem2_lhs_interference": 2.94531043,
+    "nusa_theorem2_rhs_bound": 9.11791742,
+    "nusa_theorem2_verified": true
+  },
+  "prospective_vs_retrospective_mdl": {
+    "retrospective_choice": "A",
+    "prospective_choice": "B",
+    "raw_future_program_tokens": 100,
+    "retrospective_future_mdl": 101,
+    "prospective_future_mdl": 47,
+    "prospective_mdl_reduction_pct": 53.47,
+    "prospective_beats_retrospective": true
+  }
+}

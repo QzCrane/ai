@@ -1,0 +1,133 @@
+{
+  "superposition_phase_transition_D512": [
+    {
+      "K_operators": 1,
+      "dimension_load_Kr_over_D": 0.016,
+      "ungated_non_target_drift_norm": 0.01824,
+      "ungated_target0_rel_error": 0.0,
+      "gated_false_triggers_on_128_bg": 0,
+      "gated_target0_routing_acc": 1.0,
+      "max_subspace_overlap_with_op0": 0.0,
+      "eval_ms": 0.95
+    },
+    {
+      "K_operators": 5,
+      "dimension_load_Kr_over_D": 0.078,
+      "ungated_non_target_drift_norm": 0.04149,
+      "ungated_target0_rel_error": 1.62195,
+      "gated_false_triggers_on_128_bg": 0,
+      "gated_target0_routing_acc": 1.0,
+      "max_subspace_overlap_with_op0": 0.2479,
+      "eval_ms": 1.16
+    },
+    {
+      "K_operators": 10,
+      "dimension_load_Kr_over_D": 0.156,
+      "ungated_non_target_drift_norm": 0.05953,
+      "ungated_target0_rel_error": 2.4328,
+      "gated_false_triggers_on_128_bg": 0,
+      "gated_target0_routing_acc": 1.0,
+      "max_subspace_overlap_with_op0": 0.2882,
+      "eval_ms": 1.86
+    },
+    {
+      "K_operators": 25,
+      "dimension_load_Kr_over_D": 0.391,
+      "ungated_non_target_drift_norm": 0.09469,
+      "ungated_target0_rel_error": 4.10125,
+      "gated_false_triggers_on_128_bg": 0,
+      "gated_target0_routing_acc": 1.0,
+      "max_subspace_overlap_with_op0": 0.2882,
+      "eval_ms": 3.44
+    },
+    {
+      "K_operators": 50,
+      "dimension_load_Kr_over_D": 0.781,
+      "ungated_non_target_drift_norm": 0.13314,
+      "ungated_target0_rel_error": 5.82521,
+      "gated_false_triggers_on_128_bg": 0,
+      "gated_target0_routing_acc": 1.0,
+      "max_subspace_overlap_with_op0": 0.2897,
+      "eval_ms": 6.57
+    },
+    {
+      "K_operators": 100,
+      "dimension_load_Kr_over_D": 1.562,
+      "ungated_non_target_drift_norm": 0.18845,
+      "ungated_target0_rel_error": 8.24854,
+      "gated_false_triggers_on_128_bg": 0,
+      "gated_target0_routing_acc": 1.0,
+      "max_subspace_overlap_with_op0": 0.2897,
+      "eval_ms": 11.35
+    },
+    {
+      "K_operators": 150,
+      "dimension_load_Kr_over_D": 2.344,
+      "ungated_non_target_drift_norm": 0.23095,
+      "ungated_target0_rel_error": 9.90487,
+      "gated_false_triggers_on_128_bg": 0,
+      "gated_target0_routing_acc": 1.0,
+      "max_subspace_overlap_with_op0": 0.2897,
+      "eval_ms": 15.88
+    },
+    {
+      "K_operators": 200,
+      "dimension_load_Kr_over_D": 3.125,
+      "ungated_non_target_drift_norm": 0.26647,
+      "ungated_target0_rel_error": 11.32676,
+      "gated_false_triggers_on_128_bg": 0,
+      "gated_target0_routing_acc": 1.0,
+      "max_subspace_overlap_with_op0": 0.2897,
+      "eval_ms": 21.57
+    }
+  ],
+  "few_shot_ood_generalization_vs_failure_boundary": {
+    "D": 128,
+    "R_cp": 16,
+    "N_ood_unseen": 200,
+    "curve": [
+      {
+        "N_train": 4,
+        "class1_linear_ood_rel_err_dual": 0.9891,
+        "class2_bilinear_ood_rel_err_linear_only": 1.0114,
+        "class2_bilinear_ood_rel_err_dual_kernel": 0.9808,
+        "class3_discontinuous_xor_ood_rel_err_dual": 1.0089
+      },
+      {
+        "N_train": 8,
+        "class1_linear_ood_rel_err_dual": 0.9689,
+        "class2_bilinear_ood_rel_err_linear_only": 1.0549,
+        "class2_bilinear_ood_rel_err_dual_kernel": 0.9467,
+        "class3_discontinuous_xor_ood_rel_err_dual": 1.039
+      },
+      {
+        "N_train": 16,
+        "class1_linear_ood_rel_err_dual": 0.9376,
+        "class2_bilinear_ood_rel_err_linear_only": 1.0595,
+        "class2_bilinear_ood_rel_err_dual_kernel": 0.9498,
+        "class3_discontinuous_xor_ood_rel_err_dual": 1.0716
+      },
+      {
+        "N_train": 32,
+        "class1_linear_ood_rel_err_dual": 0.8689,
+        "class2_bilinear_ood_rel_err_linear_only": 1.1084,
+        "class2_bilinear_ood_rel_err_dual_kernel": 0.8603,
+        "class3_discontinuous_xor_ood_rel_err_dual": 1.1529
+      },
+      {
+        "N_train": 64,
+        "class1_linear_ood_rel_err_dual": 0.7346,
+        "class2_bilinear_ood_rel_err_linear_only": 1.4003,
+        "class2_bilinear_ood_rel_err_dual_kernel": 0.7038,
+        "class3_discontinuous_xor_ood_rel_err_dual": 1.2309
+      },
+      {
+        "N_train": 128,
+        "class1_linear_ood_rel_err_dual": 0.3639,
+        "class2_bilinear_ood_rel_err_linear_only": 5.7432,
+        "class2_bilinear_ood_rel_err_dual_kernel": 0.332,
+        "class3_discontinuous_xor_ood_rel_err_dual": 2.9842
+      }
+    ]
+  }
+}

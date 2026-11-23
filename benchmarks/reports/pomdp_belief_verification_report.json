@@ -1,0 +1,17 @@
+{
+  "episodes": 300,
+  "naive_deterministic": {
+    "mean_net_utility": -0.6,
+    "correct_fix_rate": 0.57,
+    "catastrophic_error_rate": 0.43
+  },
+  "pomdp_belief_voi_exoskeleton": {
+    "mean_net_utility": 52.36,
+    "correct_fix_rate": 0.8367,
+    "catastrophic_error_rate": 0.15,
+    "honest_abstain_rate": 0.0133,
+    "avg_diagnostic_probes": 2.21,
+    "delayed_credit_updates_verified": 300
+  },
+  "catastrophe_reduction_factor": 2.87
+}
