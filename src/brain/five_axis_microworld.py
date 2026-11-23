@@ -703,8 +703,10 @@ def lift_conflict_across_layers(
         f"跨层冲突上浮({to_layer}): 当前承诺与底层边界不可同时满足，请确认优先保留项",
     )
     forbidden = prof[to_layer]["forbidden_lower_tokens"]
+    lowered = translated.lower()
     leaked = sorted(
-        tok for tok in forbidden if re.search(rf"(?<![a-z0-9_]){re.escape(tok)}(?![a-z0-9_])", translated.lower())
+        tok for tok in forbidden
+        if (tok.lower() in lowered if not tok.isascii() else re.search(rf"(?<![a-z0-9]){re.escape(tok.lower())}(?![a-z0-9])", lowered))
     )
     return {
         "ok": len(leaked) == 0,
@@ -840,3 +842,95 @@ def validate_intent_modality_orthogonality(clause: Dict[str, Any]) -> Dict[str, 
 
     return {"ok": len(errors) == 0, "modality": mod, "layer": INTENT_SIX_MODALITIES[mod], "errors": errors}
 
+
+def project_msk_to_intent_essence(packet: Dict[str, Any]) -> Dict[str, Any]:
+    """Lossless inverse projection from MSK-v1 packet back to the 6-dimensional intent essence."""
+    res_block = packet["Resolution"]
+    c_block = packet["Constraint"]
+    t_block = packet["Transition"]
+    a_block = packet["Anchor"]
+    j_block = packet["Judgment"]
+    payload = c_block.get("payload", {})
+    return {
+        "telos": payload.get("telos", ""),
+        "boundary": payload.get("boundary", ""),
+        "premise": a_block.get("anchor_id", "").removeprefix("anc_"),
+        "intervention": t_block.get("transition_id", "").removeprefix("trn_"),
+        "authority": res_block.get("rule", {}).get("required_role", ""),
+        "grounding": payload.get("grounding", ""),
+        "modality": payload.get("modality", ""),
+        "tier": c_block.get("tier", {}).get("kind", ""),
+        "judgment_tag": j_block.get("status", {}).get("tag", ""),
+    }
+
+
+def audit_core_surface_four_rulers() -> Dict[str, Any]:
+    """Automated 4-ruler verification gate for Core-Surface Bidirectional Architecture:
+    1. Felleisen kernel non-expansion (5 orthogonal primitives unchanged)
+    2. Change locality (single-dimension perturbation isolates affected slots)
+    3. Lossless desugaring (round-trip essence projection + no premature support)
+    4. Zero-jargon conflict lifting (all known/unknown lifts clean + adversarial leak caught)
+    """
+    expected_primitives = {"Anchor", "Constraint", "Transition", "Judgment", "Resolution"}
+    ruler1_ok = set(MSK_ORTHOGONAL_SCHEMAS.keys()) == expected_primitives
+
+    base_spec = {
+        "telos": "preserve_order_escrow_solvency",
+        "boundary": "available_stock_must_stay_non_negative",
+        "premise": "order_ledger_snapshot_v1",
+        "intervention": "reserve_inventory_with_escrow_hold",
+        "authority": "finance_ops_host_grant",
+        "grounding": "commerce_escrow_domain_v1",
+        "modality": "maintain",
+        "tier": "hard",
+    }
+    p_base = desugar_intent_essence_to_msk(base_spec)
+    v_base = validate_layered_kernel_packet(p_base, "L0_INTENT")
+    ruler1_ok = ruler1_ok and v_base["ok"]
+
+    spec_auth = dict(base_spec, authority="board_risk_committee_grant")
+    p_auth = desugar_intent_essence_to_msk(spec_auth)
+    auth_isolated = (
+        p_auth["Anchor"] == p_base["Anchor"]
+        and p_auth["Constraint"] == p_base["Constraint"]
+        and p_auth["Transition"] == p_base["Transition"]
+        and p_auth["Judgment"] == p_base["Judgment"]
+        and p_auth["Resolution"] != p_base["Resolution"]
+    )
+    spec_int = dict(base_spec, intervention="release_escrow_after_delivery")
+    p_int = desugar_intent_essence_to_msk(spec_int)
+    int_isolated = (
+        p_int["Anchor"] == p_base["Anchor"]
+        and p_int["Constraint"] == p_base["Constraint"]
+        and p_int["Resolution"] == p_base["Resolution"]
+        and p_int["Transition"] != p_base["Transition"]
+    )
+    ruler2_ok = auth_isolated and int_isolated
+
+    proj = project_msk_to_intent_essence(p_base)
+    ruler3_ok = (
+        proj["boundary"] == base_spec["boundary"]
+        and proj["intervention"] == base_spec["intervention"]
+        and proj["authority"] == base_spec["authority"]
+        and proj["modality"] == base_spec["modality"]
+        and proj["tier"] == base_spec["tier"]
+        and proj["judgment_tag"] == "gap"
+    )
+
+    ruler4_ok = True
+    for code in list(_CONFLICT_LIFT_TABLE.keys()) + ["unknown_hardware_fault"]:
+        lifted = lift_conflict_across_layers(code, "L3_EXECUTION", "L0_INTENT")
+        if not lifted["ok"] or lifted["leaked_tokens"]:
+            ruler4_ok = False
+    adv_pkt = desugar_intent_essence_to_msk(dict(base_spec, boundary="avoid vram_4gb_oom and 互斥锁 deadlock"))
+    adv_res = validate_layered_kernel_packet(adv_pkt, "L0_INTENT")
+    if adv_res["ok"]:
+        ruler4_ok = False
+
+    return {
+        "ok": ruler1_ok and ruler2_ok and ruler3_ok and ruler4_ok,
+        "felleisen_non_expansion_ok": ruler1_ok,
+        "change_locality_ok": ruler2_ok,
+        "lossless_desugaring_ok": ruler3_ok,
+        "zero_jargon_conflict_lifting_ok": ruler4_ok,
+    }

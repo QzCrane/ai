@@ -130,6 +130,19 @@ MSK-v1 (ContractInterface — orthogonal & live-consumed fields, zero arbitrary 
 - **控制结构闭合 × 领域内容开放 × 最小有用语义杠杆（Minimum Viable Semantic Leverage）**：既不按“概念大统一”发散，也不按“纯无副作用数学玩具”空转，而是严格在**控制结构**上闭合 5 个不可约控制原语（状态与不变量、显式变迁与副作用权限边界、Belnap–Dunn 四值双格 + MUS/MCS、正负传递依赖闭包与单调墓碑、诚实停机与主权移交），同时把**领域内容**永久保持在内核之外；锁定 $\mathcal{M}_0 = (\mathcal{E},\mathcal{F},\mathcal{C},\mathcal{G},\mathcal{V},B)$、五条排除边界公理（$\mathcal{A}_1$–$\mathcal{A}_5$）、六条不可约规则（R1–R6）与五道 **M0 -> M1** 扩张硬闸门（Felleisen 不可消除、可判定与预算退出、正交活体消费、外部对抗属性测试、$\mathcal{M}_0$ 零回归）。
 - **进攻型 vs 防守型窄束腰总裁决（2026-Q4 全景实证）**：纯防守型安全中间件（防火墙/Linter）仅提供负向防闯祸价值且易被 OS/IDE 80 分吞并；真正具备历史级杠杆的是三大**进攻型新范式**——① **现实分支（Reality Git）**（环境级并行试错与状态合并实验台）、② **立法与雕塑（`sec`/`.gift`）**（人类只立核心不变量与目标，编译器与 AI 雕塑实现并将真权衡以 `UnresolvedHole` 推回人类拍板）、③ **可执行认知原语（`ai`）**（将规律固化为跨模型可复利的确定性符号控制核，放弃单卡 4GB 从头预训练黑盒底模执念）。同时锚定 2026-Q4 实证基准：[SatisFix (arXiv:2611.16289)](https://arxiv.org/abs/2611.16289)（静默规格敷衍）、ActiveSecHarness（多步权限洗白）、SPILLWAY（能力租约）、EAL-Bench（记忆内生授权伪造）、Invalidation Contracts（0–11% 自主遵守率）、SymCE（小模型假设+Z3 132ms 反例）与 PCM（携证消息协议）。
 
+### 3.1C 计算理论全谱映射与「像 C 一样永久闭合内核」的形式化证明边界（v30.0）
+- **计算理论八大分支统一归位（无遗漏、非平铺）**：
+  1. **可计算性与递归论**：**Böhm–Jacopini 结构化程序定理（1966）**与 **Church–Turing 论题**证明极小离散原语（顺序/分支/循环 + 可读写状态）在离散可计算域上**永久闭合**；停机问题、Rice 定理与 Kleene 递归定理同时划定不可判定红线。
+  2. **计算复杂度理论**：`P/NP/coNP`、`PSPACE`（POMDP）、`D^P/#P`（MUS 归因与枚举）、`PPAD/CLS`（多主体博弈均衡）与通信复杂度强制要求内核全部求解路径必须受有界预算 `ResourceLimit`（R6）硬截断。
+  3. **形式语言、自动机与语法理论**：Chomsky 谱系（正则/CFG/下推/LBA/TM）指导 `.gift` M1 人类表面语法采用**确定性无歧义 LL(1) 文法**与有界卫生宏展开，彻底杜绝二义解析。
+  4. **类型论与编程语言理论**：Curry–Howard 同构、代数数据类型（`Record`/`Variant`）、System F 参数多态单态化、线性/仿射类型（Rust 所有权）、代数效应与能力传递（Algebraic Effects & Capabilities）、会话类型（Session Types）及 **Felleisen 局部消去判据（1991）**构成 M0/M1 类型与效果中枢。
+  5. **程序语义、抽象解释与精化**：Plotkin 操作语义、Scott 指称语义、Hoare 公理语义、Cousot 抽象解释/Galois 连接、Refinement Calculus、**Assume–Guarantee / Rely–Guarantee 组合契约（Jones 1983）**与 **Alpern–Schneider 安全—活性分解定理（1985）**（任意轨迹性质唯一分解为 Safety `avoid/maintain` $\cap$ Liveness `achieve`）。
+  6. **并发与分布式计算理论**：CSP / $\pi$-calculus / Actor / Petri 网、Lamport 逻辑时钟与 TLA+、**FLP 不可能定理**、**CAP**、**CALM 单调性定理**与两将军问题——在 M1 中通过共享载体与显式协调屏障建模，绝不静默伪造跨分区强一致。
+  7. **逻辑、证明论与自动验证**：一阶/高阶逻辑、**道义逻辑（Deontic Logic：`oblige/permit` 与行为模态严格正交）**、时序逻辑 LTL/CTL、Belnap–Dunn 四值双格 + Arieli–Avron 蕴含、Gödel 不完备、SAT/SMT、有界模型检验（BMC）与 MUS/MCS。
+  8. **非经典与连续计算域（由公理 $\mathcal{A}_1$ 显式排除出 M0/M1 内核）**：香农通用模拟计算机（**GPAC**, 1941）、实数计算模型（**BSS Machine**, Blum–Shub–Smale 1989）、混合自动机（Hybrid Automata）、随机微分控制（Stochastic CBF）与量子计算（BQP / Birkhoff–von Neumann 非分配格）严格归入外围物理适配器层。
+- **为什么不需要无限拿业务场景检验即可像 C 一样永久闭合？**：C 的永久闭合来自 **Böhm–Jacopini + Church–Turing** 数学定理，只需有限语言一致性套件即可证明内核闭合；同理，Gift 的 M0/M1 **内核**由「Böhm–Jacopini + ADT × Alpern–Schneider Safety/Liveness × Deontic/Capability 正交 × Belnap–Dunn/MUS × Assume–Guarantee 组合 × 显式 `UnresolvedHole`」共同锁死，一旦通过有限内核一致性测试即对全部离散可控业务意图**永久闭合**。有限真实业务场景仅用于检验**人类表面语法糖**的 **Green & Blackwell 认知维度**可用性，稳定后即冻结，绝不用于“穷举世界”。
+- **M1 单目标聚焦策略（Rust-Only M1+ & JS M0 冻结）**：M0 既有 JS 双目标兼容面冻结保零回归，M1+ 全部演进（`.gift` 表面层、外置领域糖 Profile、`OriginSpan` 携跨度降糖与零黑话冲突上浮）严格聚焦 **Rust 单目标（`Rust-Only`）**。
+
 ### 3.2 双工程当前实例化投影（随时可淘汰）
 - **`QzCrane/ai`**：**层级带类型超图**（`Refinement / Conflict Lifting / Cross-Cutting` + 最小互信息/时间尺度/Tarjan SCC/Sheaf 四把**自然解理**切刀）、**六维正交认知构件**、常驻前额叶全局工作空间（Global Workspace）+ 外置事实、首拍六维 MECE 全景扫描与 **Pre-Mortem** 事前验尸、80% 正向构造（**IETF RFC** `MUST/SHOULD/MAY` + 法典四段式）+ 20% 边界对比单次生成**最小完备契约草图（Minimal Complete Contract Sketch）**、人类意图四轴精解（覆盖语用七大深水区与 **ADEPTS 30.6%** 盲区）、同窗纵向语义桥、撞墙纠错与 `mKNN` 校验。
 - **`sec-platform/sec`**：Lowering 规则库与受控/偏模型增量解码、格理论/CSP 与零信任 SMT 冲突证明、四段双向溯源表支撑 `.gift` 表面语言；将**四线寿命分离**、**非逃逸内部可变槽** CSE 禁令、负依赖先装读集再截断、分布式六维终局分离、租约/围栏与定量小残差/原值失败优先作为 `Constraint`/`Judgment` 领域画像运行。

@@ -1,5 +1,5 @@
 {
-  "manifest_version": "v29.0",
+  "manifest_version": "v30.0",
   "target_document": "docs/whitepapers/world_cognition_unified_model.md",
   "governance_rule": "Every ACTIVE theory/mechanism/falsification entry MUST have its required_anchor present in target_document; any removed entry MUST switch status to MERGED_INTO or FALSIFIED_BY with explicit disposition_target (zero silent evaporation).",
   "entries": [
@@ -443,6 +443,55 @@
       "status": "ACTIVE",
       "required_anchor": "M0 -> M1",
       "source_ref": "world_cognition_unified_model.md#3.1B"
+    },
+    {
+      "id": "COMP-BOHM-JACOPINI",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Böhm–Jacopini",
+      "source_ref": "world_cognition_unified_model.md#3.1C"
+    },
+    {
+      "id": "COMP-CHURCH-TURING",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Church–Turing",
+      "source_ref": "world_cognition_unified_model.md#3.1C"
+    },
+    {
+      "id": "COMP-ALPERN-SCHNEIDER",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Alpern–Schneider",
+      "source_ref": "world_cognition_unified_model.md#3.1C"
+    },
+    {
+      "id": "COMP-DEONTIC-LOGIC",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Deontic",
+      "source_ref": "world_cognition_unified_model.md#3.1C"
+    },
+    {
+      "id": "COMP-ASSUME-GUARANTEE",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "Assume–Guarantee",
+      "source_ref": "world_cognition_unified_model.md#3.1C"
+    },
+    {
+      "id": "COMP-CONCURRENCY-CALM-FLP",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "CALM",
+      "source_ref": "world_cognition_unified_model.md#3.1C"
+    },
+    {
+      "id": "COMP-CONTINUOUS-GPAC-BSS",
+      "domain": "computation_theory_core",
+      "status": "ACTIVE",
+      "required_anchor": "GPAC",
+      "source_ref": "world_cognition_unified_model.md#3.1C"
     }
   ]
 }

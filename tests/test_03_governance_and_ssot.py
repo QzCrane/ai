@@ -2755,5 +2755,27 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
         self.assertTrue(validate_layer_dag([("L0_INTENT", "L1_CONSENSUS"), ("L0_INTENT", "L1_KERNEL"), ("L1_CONSENSUS", "L3_EXECUTION"), ("L1_KERNEL", "L3_EXECUTION")], profiles=diamond_profiles)["ok"])
         self.assertFalse(validate_layer_dag([("L0_INTENT", "L1_CONSENSUS"), ("L1_CONSENSUS", "L0_INTENT")], profiles=diamond_profiles)["ok"])
 
+
+    def test_250_v30_dual_repo_sync_computation_theory_and_four_rulers_gate(self):
+        from scripts.repo_doctor import (
+            audit_theory_preservation_manifest,
+            audit_cross_repo_governance_sync,
+        )
+        from src.brain.five_axis_microworld import audit_core_surface_four_rulers
+
+        man = audit_theory_preservation_manifest()
+        self.assertTrue(man["ok"], man)
+        self.assertGreaterEqual(man["active_theories_verified"], 70)
+
+        rulers = audit_core_surface_four_rulers()
+        self.assertTrue(rulers["ok"], rulers)
+        self.assertTrue(rulers["felleisen_non_expansion_ok"])
+        self.assertTrue(rulers["change_locality_ok"])
+        self.assertTrue(rulers["lossless_desugaring_ok"])
+        self.assertTrue(rulers["zero_jargon_conflict_lifting_ok"])
+
+        sync = audit_cross_repo_governance_sync(allow_missing=True)
+        self.assertTrue(sync["ok"], sync)
+
 if __name__ == "__main__":
     unittest.main()

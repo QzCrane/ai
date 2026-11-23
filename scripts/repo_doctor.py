@@ -357,6 +357,7 @@ def audit_anti_drift_and_slimming() -> dict:
     from src.brain.five_axis_microworld import (
         FiveAxisMicroworldGenerator,
         desugar_human_surface_to_msk,
+        audit_core_surface_four_rulers,
         lift_conflict_across_layers,
         validate_layer_descent_chain,
         validate_layered_kernel_packet,
@@ -391,11 +392,13 @@ def audit_anti_drift_and_slimming() -> dict:
         and len(lifted["leaked_tokens"]) == 0
         and desugar_ok
     )
+    four_rulers = audit_core_surface_four_rulers()
     return {
-        "ok": bool(zero_loss_ok and const_ok and layered_ok),
+        "ok": bool(zero_loss_ok and const_ok and layered_ok and four_rulers["ok"]),
         "zero_loss_anchors_ok": zero_loss_ok,
         "missing_anchors": missing_anchors,
         "constitution_v23_locked": const_ok,
+        "four_rulers_gate": four_rulers,
         "structural_invariants_ok": layered_ok,
     }
 
@@ -443,6 +446,16 @@ def audit_theory_preservation_manifest() -> dict:
         errors.append(f"evaporated_historical_urls:{len(evaporated_urls)}")
     if evaporated_arxiv:
         errors.append(f"evaporated_historical_arxiv:{len(evaporated_arxiv)}")
+
+    comp_ids = {e.get("id") for e in manifest.get("entries", []) if e.get("domain") == "computation_theory_core" and e.get("status") == "ACTIVE"}
+    required_comp_ids = {
+        "COMP-BOHM-JACOPINI", "COMP-CHURCH-TURING", "COMP-ALPERN-SCHNEIDER",
+        "COMP-DEONTIC-LOGIC", "COMP-ASSUME-GUARANTEE", "COMP-CONCURRENCY-CALM-FLP",
+        "COMP-CONTINUOUS-GPAC-BSS",
+    }
+    missing_comp = sorted(required_comp_ids - comp_ids)
+    if missing_comp:
+        errors.append(f"missing_computation_theory_core:{','.join(missing_comp)}")
 
     return {
         "ok": len(errors) == 0,
@@ -519,9 +532,66 @@ def audit_executable_world_engine() -> dict:
         "adversarial_hiding_and_diamond_dag_ok": bool(adv_hiding_ok and dag_ok),
     }
 
+
+
+def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_missing: bool = False) -> dict:
+    """Cross-repo governance sync gate verifying sec_repo M0_BOUNDARY_AXIOMS.md,
+    BOUNDARY_MANIFEST.json (Rust-Only M1+ & JS M0 Freeze), and CLI protocols."""
+    import os
+    sec_root = sec_repo_root or Path(os.environ.get("SEC_REPO_ROOT", str(REPO_ROOT.parent / "sec_repo")))
+    if not sec_root.exists():
+        return {
+            "ok": allow_missing,
+            "sec_repo_found": False,
+            "sec_repo_root": str(sec_root),
+            "errors": [] if allow_missing else ["sec_repo_not_found"],
+        }
+    errors = []
+    axioms_path = sec_root / "crates" / "gift-author-kernel" / "M0_BOUNDARY_AXIOMS.md"
+    bm_path = sec_root / "BOUNDARY_MANIFEST.json"
+    main_rs_path = sec_root / "crates" / "gift-author-kernel" / "src" / "main.rs"
+    const_text = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+
+    for req_p in (axioms_path, bm_path, main_rs_path):
+        if not req_p.exists():
+            errors.append(f"missing_sec_file:{req_p.name}")
+
+    if not errors:
+        ax_text = axioms_path.read_text(encoding="utf-8")
+        for tok in ("mathcal{A}_1", "R1–R6", "Rust-Only", "FROZEN_COMPAT_ONLY"):
+            if tok not in ax_text:
+                errors.append(f"sec_axioms_missing:{tok}")
+        if "Rust-Only" not in const_text:
+            errors.append("ai_constitution_missing:Rust-Only")
+
+        bm = json.loads(bm_path.read_text(encoding="utf-8"))
+        pol = bm.get("target_evolution_policy", {})
+        if pol.get("m0_js_policy") != "FROZEN_COMPAT_ONLY":
+            errors.append("sec_manifest_m0_js_policy_not_frozen")
+        if pol.get("m1_primary_target") != "rust_only":
+            errors.append("sec_manifest_m1_primary_target_not_rust_only")
+        if pol.get("m1_js_expansion") != "FORBIDDEN":
+            errors.append("sec_manifest_m1_js_expansion_not_forbidden")
+
+        main_text = main_rs_path.read_text(encoding="utf-8")
+        for flag in ("--emit-m0", "--emit-m0-rust-only", "--compile-gift"):
+            if flag not in main_text:
+                errors.append(f"sec_cli_missing_flag:{flag}")
+
+    return {
+        "ok": len(errors) == 0,
+        "sec_repo_found": True,
+        "sec_repo_root": str(sec_root),
+        "rust_only_m1_enforced": len(errors) == 0,
+        "errors": errors,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=f"Sovereign AI Brain CTO Repo Doctor ({REPO_VERSION})")
     ap.add_argument("--run-tests", action="store_true", help="Also run full 3-tier unittest suite")
+    ap.add_argument("--sec-repo", type=str, default=None, help="Path to sibling sec_repo for cross-repo governance sync")
+    ap.add_argument("--allow-missing-sec-repo", action="store_true", help="Allow skipping cross-repo check when sec_repo is absent")
     ap.add_argument("--compile-adr", action="store_true", help="Compile ARCHITECTURE_DECISIONS.md from ARCHITECTURE_GRAPH.json")
     ap.add_argument("--audit-table", action="store_true", help="Print zero-processing full closure audit table directly from ARCHITECTURE_GRAPH.json")
     ap.add_argument("--trace", type=str, default=None, help="Reverse-lookup any ADR, class, test, or arXiv ID in ARCHITECTURE_GRAPH.json")
@@ -551,6 +621,7 @@ def main() -> int:
     slim_res = audit_anti_drift_and_slimming()
     theory_res = audit_theory_preservation_manifest()
     engine_res = audit_executable_world_engine()
+    cross_repo_res = audit_cross_repo_governance_sync(Path(args.sec_repo) if args.sec_repo else None, allow_missing=args.allow_missing_sec_repo)
     tests_ok = True
     if args.run_tests:
         proc = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-q"], cwd=REPO_ROOT)
@@ -564,8 +635,9 @@ def main() -> int:
         "anti_drift_and_slimming": slim_res,
         "theory_preservation_manifest": theory_res,
         "executable_world_engine": engine_res,
+        "cross_repo_governance_sync": cross_repo_res,
         "tests_passed": tests_ok if args.run_tests else "skipped",
-        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and slim_res["ok"] and theory_res["ok"] and engine_res["ok"] and tests_ok),
+        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and slim_res["ok"] and theory_res["ok"] and engine_res["ok"] and cross_repo_res["ok"] and tests_ok),
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0 if report["overall_healthy"] else 1
