@@ -25,6 +25,8 @@ from __future__ import annotations
 
 from collections import deque
 import json
+import os
+import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
@@ -1017,6 +1019,7 @@ def compile_and_verify_gift_m0_via_rust_kernel(
     max_steps: int = 3,
     node_budget: int = 10000,
     timeout_seconds: float = 15.0,
+    differential_probes: Sequence[Dict[str, str]] = (),
 ) -> Verdict:
     """True Cross-Process Rust+Python M0 Pipeline (`gift-author-kernel --emit-m0` + `world_kernel_engine`):
     1. Invokes the compiled Rust `gift-author-kernel --emit-m0` binary over bounded stdin/stdout
@@ -1100,23 +1103,116 @@ def compile_and_verify_gift_m0_via_rust_kernel(
         emitted_rs = artifacts.get("lib.rs", "")
         emitted_js = artifacts.get("index.mjs", "")
         exports = tuple(e.get("rust_name", "") for e in res.get("exports", []))
-        if dep_graph is not None and module_spec.get("schema") == "gift.m0-workspace/1":
-            mods = module_spec.get("modules", [])
-            for mod in mods:
-                mid = mod.get("moduleId", "")
-                imports = mod.get("imports", {})
-                upstreams = [f"module:{imp.get('moduleId')}" for imp in imports.values() if isinstance(imp, dict) and imp.get("moduleId")]
-                dep_graph.record_derivation(f"module:{mid}", "verified", reads=[f"module_rev:{mid}"] + upstreams)
-            root_mid = module_spec.get("rootModuleId") or (mods[-1].get("moduleId", "") if mods else "")
-            if root_mid:
+        source_map = res.get("source_map", [])
+        def_counts: Dict[str, int] = {}
+        for sm in source_map:
+            dname = sm.get("definition", "")
+            if dname:
+                def_counts[dname] = def_counts.get(dname, 0) + 1
+        all_mods = module_spec.get("modules", [module_spec]) if module_spec.get("schema") == "gift.m0-workspace/1" else [module_spec]
+        generic_defs: List[str] = []
+        for mod in all_mods:
+            for dname, dval in mod.get("definitions", {}).items():
+                if isinstance(dval, dict) and isinstance(dval.get("body"), dict) and dval["body"].get("typeParams"):
+                    generic_defs.append(dname)
+        mono_fns = tuple(sorted(set(k for k, v in def_counts.items() if v > 1 or k in generic_defs)))
+
+        if differential_probes:
+            crate_name = res.get("context", {}).get("crate_name", "gift_m0_crate")
+            scratch_base = os.path.dirname(os.path.abspath(kernel_binary_path))
+            scratch_dir = os.path.join(scratch_base, f"diff_probe_{os.getpid()}")
+            shutil.rmtree(scratch_dir, ignore_errors=True)
+            os.makedirs(scratch_dir, exist_ok=True)
+            try:
+                lib_rs_path = os.path.join(scratch_dir, "lib.rs")
+                rlib_path = os.path.join(scratch_dir, f"lib{crate_name}.rlib")
+                index_mjs_path = os.path.join(scratch_dir, "index.mjs")
+                with open(lib_rs_path, "w", encoding="utf-8") as f:
+                    f.write(emitted_rs)
+                with open(index_mjs_path, "w", encoding="utf-8") as f:
+                    f.write(emitted_js)
+                c_lib = subprocess.run(
+                    ["rustc", "--edition", "2024", "--crate-type", "lib", "-o", rlib_path, lib_rs_path],
+                    capture_output=True,
+                    timeout=timeout_seconds,
+                    check=False,
+                )
+                if c_lib.returncode != 0:
+                    return RefuteVerdict(
+                        counterexample={"stage": "rustc_lib_compile", "stderr": c_lib.stderr.decode("utf-8", errors="replace")},
+                        dep_closure=(contract_id, "rustc_compile"),
+                        nodes_visited=verdict.nodes_visited,
+                    )
+                for idx, probe in enumerate(differential_probes):
+                    p_name = probe.get("name", f"probe_{idx}")
+                    r_expr = probe["rust_expr"]
+                    j_expr = probe["js_expr"]
+                    expected = probe["expected"]
+                    drv_rs = os.path.join(scratch_dir, f"drv_{idx}.rs")
+                    drv_bin = os.path.join(scratch_dir, f"drv_{idx}")
+                    drv_mjs = os.path.join(scratch_dir, f"drv_{idx}.mjs")
+                    with open(drv_rs, "w", encoding="utf-8") as f:
+                        f.write(f"extern crate {crate_name};\nfn main() {{ println!(\"{{}}\", {r_expr}); }}\n")
+                    with open(drv_mjs, "w", encoding="utf-8") as f:
+                        f.write(f"import * as mod from './index.mjs';\nconsole.log(String({j_expr}));\n")
+                    c_drv = subprocess.run(
+                        ["rustc", "--edition", "2024", "--extern", f"{crate_name}={rlib_path}", "-o", drv_bin, drv_rs],
+                        capture_output=True,
+                        timeout=timeout_seconds,
+                        check=False,
+                    )
+                    if c_drv.returncode != 0:
+                        return RefuteVerdict(
+                            counterexample={"stage": "rustc_driver_compile", "probe": p_name, "stderr": c_drv.stderr.decode("utf-8", errors="replace")},
+                            dep_closure=(contract_id, p_name),
+                            nodes_visited=verdict.nodes_visited,
+                        )
+                    r_run = subprocess.run([drv_bin], capture_output=True, timeout=timeout_seconds, check=False)
+                    j_run = subprocess.run(["node", drv_mjs], capture_output=True, timeout=timeout_seconds, check=False)
+                    r_out = r_run.stdout.decode("utf-8", errors="replace").strip()
+                    j_out = j_run.stdout.decode("utf-8", errors="replace").strip()
+                    if r_run.returncode != 0 or j_run.returncode != 0 or r_out != j_out or r_out != expected:
+                        return RefuteVerdict(
+                            counterexample={
+                                "stage": "dual_target_differential_probe",
+                                "probe": p_name,
+                                "rust_out": r_out,
+                                "js_out": j_out,
+                                "expected": expected,
+                            },
+                            dep_closure=(contract_id, p_name),
+                            nodes_visited=verdict.nodes_visited,
+                        )
+            finally:
+                shutil.rmtree(scratch_dir, ignore_errors=True)
+
+        if dep_graph is not None:
+            if generic_defs:
                 existing_reads = set(dep_graph.derived.get(contract_id, {}).get("reads", ()))
                 existing_neg = set(dep_graph.derived.get(contract_id, {}).get("neg_reads", ()))
                 dep_graph.record_derivation(
                     contract_id,
                     verdict.tag,
-                    reads=existing_reads | {f"module:{root_mid}"},
+                    reads=existing_reads | {f"generic_def:{g}" for g in generic_defs},
                     neg_reads=existing_neg,
                 )
+            if module_spec.get("schema") == "gift.m0-workspace/1":
+                mods = module_spec.get("modules", [])
+                for mod in mods:
+                    mid = mod.get("moduleId", "")
+                    imports = mod.get("imports", {})
+                    upstreams = [f"module:{imp.get('moduleId')}" for imp in imports.values() if isinstance(imp, dict) and imp.get("moduleId")]
+                    dep_graph.record_derivation(f"module:{mid}", "verified", reads=[f"module_rev:{mid}"] + upstreams)
+                root_mid = module_spec.get("rootModuleId") or (mods[-1].get("moduleId", "") if mods else "")
+                if root_mid:
+                    existing_reads = set(dep_graph.derived.get(contract_id, {}).get("reads", ()))
+                    existing_neg = set(dep_graph.derived.get(contract_id, {}).get("neg_reads", ()))
+                    dep_graph.record_derivation(
+                        contract_id,
+                        verdict.tag,
+                        reads=existing_reads | {f"module:{root_mid}"},
+                        neg_reads=existing_neg,
+                    )
         return SupportVerdict(
             witness={
                 **verdict.witness,
@@ -1124,6 +1220,8 @@ def compile_and_verify_gift_m0_via_rust_kernel(
                 "js_module_verified": bool(emitted_js),
                 "artifact_paths": tuple(sorted(artifacts.keys())),
                 "rust_exports": exports,
+                "monomorphized_functions": mono_fns,
+                "differential_probes_passed": len(differential_probes),
                 "emitted_rust_bytes": len(emitted_rs),
                 "emitted_js_bytes": len(emitted_js),
             },

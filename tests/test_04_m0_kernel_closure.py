@@ -607,5 +607,174 @@ class TestM0KernelClosure(unittest.TestCase):
         self.assertEqual(inv["invalidated"], ["module:CheckoutApp", "module:CoreTypes", "ws_checkout_contract"])
 
 
+
+    def test_13_parameterized_generic_monomorphization_and_dual_target_differential_verification(self):
+        kernel_bin = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "..",
+                "sec_repo",
+                ".tmp",
+                "gift-author-kernel-target",
+                "debug",
+                "gift-author-kernel",
+            )
+        )
+        if not os.path.exists(kernel_bin):
+            self.skipTest("Rust gift-author-kernel binary not built in sibling directory")
+
+        solver = FiniteDomainCSPSolver()
+        dg = DependencyGraph()
+        dg.mutate_fact("generic_def:Envelope", "v1")
+        dg.mutate_fact("generic_def:Wrap", "v1")
+
+        generic_mod = {
+            "schema": "gift.author-module/design-converged",
+            "moduleId": "GenericCheckout",
+            "definitions": {
+                "OrderStatus": {
+                    "kind": "core:type",
+                    "body": {
+                        "type": {
+                            "tag": "variant",
+                            "cases": {
+                                "Pending": {"tag": "scalar", "name": "int"},
+                                "Paid": {"tag": "scalar", "name": "int"},
+                                "Cancelled": {"tag": "scalar", "name": "unit"},
+                            },
+                        }
+                    },
+                },
+                "Envelope": {
+                    "kind": "core:type",
+                    "body": {
+                        "typeParams": [{"name": "T"}],
+                        "type": {
+                            "tag": "record",
+                            "fields": {
+                                "ok": {"type": {"tag": "scalar", "name": "bool"}},
+                                "payload": {"type": {"tag": "param", "name": "T"}},
+                            },
+                        },
+                    },
+                },
+                "Wrap": {
+                    "kind": "core:function",
+                    "body": {
+                        "typeParams": [{"name": "T"}],
+                        "parameters": [
+                            {"name": "flag", "type": {"tag": "scalar", "name": "bool"}},
+                            {"name": "item", "type": {"tag": "param", "name": "T"}},
+                        ],
+                        "returns": {"tag": "nominal", "ref": "local:Envelope", "args": [{"tag": "param", "name": "T"}]},
+                        "body": {
+                            "op": "record",
+                            "fields": [
+                                {"name": "ok", "value": {"op": "var", "name": "flag"}},
+                                {"name": "payload", "value": {"op": "var", "name": "item"}},
+                            ],
+                        },
+                    },
+                },
+                "WrapAmount": {
+                    "kind": "core:function",
+                    "body": {
+                        "parameters": [{"name": "amt", "type": {"tag": "scalar", "name": "int"}}],
+                        "returns": {"tag": "nominal", "ref": "local:Envelope", "args": [{"tag": "scalar", "name": "int"}]},
+                        "body": {
+                            "op": "call",
+                            "callee": {"op": "symbol", "ref": "local:Wrap"},
+                            "arguments": [
+                                {"op": "literal", "type": {"tag": "scalar", "name": "bool"}, "value": True},
+                                {"op": "var", "name": "amt"},
+                            ],
+                        },
+                    },
+                },
+                "WrapLabel": {
+                    "kind": "core:function",
+                    "body": {
+                        "parameters": [{"name": "lbl", "type": {"tag": "scalar", "name": "text"}}],
+                        "returns": {"tag": "nominal", "ref": "local:Envelope", "args": [{"tag": "scalar", "name": "text"}]},
+                        "body": {
+                            "op": "call",
+                            "callee": {"op": "symbol", "ref": "local:Wrap"},
+                            "arguments": [
+                                {"op": "literal", "type": {"tag": "scalar", "name": "bool"}, "value": True},
+                                {"op": "var", "name": "lbl"},
+                            ],
+                        },
+                    },
+                },
+            },
+            "exports": {
+                "OrderStatus": {"definitionId": "OrderStatus"},
+                "Envelope": {"definitionId": "Envelope"},
+                "wrap_amount": {"definitionId": "WrapAmount"},
+                "wrap_label": {"definitionId": "WrapLabel"},
+            },
+        }
+        t_pay = TransitionRule("pay", ("Pending",), "Paid", side_effect="charge_card", required_authority="host_grant:pay")
+        t_cancel = TransitionRule("cancel", ("Pending",), "Cancelled", side_effect="none", required_authority="none")
+        inv_single_charge = NamedConstraint(
+            "single_charge",
+            ("trace_effects",),
+            lambda a: list(a["trace_effects"]).count("charge_card") <= 1,
+            hard=True,
+        )
+
+        probes = [
+            {
+                "name": "int_and_text_monomorphization_equivalence",
+                "rust_expr": 'format!("{}:{}:{}:{}", gift_m0_crate::wrap_amount(420).ok, gift_m0_crate::wrap_amount(420).payload, gift_m0_crate::wrap_label(String::from("vip")).ok, gift_m0_crate::wrap_label(String::from("vip")).payload)',
+                "js_expr": '`${mod.wrap_amount(420n).ok}:${Number(mod.wrap_amount(420n).payload)}:${mod.wrap_label("vip").ok}:${mod.wrap_label("vip").payload}`',
+                "expected": "true:420:true:vip",
+            }
+        ]
+        verdict = compile_and_verify_gift_m0_via_rust_kernel(
+            solver=solver,
+            kernel_binary_path=kernel_bin,
+            module_spec=generic_mod,
+            variant_def_name="OrderStatus",
+            initial_states=("Pending",),
+            transitions=[t_pay, t_cancel],
+            step_invariants=(),
+            trajectory_invariants=[inv_single_charge],
+            granted_authorities=("host_grant:pay",),
+            dep_graph=dg,
+            contract_id="generic_poly_contract",
+            max_steps=3,
+            differential_probes=probes,
+        )
+        self.assertIsInstance(verdict, SupportVerdict)
+        self.assertIn("Wrap", verdict.witness["monomorphized_functions"])
+        self.assertEqual(verdict.witness["differential_probes_passed"], 1)
+        self.assertTrue(dg.derived["generic_poly_contract"]["valid"])
+
+        # Retracting generic helper definition invalidates the contract
+        ret = dg.retract_fact("generic_def:Wrap")
+        self.assertIn("generic_poly_contract", ret["invalidated"])
+        self.assertFalse(dg.derived["generic_poly_contract"]["valid"])
+
+        # Adversarial negative probe: wrong expected output triggers RefuteVerdict
+        bad_verdict = compile_and_verify_gift_m0_via_rust_kernel(
+            solver=solver,
+            kernel_binary_path=kernel_bin,
+            module_spec=generic_mod,
+            variant_def_name="OrderStatus",
+            initial_states=("Pending",),
+            transitions=[t_pay, t_cancel],
+            step_invariants=(),
+            trajectory_invariants=[inv_single_charge],
+            granted_authorities=("host_grant:pay",),
+            max_steps=3,
+            differential_probes=[{**probes[0], "expected": "true:999:true:vip"}],
+        )
+        self.assertIsInstance(bad_verdict, RefuteVerdict)
+        self.assertEqual(bad_verdict.counterexample["stage"], "dual_target_differential_probe")
+
+
 if __name__ == "__main__":
+
     unittest.main()
