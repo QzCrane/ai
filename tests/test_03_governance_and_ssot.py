@@ -2765,7 +2765,9 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
 
         man = audit_theory_preservation_manifest()
         self.assertTrue(man["ok"], man)
-        self.assertGreaterEqual(man["active_theories_verified"], 70)
+        self.assertGreaterEqual(man["active_theories_verified"], 76)
+        self.assertEqual(len(man["layer_distribution"]), 5)
+        self.assertEqual(sum(man["layer_distribution"].values()), man["active_theories_verified"])
 
         rulers = audit_core_surface_four_rulers()
         self.assertTrue(rulers["ok"], rulers)
@@ -2776,6 +2778,8 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
 
         sync = audit_cross_repo_governance_sync(allow_missing=True)
         self.assertTrue(sync["ok"], sync)
+        if sync.get("sec_repo_found"):
+            self.assertTrue(sync["zero_ai_enforced"])
 
 if __name__ == "__main__":
     unittest.main()

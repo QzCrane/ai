@@ -204,3 +204,4 @@
 - **M0→M1 扩张五闸门**：任何新原语/字段进入内核必须同时通过：(1) Felleisen 不可消除性证明；(2) 可判定类与预算退出路径；(3) 正交且存在真实执行消费方（零死字段/死类）；(4) 外部对抗属性测试通过（严禁 mock lambda 自评）；(5) 既有 M0 行为逐位零回归。
 - **强制自动导出律**：每次双仓代码、公理或里程碑更新并通过全量验收后，必须自动提交并打包导出最新自包含 ZIP 同步至云端与对话交付。
 - **双仓同步硬门禁与 M1+ Rust 单目标聚焦（`v30.0`）**：`repo_doctor.py` 必须跨仓同步核验 `sec_repo/crates/gift-author-kernel/M0_BOUNDARY_AXIOMS.md` 与 `sec_repo/BOUNDARY_MANIFEST.json`，强制锁定计算理论 7 大核心定理域（`computation_theory_core`）、核心—表面双层 4 尺自动化门禁，以及 **M1+ Rust-Only 单目标策略（JS 仅保留 M0 冻结兼容面，严禁 M1+ JS 扩张）**。
+- **工具内零 AI 纯确定性编译铁律与 76 条理论全分层映射（`v31.0`）**：Gift 编译器与工具链全栈（L0→L1→L2→L3）严禁内嵌任何 AI/LLM/随机推理组件（`zero_ai_inside_compiler: true`），人类与外部 AI 严格作为编译器外部使用者（`ai_role: "EXTERNAL_USER_ONLY"`）；所有 CTO 级业务架构图谱均由权威 `.gift` 文本经纯 `BTreeMap`/`BTreeSet` 单向确定性投影生成；底层可控出口统一收口于受 R5 权威审计的 `extern capability` 逃生舱；`THEORY_PRESERVATION_MANIFEST.json` 全部 `ACTIVE` 条目必须显式标注 5 层 `arch_layer` 并由 `repo_doctor.py` 跨仓强制核验。

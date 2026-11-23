@@ -86,7 +86,7 @@ $$\text{领域表面词（随行业变）} \xrightarrow{\text{实例化}} \mathb
 MSK-v1 (ContractInterface — orthogonal & live-consumed fields, zero arbitrary cap) {
   Anchor     : { anchor_id, rev_digest, generation,
                  origin[source_ptr, occurrence_id, persistent_id],
-                 obs_cut[propositions, coverage(complete|partial), fact_time, obs_time] }
+                 obs_cut[propositions, coverage(complete|partial), fact_time, obs_time, norm_time, judge_time] }
   Constraint : { constraint_id, anchor_ref, subject_ref,
                  tier[hard(non_compensable) | soft(order_key)],
                  domain[math_model|normative|resource],
@@ -128,7 +128,7 @@ MSK-v1 (ContractInterface — orthogonal & live-consumed fields, zero arbitrary 
 - **排除创造闭合，闭合先于演进（7 位系统大师与 10 大史案）**：综合 Lampson (1983/2021)、Hoare (1973/1980)、Gabriel (1989)、Simon (1962)、Brooks (1975/1986)、Ousterhout (2018/2021) 与 Hickey (2011) 之元方法论，以及计算机史 10 案对照（赢家：C→Rust、SQL、LLVM、Git、SQLite vs 反大统一死锁：Algol 68、Cyc、语义网、PL/I、Multics），确立核心法则：**概念细分（Taxonomy）天然发散，唯有残酷排除 80–90% 领域内容并钉死深模块（Deep Module）抽象机边界，系统方可闭合演进**。
 - **共享载体（Shared Carrier）把 $O(K^2)$ 压扁为 $O(K)$**：彻底摒弃维护二维维度交互表（无法覆盖“丢包×重试×非幂等”或 CAP 等高阶三元耦合），改由极少数**共享载体**统一承载跨维度影响，并严格区分三类耦合：① 抽象机假设外的物理极端（写进 Assume 前提）；② 隔离机制可切断的工程偶然耦合；③ 数学不可约耦合边界（两将军 / FLP / CAP / CALM / Rice / 守恒）。
 - **控制结构闭合 × 领域内容开放 × 最小有用语义杠杆（Minimum Viable Semantic Leverage）**：既不按“概念大统一”发散，也不按“纯无副作用数学玩具”空转，而是严格在**控制结构**上闭合 5 个不可约控制原语（状态与不变量、显式变迁与副作用权限边界、Belnap–Dunn 四值双格 + MUS/MCS、正负传递依赖闭包与单调墓碑、诚实停机与主权移交），同时把**领域内容**永久保持在内核之外；锁定 $\mathcal{M}_0 = (\mathcal{E},\mathcal{F},\mathcal{C},\mathcal{G},\mathcal{V},B)$、五条排除边界公理（$\mathcal{A}_1$–$\mathcal{A}_5$）、六条不可约规则（R1–R6）与五道 **M0 -> M1** 扩张硬闸门（Felleisen 不可消除、可判定与预算退出、正交活体消费、外部对抗属性测试、$\mathcal{M}_0$ 零回归）。
-- **进攻型 vs 防守型窄束腰总裁决（2026-Q4 全景实证）**：纯防守型安全中间件（防火墙/Linter）仅提供负向防闯祸价值且易被 OS/IDE 80 分吞并；真正具备历史级杠杆的是三大**进攻型新范式**——① **现实分支（Reality Git）**（环境级并行试错与状态合并实验台）、② **立法与雕塑（`sec`/`.gift`）**（人类只立核心不变量与目标，编译器与 AI 雕塑实现并将真权衡以 `UnresolvedHole` 推回人类拍板）、③ **可执行认知原语（`ai`）**（将规律固化为跨模型可复利的确定性符号控制核，放弃单卡 4GB 从头预训练黑盒底模执念）。同时锚定 2026-Q4 实证基准：[SatisFix (arXiv:2611.16289)](https://arxiv.org/abs/2611.16289)（静默规格敷衍）、ActiveSecHarness（多步权限洗白）、SPILLWAY（能力租约）、EAL-Bench（记忆内生授权伪造）、Invalidation Contracts（0–11% 自主遵守率）、SymCE（小模型假设+Z3 132ms 反例）与 PCM（携证消息协议）。
+- **进攻型 vs 防守型窄束腰总裁决（2026-Q4 全景实证）**：纯防守型安全中间件（防火墙/Linter）仅提供负向防闯祸价值且易被 OS/IDE 80 分吞并；真正具备历史级杠杆的是三大**进攻型新范式**——① **现实分支（Reality Git）**（环境级并行试错与状态合并实验台）、② **立法与雕塑（`sec`/`.gift`）**（人类或外部 AI 只立核心不变量与目标，纯确定性编译器负责校验、降维与图谱投影，并将真权衡以 `UnresolvedHole` 推回外部人类拍板）、③ **可执行认知原语（`ai`）**（将规律固化为跨模型可复利的确定性符号控制核，放弃单卡 4GB 从头预训练黑盒底模执念）。同时锚定 2026-Q4 实证基准：[SatisFix (arXiv:2611.16289)](https://arxiv.org/abs/2611.16289)（静默规格敷衍）、ActiveSecHarness（多步权限洗白）、SPILLWAY（能力租约）、EAL-Bench（记忆内生授权伪造）、Invalidation Contracts（0–11% 自主遵守率）、SymCE（小模型假设+Z3 132ms 反例）与 PCM（携证消息协议）。
 
 ### 3.1C 计算理论全谱映射与「像 C 一样永久闭合内核」的形式化证明边界（v30.0）
 - **计算理论八大分支统一归位（无遗漏、非平铺）**：
@@ -156,6 +156,16 @@ MSK-v1 (ContractInterface — orthogonal & live-consumed fields, zero arbitrary 
 
 ## 第四层｜公理演化与证伪反例总台账（单调沉淀，零丢失）
 
+
+### 3.1D 零 AI 纯确定性四层最终架构、76 条理论全分层映射与六项未研究透彻空洞诚实台账（v31.0）
+- **零 AI 纯确定性编译铁律（Zero-AI-Inside-Compiler）**：Gift 编译器与工具链全栈（L0 意图表面 → L1 确定性语义与控制内核 → L2 确定性策略配置与降维 → L3 Rust-Only 代码生成）**严禁嵌入任何 AI / LLM / 神经网络 / 随机推理组件**；任意输入必须通过 100% 确定性有限算法给出逐位一致的输出或诚实停机诊断。
+- **外部使用者防火墙铁律（`EXTERNAL_USER_ONLY`）**：人类架构师/CTO 与外部 AI 智能体（含 `ai_repo` 与外部大模型）严格位于编译器边界之外，仅作为**外部使用者**编写 `.gift` 意图文本、消费确定性架构图谱与无泄漏 MUS 冲突报告、拍板 `decide`/`hole` 决策槽，并在底层通过受审计接口补全实现。
+- **文本同源单向投影（Canonical Text SSOT → Deterministic Graph）**：CTO 级全部业务与架构视图（限界上下文/设计模块、状态载体、状态变迁、硬红线与软偏好、未拍板决策槽、副作用与授权边、MUS 冲突边）均以权威 `.gift` 文本为唯一真源（SSOT），由编译器经纯 `BTreeMap`/`BTreeSet`（零 `HashMap`）100% 确定性单向投影为 `ArchitectureGraph` JSON 与 `Mermaid` 流程图；禁止反向从图形画布自由涂鸦破坏语义真相。
+- **可确定性降维片段（DLF, Deterministic Lowerable Fragment）**：零 AI 条件下，L0 声明式意图并非靠黑盒猜测补全，而是严格划分为两类合法路径：① **可执行确定性片段**（含显式 `apply` 转移体、硬红线谓词与已绑定决策槽，确定性降维为完整 Rust 函数与类型）；② **纯声明式架构契约片段**（省略 `design` 参数与 `apply` 实现体，确定性生成强类型 Rust `struct`/`enum`/`DeclarativeTransitions` 契约骨架）。超出两类片段或存在未拍板 `decide`/`hole` 时必须诚实停机。
+- **Rust 仿射所有权与 BTree 确定性（L3 物理执行基座）**：L3 锁定 Rust 单目标输出，依托 Rust 仿射所有权（Affine Ownership）在编译期静态守卫线性资源与无数据竞争，并以 `BTreeMap`/`BTreeSet` 消除哈希随机种子导致的跨运行漂移。
+- **extern capability 逃生舱（受审计底层可控出口）**：当业务意图需要触碰底层硬件、网络 IO、密码学或第三方库时，禁止把底层实现泄漏进 L0 业务语句，而是通过 `[extern] capability Name(p: T) -> R effect ... authority ...;` 声明显式逃生舱；R5 规则强制“凡声明 `effect` 必配 `authority`，缺授权立即以 `MissingCapabilityAuthority` 拒绝”，编译期在 `lib.rs` 中确定性生成 `pub trait GiftCapabilities` 供外部 Rust 工程师或外部 AI 在沙箱外实现。
+- **76 条理论全分层映射与六项未研究透彻空洞诚实台账**：全仓 76 条 `ACTIVE` 理论按职责严格归位五层——`LAYER_A_META_WORLD`（27 条，元理论/文明窄腰/连续物理边界）、`LAYER_B_L0_INTENT_SURFACE`（14 条，L0 意图语法/认知维度/文本单向投影）、`LAYER_C_L1_DETERMINISTIC_KERNEL`（16 条，L1 确定性五原语内核/双格/CSP-MUS/计算理论核心）、`LAYER_D_L2_L3_PHYSICAL_EXECUTION`（5 条，L2/L3 零 AI 确定性编译/DLF/Rust 仿射与逃生舱/连续控制物理边界）、`LAYER_E_EXTERNAL_USERS_AI_BRAIN`（14 条，外部使用者协议与 `ai_repo` 认知大脑）。**当前仍未研究透彻的六项真实空洞**：(1) DLF 可确定性降维片段的形式化语法刻画与完备性证明；(2) L2/L3 目标契约与 Rust 仿射效应系统（含 `extern capability` 线性租约）的形式化；(3) 分布式一致性 CALM 定理与多方会话类型（Session Types）到 L1 协议原语的落地；(4) 冲突上浮（Conflict Lifting）在复杂宏/多跳糖链下的健全性界与确定性图谱增量 diff；(5) Chisholm 反事实义务补偿与 4D 双时态（`fact_time`/`obs_time`/`norm_time`/`judge_time`）完整演算；(6) 跨 Epoch 本体版本迁移（`precedent_open_texture` 离线立法）与外部 AI 使用者协议标准化。
+
 ### 4.1 自我推翻与跃迁全记录
 
 | 阶段 | 旧形态 | 致命反例与诊断 | 跃迁新形态 |
@@ -169,6 +179,7 @@ MSK-v1 (ContractInterface — orthogonal & live-consumed fields, zero arbitrary 
 | **v20.0–v25.0** (`624d6ae`→`v25.0`) | 2026-11-20 **1,700 万行** Lean 黎曼证明（**25 万页**，[Lean/Mathlib](https://leanprover-community.github.io/blog/posts/riemann-hypothesis/) 通过，**克雷所**未决 [Emerald Book](https://emeraldbook.org/news/nov-2126/)）+ v22 拍脑袋死数字与浅层表面词拆分 | 击穿“理论饱和”（Checked $\neq$ Understood $\neq$ Accepted）、拍脑袋常数与浅层行业词拆分 | 零拍脑袋数字三源法、全史零丢失、**意图本质六维 $\leftrightarrow$ $\mathcal{K}(s,\Sigma_s)$** 与无损结构化压薄 |
 
 | **v28.0→v29.0（第七次跃迁｜Turns 91–139 全量合流）** | 仅停留在单库理论与防守型窄腰评估，尚未融合元方法论、进攻型三范式与双仓实码闭合 | 5 路与 6 路并发战略淘汰 + 7 大师元方法论与 10 史案剖析证明：大统一发散必死，纯防守中间件无进攻张力 | 确立**排除创造闭合**、**共享载体 $O(K)$ 降维**、**控制结构闭合×领域内容开放**、**进攻型三范式（Reality Git / 立法与雕塑 / 可执行认知原语）**与双仓 7 轮 $\mathcal{M}_0$ 真机闭合（Variant/Match、Pure Constant、RecordUpdate/List、Local Mut/Loop、BTreeSet/Map、Nominal Types、Rust+JS 双目标、Multi-Module Workspace、Parameterized Polymorphism 与 CTO 三层解耦）。 |
+| **v30.0→v31.0（第八次跃迁｜零 AI 纯确定性终局架构与 76 条理论全分层映射）** | §3.1B 残留“编译器与 AI 雕塑实现”越界表述、70 条理论缺乏显式架构分层标注且 L2/L3 物理执行层理论空心（仅 1 条）、`sec_repo` 尚未支持 `extern capability` 逃生舱与确定性架构图谱投影 | 确立工具内零 AI 铁律（人/AI 均为外部使用者），三路并发审计 70 条理论全量分层并暴露 6 项真实理论空洞 | 固化**零 AI 纯确定性四层最终架构（L0→L1→L2→L3）**、**外部使用者防火墙铁律**、**文本同源单向投影（`ArchitectureGraph` + `Mermaid`）**与 **`extern capability` 逃生舱**；总账升级至 76 条全分层 `ACTIVE` 条目，`sec_repo` 实码落地 `diagram.rs` 与 `GiftCapabilities` trait 生成（223/223 Rust 测试含 `rustc` 真编译通过）。 |
 
 ### 4.2 2026-Q4 重大证伪清单（90 天滚动窗口，全量量化保留）
 

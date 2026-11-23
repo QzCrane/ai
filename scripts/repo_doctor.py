@@ -412,6 +412,10 @@ def audit_theory_preservation_manifest() -> dict:
     target_rel = manifest["target_document"]
     target_txt = (REPO_ROOT / target_rel).read_text(encoding="utf-8")
     errors: list[str] = []
+    valid_layers = set(manifest.get("layer_schema", {}).keys())
+    if len(valid_layers) != 5:
+        errors.append(f"invalid_layer_schema_count:{len(valid_layers)}")
+    layer_distribution: dict[str, int] = {k: 0 for k in sorted(valid_layers)}
     active_checked = 0
     for entry in manifest.get("entries", []):
         eid = entry.get("id", "UNKNOWN")
@@ -421,6 +425,11 @@ def audit_theory_preservation_manifest() -> dict:
             anc = entry.get("required_anchor", "")
             if not anc or anc not in target_txt:
                 errors.append(f"missing_active_theory_anchor:{eid}:{anc}")
+            al = entry.get("arch_layer")
+            if al not in valid_layers:
+                errors.append(f"invalid_or_missing_arch_layer:{eid}:{al}")
+            else:
+                layer_distribution[al] += 1
         elif st in ("MERGED_INTO", "FALSIFIED_BY"):
             if not entry.get("disposition_target"):
                 errors.append(f"missing_disposition_target:{eid}")
@@ -461,6 +470,7 @@ def audit_theory_preservation_manifest() -> dict:
         "ok": len(errors) == 0,
         "manifest_version": manifest.get("manifest_version"),
         "active_theories_verified": active_checked,
+        "layer_distribution": layer_distribution,
         "git_commits_audited": len(commits),
         "evaporated_urls": evaporated_urls,
         "evaporated_arxiv": evaporated_arxiv,
@@ -558,11 +568,12 @@ def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_mi
 
     if not errors:
         ax_text = axioms_path.read_text(encoding="utf-8")
-        for tok in ("mathcal{A}_1", "R1–R6", "Rust-Only", "FROZEN_COMPAT_ONLY"):
+        for tok in ("mathcal{A}_1", "R1–R6", "Rust-Only", "FROZEN_COMPAT_ONLY", "Zero-AI-Inside-Compiler Iron Law", "EXTERNAL_USER_ONLY"):
             if tok not in ax_text:
                 errors.append(f"sec_axioms_missing:{tok}")
-        if "Rust-Only" not in const_text:
-            errors.append("ai_constitution_missing:Rust-Only")
+        for ctok in ("Rust-Only", "零 AI 纯确定性编译铁律", "EXTERNAL_USER_ONLY"):
+            if ctok not in const_text:
+                errors.append(f"ai_constitution_missing:{ctok}")
 
         bm = json.loads(bm_path.read_text(encoding="utf-8"))
         pol = bm.get("target_evolution_policy", {})
@@ -572,6 +583,12 @@ def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_mi
             errors.append("sec_manifest_m1_primary_target_not_rust_only")
         if pol.get("m1_js_expansion") != "FORBIDDEN":
             errors.append("sec_manifest_m1_js_expansion_not_forbidden")
+        if pol.get("zero_ai_inside_compiler") is not True:
+            errors.append("sec_manifest_zero_ai_inside_compiler_not_true")
+        if pol.get("ai_role") != "EXTERNAL_USER_ONLY":
+            errors.append("sec_manifest_ai_role_not_external_user_only")
+        if pol.get("architecture_graph_projection") != "DETERMINISTIC_BTREE_MERMAID":
+            errors.append("sec_manifest_graph_projection_not_deterministic")
 
         main_text = main_rs_path.read_text(encoding="utf-8")
         for flag in ("--emit-m0", "--emit-m0-rust-only", "--compile-gift"):
@@ -583,6 +600,7 @@ def audit_cross_repo_governance_sync(sec_repo_root: Path | None = None, allow_mi
         "sec_repo_found": True,
         "sec_repo_root": str(sec_root),
         "rust_only_m1_enforced": len(errors) == 0,
+        "zero_ai_enforced": len(errors) == 0,
         "errors": errors,
     }
 
