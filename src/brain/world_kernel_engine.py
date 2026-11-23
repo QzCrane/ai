@@ -1238,7 +1238,8 @@ def resolve_gift_kernel_binary(explicit_path: Optional[str] = None) -> Optional[
     1. Explicit path argument;
     2. `GIFT_KERNEL_BIN` environment variable (recommended cross-repo CI/runtime contract);
     3. `gift-author-kernel` on system `PATH`;
-    4. Standard sibling workspace build outputs (`sec_repo/target/debug`, etc.).
+    4. Standard sibling workspace build outputs under `sec_repo` / `sec` / `gift`
+       (`target/debug`, `target/release`, … with or without the Windows `.exe` suffix).
     """
     candidates: List[str] = []
     if explicit_path:
@@ -1251,13 +1252,17 @@ def resolve_gift_kernel_binary(explicit_path: Optional[str] = None) -> Optional[
         candidates.append(which_bin)
     here = os.path.dirname(os.path.abspath(__file__))
     workspace_parent = os.path.abspath(os.path.join(here, "..", "..", ".."))
-    for rel in (
-        ("sec_repo", "target", "debug", "gift-author-kernel"),
-        ("sec_repo", "target", "release", "gift-author-kernel"),
-        ("sec_repo", "crates", "gift-author-kernel", "target", "debug", "gift-author-kernel"),
-        ("sec_repo", ".tmp", "gift-author-kernel-target", "debug", "gift-author-kernel"),
-    ):
-        candidates.append(os.path.join(workspace_parent, *rel))
+    # The sibling clone is named `sec_repo` upstream, but local clones are often just `sec`
+    # (or `gift`). Probe every common name instead of degrading to "kernel not found".
+    for sibling in ("sec_repo", "sec", "gift"):
+        for rel in (
+            ("target", "debug", "gift-author-kernel"),
+            ("target", "release", "gift-author-kernel"),
+            ("crates", "gift-author-kernel", "target", "debug", "gift-author-kernel"),
+            (".tmp", "gift-author-kernel-target", "debug", "gift-author-kernel"),
+        ):
+            base = os.path.join(workspace_parent, sibling, *rel)
+            candidates.extend((base, base + ".exe"))
     for cand in candidates:
         if cand and os.path.isfile(cand) and os.access(cand, os.X_OK):
             return os.path.abspath(cand)
