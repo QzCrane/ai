@@ -1231,3 +1231,34 @@ def compile_and_verify_gift_m0_via_rust_kernel(
             nodes_visited=verdict.nodes_visited,
         )
     return verdict
+
+
+def resolve_gift_kernel_binary(explicit_path: Optional[str] = None) -> Optional[str]:
+    """Resolve the `gift-author-kernel` CLI binary without hardcoding sibling layout:
+    1. Explicit path argument;
+    2. `GIFT_KERNEL_BIN` environment variable (recommended cross-repo CI/runtime contract);
+    3. `gift-author-kernel` on system `PATH`;
+    4. Standard sibling workspace build outputs (`sec_repo/target/debug`, etc.).
+    """
+    candidates: List[str] = []
+    if explicit_path:
+        candidates.append(explicit_path)
+    env_bin = os.environ.get("GIFT_KERNEL_BIN")
+    if env_bin:
+        candidates.append(env_bin)
+    which_bin = shutil.which("gift-author-kernel")
+    if which_bin:
+        candidates.append(which_bin)
+    here = os.path.dirname(os.path.abspath(__file__))
+    workspace_parent = os.path.abspath(os.path.join(here, "..", "..", ".."))
+    for rel in (
+        ("sec_repo", "target", "debug", "gift-author-kernel"),
+        ("sec_repo", "target", "release", "gift-author-kernel"),
+        ("sec_repo", "crates", "gift-author-kernel", "target", "debug", "gift-author-kernel"),
+        ("sec_repo", ".tmp", "gift-author-kernel-target", "debug", "gift-author-kernel"),
+    ):
+        candidates.append(os.path.join(workspace_parent, *rel))
+    for cand in candidates:
+        if cand and os.path.isfile(cand) and os.access(cand, os.X_OK):
+            return os.path.abspath(cand)
+    return None

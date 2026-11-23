@@ -1,3 +1,10 @@
+<!-- CTO-SSOT-MAP -->
+> **最新全方案全景入口（机器索引见 `ARCHITECTURE_MAP.json`）**
+> - **Layer 1 确定性控制核（零 PyTorch 依赖）**：`src/kernel`（核心实现 `src/brain/world_kernel_engine.py`），通过 `resolve_gift_kernel_binary()`（优先读取 `GIFT_KERNEL_BIN`）与 `sec_repo` 的 `gift-author-kernel --emit-m0` 解耦联调。
+> - **Layer 2 神经提案器（Route B，GAP-10 Hold）**：`src/neural`（3:1 Looped DeltaNet+HLA + CPU-Pinned Engram；先在 2B Q4+QLoRA 底模验证洞察数据与外骨骼闭环，不盲目用 4GB 显卡从头预训练）。
+> - **Layer 3 外骨骼运行时**：`src/runtime`（Wake-Sleep、外骨骼桥接、五轴微世界）。
+> - **9 份文档分层**：活架构总纲 3 份（`README.md` / `SYSTEM_CONSTITUTION.md` / `ARCHITECTURE_DECISIONS.md`）、结构图与统一模型 2 份、**高频检索参考库 4 份**（`docs/whitepapers/` 下 4 份大型白皮书/注册表，保留供按需检索而非日常手改）。
+
 # Sovereign AI — Route B Pure AI Brain & Deterministic Agent Harness (v10.32)
 
 本仓库包含从第一性原理出发的自研主权 AI 全栈架构研究与可执行代码，严格执行**「纯 AI 大脑本体（`src/brain/`）」与「确定性外骨骼 / Agent Harness（`src/harness/`）」双轨解耦**，并由 `SYSTEM_CONSTITUTION.md`（七章 28 条最高元约束，含第 27 条全仓四层活性与反腐烂强制审计律）与 `docs/whitepapers/brain_paper_organ_registry.md`（2236 条零重复文献统一字典，98.4% 为 2025–2026 前沿文献）全链路兜底。

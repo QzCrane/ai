@@ -28,6 +28,7 @@ from src.brain.world_kernel_engine import (
     UnresolvedHoleVerdict,
     extract_gift_variant_states,
     compile_and_verify_gift_m0_via_rust_kernel,
+    resolve_gift_kernel_binary,
     verify_and_repair_gift_module_k_step_contract,
     verify_gift_module_transition_contract,
     synthesize_k_step_transition_repair,
@@ -406,20 +407,9 @@ class TestM0KernelClosure(unittest.TestCase):
 
 
     def test_11_end_to_end_cross_process_rust_kernel_emit_m0_and_k_step_verification(self):
-        kernel_bin = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "..",
-                "sec_repo",
-                ".tmp",
-                "gift-author-kernel-target",
-                "debug",
-                "gift-author-kernel",
-            )
-        )
-        if not os.path.exists(kernel_bin):
-            self.skipTest("Rust gift-author-kernel binary not built in sibling directory")
+        kernel_bin = resolve_gift_kernel_binary()
+        if not kernel_bin:
+            self.skipTest("Rust gift-author-kernel binary not found via GIFT_KERNEL_BIN, PATH, or sibling workspace")
 
         solver = FiniteDomainCSPSolver()
         dg = DependencyGraph()
@@ -497,20 +487,9 @@ class TestM0KernelClosure(unittest.TestCase):
 
 
     def test_12_multi_module_workspace_cross_process_compilation_and_transitive_module_invalidation(self):
-        kernel_bin = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "..",
-                "sec_repo",
-                ".tmp",
-                "gift-author-kernel-target",
-                "debug",
-                "gift-author-kernel",
-            )
-        )
-        if not os.path.exists(kernel_bin):
-            self.skipTest("Rust gift-author-kernel binary not built in sibling directory")
+        kernel_bin = resolve_gift_kernel_binary()
+        if not kernel_bin:
+            self.skipTest("Rust gift-author-kernel binary not found via GIFT_KERNEL_BIN, PATH, or sibling workspace")
 
         solver = FiniteDomainCSPSolver()
         dg = DependencyGraph()
@@ -609,20 +588,9 @@ class TestM0KernelClosure(unittest.TestCase):
 
 
     def test_13_parameterized_generic_monomorphization_and_dual_target_differential_verification(self):
-        kernel_bin = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "..",
-                "sec_repo",
-                ".tmp",
-                "gift-author-kernel-target",
-                "debug",
-                "gift-author-kernel",
-            )
-        )
-        if not os.path.exists(kernel_bin):
-            self.skipTest("Rust gift-author-kernel binary not built in sibling directory")
+        kernel_bin = resolve_gift_kernel_binary()
+        if not kernel_bin:
+            self.skipTest("Rust gift-author-kernel binary not found via GIFT_KERNEL_BIN, PATH, or sibling workspace")
 
         solver = FiniteDomainCSPSolver()
         dg = DependencyGraph()
@@ -773,6 +741,25 @@ class TestM0KernelClosure(unittest.TestCase):
         )
         self.assertIsInstance(bad_verdict, RefuteVerdict)
         self.assertEqual(bad_verdict.counterexample["stage"], "dual_target_differential_probe")
+
+
+
+    def test_14_cto_layered_facade_zero_torch_kernel_and_env_binary_discovery(self):
+        import src.kernel as kernel_pkg
+        self.assertIs(kernel_pkg.resolve_gift_kernel_binary, resolve_gift_kernel_binary)
+        self.assertIs(kernel_pkg.FiniteDomainCSPSolver, FiniteDomainCSPSolver)
+        resolved = resolve_gift_kernel_binary()
+        self.assertIsNotNone(resolved, "Expected gift-author-kernel binary to be discovered via workspace or GIFT_KERNEL_BIN")
+        # Verify GIFT_KERNEL_BIN override takes precedence
+        prev = os.environ.get("GIFT_KERNEL_BIN")
+        try:
+            os.environ["GIFT_KERNEL_BIN"] = resolved
+            self.assertEqual(resolve_gift_kernel_binary(), os.path.abspath(resolved))
+        finally:
+            if prev is None:
+                os.environ.pop("GIFT_KERNEL_BIN", None)
+            else:
+                os.environ["GIFT_KERNEL_BIN"] = prev
 
 
 if __name__ == "__main__":
