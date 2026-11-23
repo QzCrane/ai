@@ -1,5 +1,5 @@
 {
-  "manifest_version": "v34.0",
+  "manifest_version": "v35.0",
   "target_document": "docs/whitepapers/world_cognition_unified_model.md",
   "governance_rule": "Every ACTIVE theory/mechanism/falsification entry MUST have its required_anchor present in target_document; any removed entry MUST switch status to MERGED_INTO or FALSIFIED_BY with explicit disposition_target (zero silent evaporation).",
   "entries": [
@@ -692,6 +692,36 @@
       "status": "ACTIVE",
       "required_anchor": "Lean 4 第一性原理悟性融合",
       "source_ref": "world_cognition_unified_model.md#3.1G",
+      "disposition_target": null
+    },
+    {
+      "id": "WORKFLOW-WHEEL-FIRST-ANTI-NIH-LAW",
+      "domain": "meta_methodology",
+      "arch_layer": "LAYER_A_META_WORLD",
+      "title": "轮子优先（Wheel-First）五步工作循环与反 NIH 铁律（优先复用成熟轮子，.gift 永不膨胀为通用编程语言）",
+      "status": "ACTIVE",
+      "required_anchor": "轮子优先（Wheel-First）五步工作循环与反 NIH 铁律",
+      "source_ref": "world_cognition_unified_model.md#3.1H",
+      "disposition_target": null
+    },
+    {
+      "id": "SURF-RUST-PURE-SUBSET-BRIDGE-SYN",
+      "domain": "intent_surface_syntax",
+      "arch_layer": "LAYER_B_L0_INTENT_SURFACE",
+      "title": "基于 syn 静态审计的 Rust 纯子集桥接与 .gift 薄意图层边界（复杂集合/泛型纯逻辑外置桥接）",
+      "status": "ACTIVE",
+      "required_anchor": "Rust 纯子集桥接（`syn`）与薄意图层边界",
+      "source_ref": "world_cognition_unified_model.md#3.1H",
+      "disposition_target": null
+    },
+    {
+      "id": "COMP-PL-FORMAL-TEN-BENCHMARK-LANDSCAPE",
+      "domain": "computation_theory_core",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "PL/形式化全谱系十大标杆横向审计（Verus/Aeneas/Dafny/Quint-TLA+/Alloy/Koka-Effekt/Flix/Salsa/egglog/Z3-OR-Tools 四分裁决）",
+      "status": "ACTIVE",
+      "required_anchor": "PL/形式化全谱系十大标杆横向审计",
+      "source_ref": "world_cognition_unified_model.md#3.1H",
       "disposition_target": null
     }
   ],

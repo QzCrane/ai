@@ -787,7 +787,9 @@ def audit_v34_unification_and_lean_synthesis() -> dict:
         errors.append("constitution_v34_sync_failed")
 
     active_cnt = sum(1 for e in manifest.get("entries", []) if e.get("status") == "ACTIVE")
-    manifest_v34_upgraded = bool(manifest.get("manifest_version") == "v34.0" and active_cnt >= 84)
+    raw_ver = str(manifest.get("manifest_version", "v0")).lstrip("v")
+    major_ver = int(raw_ver.split(".")[0]) if raw_ver.split(".")[0].isdigit() else 0
+    manifest_v34_upgraded = bool(major_ver >= 34 and active_cnt >= 84)
     if not manifest_v34_upgraded:
         errors.append(f"manifest_v34_upgrade_failed:{manifest.get('manifest_version')}:{active_cnt}")
 
@@ -806,6 +808,122 @@ def audit_v34_unification_and_lean_synthesis() -> dict:
         "lean4_debruijn_synthesis_verified": lean4_debruijn_synthesis_verified,
         "constitution_v34_synced": constitution_v34_synced,
         "manifest_v34_upgraded": manifest_v34_upgraded,
+        "md_file_count_locked_at_9": md_locked,
+        "errors": errors,
+    }
+
+
+
+def audit_v35_wheel_first_and_pl_landscape() -> dict:
+    """v35.0 Wheel-First Anti-NIH loop, Lean 4 tiered boundary correction & 10-benchmark PL landscape gate."""
+    l1_txt = (REPO_ROOT / "docs" / "whitepapers" / "world_cognition_unified_model.md").read_text(encoding="utf-8")
+    const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
+    mpath = REPO_ROOT / "docs" / "architecture" / "THEORY_PRESERVATION_MANIFEST.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    entries = {e.get("id"): e for e in manifest.get("entries", [])}
+    errors: list[str] = []
+
+    md_locked = len([p for p in REPO_ROOT.rglob("*.md") if ".git" not in p.parts]) == 9
+    if not md_locked:
+        errors.append("md_file_count_not_locked_at_9")
+
+    lean_tiered_tokens = (
+        "日常业务编译热路径",
+        "离线元证明",
+        "交互式 Tactic",
+        "Refinement Types",
+        "Verus",
+        "Dafny",
+    )
+    sec_31g = l1_txt.split("### 3.1G", 1)[1].split("### 3.1H", 1)[0] if ("### 3.1G" in l1_txt and "### 3.1H" in l1_txt) else ""
+    rule34_sec = const_txt.split("## Rule 34:", 1)[1] if "## Rule 34:" in const_txt else ""
+    lean4_tiered_correction_verified = bool(
+        all(t in sec_31g for t in lean_tiered_tokens)
+        and all(t in rule34_sec for t in lean_tiered_tokens)
+        and "坚决拒绝（3 项）" not in sec_31g
+        and "坚决拒绝依赖类型" not in rule34_sec
+    )
+    if not lean4_tiered_correction_verified:
+        errors.append("lean4_tiered_correction_failed")
+
+    const_v35_tokens = (
+        "v35.0",
+        "Wheel-First",
+        "五步工作循环",
+        "反 NIH",
+        "绝不重造通用编程语言",
+        "syn",
+        "SMT-LIB2",
+        "Z3",
+        "OR-Tools",
+        "LSP 3.17",
+        "Salsa",
+        "egglog",
+        "zero_ai_inside_compiler: true",
+        "EXTERNAL_USER_ONLY",
+        "v35_wheel_first_and_pl_landscape",
+    )
+    wheel_first_constitution_synced = bool(all(t in const_txt for t in const_v35_tokens))
+    if not wheel_first_constitution_synced:
+        errors.append("wheel_first_constitution_sync_failed")
+
+    pl_tokens = (
+        "### 3.1H",
+        "轮子优先（Wheel-First）五步工作循环与反 NIH 铁律",
+        "Rust 纯子集桥接（`syn`）与薄意图层边界",
+        "PL/形式化全谱系十大标杆横向审计",
+        "Verus",
+        "Aeneas",
+        "Dafny",
+        "Quint",
+        "TLA+",
+        "Alloy",
+        "Koka",
+        "Effekt",
+        "Flix",
+        "Salsa",
+        "egglog",
+        "Z3",
+        "OR-Tools",
+        "直接复用轮子",
+        "吸收思想",
+        "归属离线层",
+        "排除边界",
+        "v34.0→v35.0",
+    )
+    pl_landscape_ten_benchmarks_verified = bool(all(t in l1_txt for t in pl_tokens))
+    if not pl_landscape_ten_benchmarks_verified:
+        errors.append("pl_landscape_ten_benchmarks_failed")
+
+    expected_v35_entries = {
+        "WORKFLOW-WHEEL-FIRST-ANTI-NIH-LAW": "LAYER_A_META_WORLD",
+        "SURF-RUST-PURE-SUBSET-BRIDGE-SYN": "LAYER_B_L0_INTENT_SURFACE",
+        "COMP-PL-FORMAL-TEN-BENCHMARK-LANDSCAPE": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+    }
+    entries_ok = all(
+        entries.get(eid, {}).get("status") == "ACTIVE" and entries.get(eid, {}).get("arch_layer") == layer
+        for eid, layer in expected_v35_entries.items()
+    )
+    active_cnt = sum(1 for e in manifest.get("entries", []) if e.get("status") == "ACTIVE")
+    raw_ver = str(manifest.get("manifest_version", "v0")).lstrip("v")
+    major_ver = int(raw_ver.split(".")[0]) if raw_ver.split(".")[0].isdigit() else 0
+    manifest_v35_upgraded = bool(major_ver >= 35 and active_cnt >= 87 and entries_ok)
+    if not manifest_v35_upgraded:
+        errors.append(f"manifest_v35_upgrade_failed:{manifest.get('manifest_version')}:{active_cnt}:{entries_ok}")
+
+    return {
+        "ok": bool(
+            md_locked
+            and lean4_tiered_correction_verified
+            and wheel_first_constitution_synced
+            and pl_landscape_ten_benchmarks_verified
+            and manifest_v35_upgraded
+            and not errors
+        ),
+        "lean4_tiered_correction_verified": lean4_tiered_correction_verified,
+        "wheel_first_constitution_synced": wheel_first_constitution_synced,
+        "pl_landscape_ten_benchmarks_verified": pl_landscape_ten_benchmarks_verified,
+        "manifest_v35_upgraded": manifest_v35_upgraded,
         "md_file_count_locked_at_9": md_locked,
         "errors": errors,
     }
@@ -920,6 +1038,7 @@ def main() -> int:
     engine_res = audit_executable_world_engine()
     v33_res = audit_v33_convergence_closure()
     v34_res = audit_v34_unification_and_lean_synthesis()
+    v35_res = audit_v35_wheel_first_and_pl_landscape()
     allow_missing_sec = True if (args.allow_missing_sec_repo or not args.require_sec_repo) else False
     cross_repo_res = audit_cross_repo_governance_sync(Path(args.sec_repo) if args.sec_repo else None, allow_missing=allow_missing_sec)
     tests_ok = True
@@ -937,9 +1056,10 @@ def main() -> int:
         "executable_world_engine": engine_res,
         "v33_convergence_closure": v33_res,
         "v34_unification_and_lean_synthesis": v34_res,
+        "v35_wheel_first_and_pl_landscape": v35_res,
         "cross_repo_governance_sync": cross_repo_res,
         "tests_passed": tests_ok if args.run_tests else "skipped",
-        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and slim_res["ok"] and theory_res["ok"] and engine_res["ok"] and v33_res["ok"] and v34_res["ok"] and cross_repo_res["ok"] and tests_ok),
+        "overall_healthy": bool(ast_res["ok"] and ssot_res["ok"] and fresh_res["ok"] and slim_res["ok"] and theory_res["ok"] and engine_res["ok"] and v33_res["ok"] and v34_res["ok"] and v35_res["ok"] and cross_repo_res["ok"] and tests_ok),
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0 if report["overall_healthy"] else 1

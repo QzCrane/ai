@@ -53,7 +53,7 @@ class Test253V34UnificationAndLeanSynthesis(unittest.TestCase):
 
         mpath = REPO_ROOT / "docs" / "architecture" / "THEORY_PRESERVATION_MANIFEST.json"
         manifest = json.loads(mpath.read_text(encoding="utf-8"))
-        self.assertEqual(manifest["manifest_version"], "v34.0")
+        self.assertGreaterEqual(int(str(manifest["manifest_version"]).lstrip("v").split(".")[0]), 34)
 
         entries_by_id = {e["id"]: e for e in manifest["entries"]}
         expected_v34 = {
@@ -67,20 +67,20 @@ class Test253V34UnificationAndLeanSynthesis(unittest.TestCase):
 
         res = audit_theory_preservation_manifest()
         self.assertTrue(res["ok"], res)
-        self.assertEqual(res["manifest_version"], "v34.0")
-        self.assertEqual(res["active_theories_verified"], 84)
+        self.assertGreaterEqual(int(str(res["manifest_version"]).lstrip("v").split(".")[0]), 34)
+        self.assertGreaterEqual(res["active_theories_verified"], 84)
         self.assertEqual(res["evaporated_urls"], [])
         self.assertEqual(res["evaporated_arxiv"], [])
-        self.assertEqual(
-            res["layer_distribution"],
-            {
-                "LAYER_A_META_WORLD": 28,
-                "LAYER_B_L0_INTENT_SURFACE": 14,
-                "LAYER_C_L1_DETERMINISTIC_KERNEL": 20,
-                "LAYER_D_L2_L3_PHYSICAL_EXECUTION": 7,
-                "LAYER_E_EXTERNAL_USERS_AI_BRAIN": 15,
-            },
-        )
+        v34_floor = {
+            "LAYER_A_META_WORLD": 28,
+            "LAYER_B_L0_INTENT_SURFACE": 14,
+            "LAYER_C_L1_DETERMINISTIC_KERNEL": 20,
+            "LAYER_D_L2_L3_PHYSICAL_EXECUTION": 7,
+            "LAYER_E_EXTERNAL_USERS_AI_BRAIN": 15,
+        }
+        for layer_name, min_cnt in v34_floor.items():
+            self.assertGreaterEqual(res["layer_distribution"].get(layer_name, 0), min_cnt)
+        self.assertEqual(sum(res["layer_distribution"].values()), res["active_theories_verified"])
 
     def test_253c_constitution_rule34_v34_sync_and_9md_lock(self) -> None:
         const_txt = (REPO_ROOT / "SYSTEM_CONSTITUTION.md").read_text(encoding="utf-8")
