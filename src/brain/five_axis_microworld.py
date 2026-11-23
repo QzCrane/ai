@@ -934,3 +934,168 @@ def audit_core_surface_four_rulers() -> Dict[str, Any]:
         "lossless_desugaring_ok": ruler3_ok,
         "zero_jargon_conflict_lifting_ok": ruler4_ok,
     }
+
+
+_EPOCH_TYPE_MAP: Dict[str, Tuple[type, ...]] = {
+    "str": (str,),
+    "int": (int,),
+    "float": (int, float),
+    "bool": (bool,),
+    "list": (list,),
+    "dict": (dict,),
+}
+
+_COMPATIBLE_TYPE_WIDENING: frozenset[Tuple[str, str]] = frozenset({
+    ("int", "float"),
+})
+
+_INTERNAL_COMPILER_JARGON: frozenset[str] = frozenset({
+    "ast_node", "ir_lower_pass", "hir_arena", "mir_cfg", "btree_slot",
+    "tcb_hash", "ssa_phi", "vtable_ptr", "monomorph_stub", "rustc_mir",
+    "内部ast", "降维中间表示", "寄存器分配", "单态化桩",
+})
+
+
+def _value_matches_schema_type(val: Any, type_name: str) -> bool:
+    if type_name == "int":
+        return isinstance(val, int) and not isinstance(val, bool)
+    if type_name == "float":
+        return isinstance(val, (int, float)) and not isinstance(val, bool)
+    expected = _EPOCH_TYPE_MAP.get(type_name)
+    return expected is not None and isinstance(val, expected)
+
+
+def validate_epoch_migration(
+    old_schema: Dict[str, Any],
+    new_schema: Dict[str, Any],
+    records: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """v32.0 Offline Cross-Epoch Ontology Migration Gate (A2 Boundary)."""
+    breaking_reasons: List[str] = []
+    old_ep = old_schema.get("epoch")
+    new_ep = new_schema.get("epoch")
+    if (
+        isinstance(old_ep, bool) or not isinstance(old_ep, int)
+        or isinstance(new_ep, bool) or not isinstance(new_ep, int)
+        or new_ep <= old_ep
+    ):
+        breaking_reasons.append(f"epoch_not_strictly_monotonic:{old_ep}->{new_ep}")
+
+    old_fields: Dict[str, Dict[str, Any]] = old_schema.get("fields", {})
+    new_fields: Dict[str, Dict[str, Any]] = new_schema.get("fields", {})
+
+    old_invs = set(old_schema.get("invariants", ()))
+    new_invs = set(new_schema.get("invariants", ()))
+    retired_invs = set(new_schema.get("retired_invariants", ()))
+    silently_dropped_invs = sorted(old_invs - new_invs - retired_invs)
+    if silently_dropped_invs:
+        breaking_reasons.append(f"hard_invariant_silently_dropped:{','.join(silently_dropped_invs)}")
+
+    for fname, fspec in old_fields.items():
+        if fname not in new_fields:
+            populated = any(fname in rec and rec[fname] is not None for rec in records)
+            if fspec.get("required") or populated:
+                breaking_reasons.append(f"removed_field_breaks_history:{fname}")
+            continue
+        nspec = new_fields[fname]
+        otype = fspec.get("type", "str")
+        ntype = nspec.get("type", "str")
+        if otype != ntype and (otype, ntype) not in _COMPATIBLE_TYPE_WIDENING:
+            breaking_reasons.append(f"incompatible_type_change:{fname}:{otype}->{ntype}")
+
+        new_enum = nspec.get("enum")
+        if new_enum is not None:
+            new_enum_set = set(new_enum)
+            old_enum = fspec.get("enum")
+            if old_enum is not None and not set(old_enum).issubset(new_enum_set):
+                breaking_reasons.append(f"enum_domain_narrowed:{fname}")
+            for idx, rec in enumerate(records):
+                if fname in rec and rec[fname] is not None and rec[fname] not in new_enum_set:
+                    breaking_reasons.append(f"record_enum_out_of_domain:{idx}:{fname}={rec[fname]!r}")
+
+    for fname, nspec in new_fields.items():
+        if fname not in old_fields and nspec.get("required") and "default" not in nspec:
+            missing_in_hist = any(fname not in rec or rec[fname] is None for rec in records)
+            if missing_in_hist or not records:
+                breaking_reasons.append(f"new_required_field_missing_default:{fname}")
+
+    migrated: List[Dict[str, Any]] = []
+    if not breaking_reasons:
+        for idx, rec in enumerate(records):
+            out_rec = dict(rec)
+            for fname, nspec in new_fields.items():
+                if fname not in out_rec and "default" in nspec:
+                    out_rec[fname] = nspec["default"]
+                if fname in out_rec and out_rec[fname] is not None:
+                    ntype = nspec.get("type", "str")
+                    if not _value_matches_schema_type(out_rec[fname], ntype):
+                        breaking_reasons.append(f"record_type_mismatch:{idx}:{fname}:{ntype}")
+                    elif ntype == "float" and isinstance(out_rec[fname], int) and not isinstance(out_rec[fname], bool):
+                        out_rec[fname] = float(out_rec[fname])
+            migrated.append(out_rec)
+
+    ok = len(breaking_reasons) == 0
+    return {
+        "ok": ok,
+        "decision": "MIGRATE_COMPAT" if ok else "HALT_BREAKING",
+        "from_epoch": old_ep,
+        "to_epoch": new_ep,
+        "records_checked": len(records),
+        "migrated_records": migrated if ok else [],
+        "breaking_reasons": breaking_reasons,
+        "halt_tag": "<|halt:closure|>" if ok else "<|halt:bottom|>",
+    }
+
+
+def validate_external_user_protocol(
+    request: Dict[str, Any],
+    response: Dict[str, Any],
+) -> Dict[str, Any]:
+    """v32.0 External AI User Firewall Gate (USER-EXTERNAL-AI-FIREWALL)."""
+    errors: List[str] = []
+    policy = request.get("compiler_policy", {}) if isinstance(request.get("compiler_policy"), dict) else {}
+    zero_ai = policy.get("zero_ai_inside_compiler", request.get("zero_ai_inside_compiler"))
+    if zero_ai is not True:
+        errors.append("compiler_policy_violation:zero_ai_inside_compiler_must_be_true")
+
+    for forbidden_hook in ("compiler_llm_hook", "inject_llm_pass", "neural_lowering"):
+        if request.get(forbidden_hook) or policy.get(forbidden_hook):
+            errors.append(f"compiler_contamination_forbidden:{forbidden_hook}")
+
+    ai_role = request.get("ai_role")
+    if ai_role != "EXTERNAL_USER_ONLY":
+        errors.append(f"ai_role_violation:expected_EXTERNAL_USER_ONLY_got_{ai_role!r}")
+
+    for carrier_name, carrier in (("request", request), ("response", response)):
+        if (
+            carrier.get("authority_req") == "host_grant"
+            and carrier.get("minted_by") in ("external_ai", "model_permit", "EXTERNAL_USER_ONLY")
+        ):
+            errors.append(f"authority_violation:{carrier_name}_external_ai_cannot_mint_host_grant")
+
+    forbidden_tokens = DEFAULT_FOUR_LAYER_PROFILES["L0_INTENT"]["forbidden_lower_tokens"] | _INTERNAL_COMPILER_JARGON
+    user_facing_blob = " ".join(
+        str(response.get(k, ""))
+        for k in ("message", "lifted_tradeoff", "diagnostics_summary", "user_facing_text")
+    ).lower()
+    leaked_tokens = sorted(
+        tok for tok in forbidden_tokens
+        if (
+            tok.lower() in user_facing_blob
+            if not tok.isascii()
+            else bool(re.search(rf"(?<![a-z0-9]){re.escape(tok.lower())}(?![a-z0-9])", user_facing_blob))
+        )
+    )
+    if leaked_tokens:
+        errors.append(f"internal_jargon_leakage:{','.join(leaked_tokens)}")
+
+    ok = len(errors) == 0
+    return {
+        "ok": ok,
+        "decision": "ALLOW_EXTERNAL_PROTOCOL" if ok else "REJECT_PROTOCOL_VIOLATION",
+        "zero_ai_inside_compiler": bool(zero_ai is True),
+        "ai_role": str(ai_role),
+        "leaked_tokens": leaked_tokens,
+        "errors": errors,
+        "halt_tag": "<|halt:closure|>" if ok else "<|halt:bottom|>",
+    }

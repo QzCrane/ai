@@ -1262,3 +1262,506 @@ def resolve_gift_kernel_binary(explicit_path: Optional[str] = None) -> Optional[
         if cand and os.path.isfile(cand) and os.access(cand, os.X_OK):
             return os.path.abspath(cand)
     return None
+
+
+def _require_exact_int(name: str, value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{name} must be an exact int (not bool/float), got {value!r}")
+    return value
+
+
+@dataclass(frozen=True)
+class FourDTimeCut:
+    """4D Bitemporal evaluation cut: (fact_time, obs_time, norm_time, judge_time)."""
+
+    fact_time: int
+    obs_time: int
+    norm_time: int
+    judge_time: int
+
+    def __post_init__(self) -> None:
+        _require_exact_int("fact_time", self.fact_time)
+        _require_exact_int("obs_time", self.obs_time)
+        _require_exact_int("norm_time", self.norm_time)
+        _require_exact_int("judge_time", self.judge_time)
+        if self.judge_time < self.obs_time:
+            raise ValueError(
+                f"Causal violation: judge_time ({self.judge_time}) < obs_time ({self.obs_time})"
+            )
+
+
+@dataclass(frozen=True)
+class BitemporalFactEntry:
+    """Append-only immutable bitemporal fact or tombstone record."""
+
+    fact_id: str
+    value: Any
+    valid_from: int
+    valid_to: Optional[int]
+    recorded_at: int
+    generation: int
+    tombstone: bool = False
+    seq: int = 0
+
+    def covers_fact_time(self, t_fact: int) -> bool:
+        return self.valid_from <= t_fact and (self.valid_to is None or t_fact < self.valid_to)
+
+
+@dataclass(frozen=True)
+class NormRuleVersion:
+    """Immutable versioned normative predicate with explicit effective window & recording time."""
+
+    norm_id: str
+    version: int
+    effective_from: int
+    effective_to: Optional[int]
+    recorded_at: int
+    predicate: Callable[[Any], bool]
+    hard: bool = True
+    description: str = ""
+
+    def active_at(self, t_norm: int, t_obs: int) -> bool:
+        return (
+            self.recorded_at <= t_obs
+            and self.effective_from <= t_norm
+            and (self.effective_to is None or t_norm < self.effective_to)
+        )
+
+
+@dataclass(frozen=True)
+class FourDQueryResult:
+    """Structured 4D bitemporal evaluation output preserving non-retroactivity & late-obs visibility."""
+
+    cut: FourDTimeCut
+    fact_id: str
+    fact_status: str
+    fact_value: Any
+    fact_evidence: EvidenceBit
+    resurrection_blocked: bool
+    reconciliation_required: bool
+    late_observation_detected: bool
+    late_observations: Tuple[BitemporalFactEntry, ...]
+    norm_id: Optional[str]
+    norm_at_fact_version: Optional[int]
+    norm_at_cut_version: Optional[int]
+    compliant_at_fact_time: EvidenceBit
+    compliant_at_norm_time: EvidenceBit
+    retroactive_norm_detected: bool
+    norm_temporal_status: str
+    primary_verdict: EvidenceBit
+
+
+class BitemporalFactLedger:
+    """Append-only 4D bitemporal fact & norm ledger (zero silent history overwrite)."""
+
+    def __init__(self) -> None:
+        self._seq: int = 0
+        self._fact_log: List[BitemporalFactEntry] = []
+        self._norm_log: List[NormRuleVersion] = []
+
+    @property
+    def fact_history(self) -> Tuple[BitemporalFactEntry, ...]:
+        return tuple(self._fact_log)
+
+    def append_fact(
+        self,
+        fact_id: str,
+        value: Any,
+        valid_from: int,
+        recorded_at: int,
+        generation: int,
+        valid_to: Optional[int] = None,
+        tombstone: bool = False,
+    ) -> BitemporalFactEntry:
+        _require_exact_int("valid_from", valid_from)
+        _require_exact_int("recorded_at", recorded_at)
+        _require_exact_int("generation", generation)
+        if valid_to is not None:
+            _require_exact_int("valid_to", valid_to)
+            if valid_to <= valid_from:
+                raise ValueError(f"valid_to ({valid_to}) must be > valid_from ({valid_from})")
+        for prev in self._fact_log:
+            if (
+                prev.fact_id == fact_id
+                and prev.valid_from == valid_from
+                and prev.valid_to == valid_to
+                and prev.generation == generation
+                and prev.recorded_at == recorded_at
+            ):
+                if prev.value != value or prev.tombstone != tombstone:
+                    raise ValueError(
+                        f"Silent history overwrite forbidden for {fact_id!r} at gen={generation}, recorded_at={recorded_at}"
+                    )
+                return prev
+        self._seq += 1
+        entry = BitemporalFactEntry(
+            fact_id=fact_id,
+            value=None if tombstone else value,
+            valid_from=valid_from,
+            valid_to=valid_to,
+            recorded_at=recorded_at,
+            generation=generation,
+            tombstone=tombstone,
+            seq=self._seq,
+        )
+        self._fact_log.append(entry)
+        return entry
+
+    def register_norm(
+        self,
+        norm_id: str,
+        version: int,
+        effective_from: int,
+        recorded_at: int,
+        predicate: Callable[[Any], bool],
+        effective_to: Optional[int] = None,
+        hard: bool = True,
+        description: str = "",
+    ) -> NormRuleVersion:
+        _require_exact_int("version", version)
+        _require_exact_int("effective_from", effective_from)
+        _require_exact_int("recorded_at", recorded_at)
+        if effective_to is not None:
+            _require_exact_int("effective_to", effective_to)
+            if effective_to <= effective_from:
+                raise ValueError("effective_to must be > effective_from")
+        for prev in self._norm_log:
+            if prev.norm_id == norm_id and prev.version == version:
+                raise ValueError(f"Duplicate norm version forbidden: {norm_id}@v{version}")
+        nv = NormRuleVersion(
+            norm_id=norm_id,
+            version=version,
+            effective_from=effective_from,
+            effective_to=effective_to,
+            recorded_at=recorded_at,
+            predicate=predicate,
+            hard=hard,
+            description=description,
+        )
+        self._norm_log.append(nv)
+        return nv
+
+    def _resolve_norm(self, norm_id: str, t_norm: int, t_obs: int) -> Optional[NormRuleVersion]:
+        cands = [n for n in self._norm_log if n.norm_id == norm_id and n.active_at(t_norm, t_obs)]
+        if not cands:
+            return None
+        return max(cands, key=lambda n: (n.version, n.effective_from, n.recorded_at))
+
+    def query_at(
+        self,
+        cut: FourDTimeCut,
+        fact_id: str,
+        norm_id: Optional[str] = None,
+        dep_graph: Optional[DependencyGraph] = None,
+        derivation_key: Optional[str] = None,
+    ) -> FourDQueryResult:
+        matching_fact_time = [
+            e for e in self._fact_log if e.fact_id == fact_id and e.covers_fact_time(cut.fact_time)
+        ]
+        visible = [e for e in matching_fact_time if e.recorded_at <= cut.obs_time]
+        late_obs = tuple(
+            e for e in matching_fact_time if cut.obs_time < e.recorded_at <= cut.judge_time
+        )
+
+        fact_status = "ABSENT"
+        fact_value: Any = None
+        fact_evidence = NEITHER
+        resurrection_blocked = False
+        reconciliation_required = False
+
+        if visible:
+            max_gen = max(e.generation for e in visible)
+            top_entries = [e for e in visible if e.generation == max_gen]
+            tombstones = [e for e in top_entries if e.tombstone]
+            live_top = [e for e in top_entries if not e.tombstone]
+
+            if tombstones:
+                fact_status = "TOMBSTONED"
+                fact_evidence = REFUTE
+                tomb_rec_at = min(t.recorded_at for t in tombstones)
+                late_lower_live = [
+                    e for e in visible
+                    if (not e.tombstone) and e.generation < max_gen and e.recorded_at > tomb_rec_at
+                ]
+                if late_lower_live or live_top:
+                    resurrection_blocked = True
+                    reconciliation_required = True
+            else:
+                distinct_vals = []
+                for e in live_top:
+                    if e.value not in distinct_vals:
+                        distinct_vals.append(e.value)
+                if len(distinct_vals) > 1:
+                    fact_status = "CONFLICT"
+                    fact_value = tuple(distinct_vals)
+                    fact_evidence = BOTH
+                else:
+                    fact_status = "ACTIVE"
+                    fact_value = distinct_vals[0]
+                    fact_evidence = SUPPORT
+
+        norm_fact: Optional[NormRuleVersion] = None
+        norm_cut: Optional[NormRuleVersion] = None
+        comp_fact = NEITHER
+        comp_cut = NEITHER
+        retroactive_norm_detected = False
+        norm_status = "NO_NORM_REQUESTED"
+
+        if norm_id is not None:
+            norm_fact = self._resolve_norm(norm_id, cut.fact_time, cut.obs_time)
+            norm_cut = self._resolve_norm(norm_id, cut.norm_time, cut.obs_time)
+            if fact_status == "CONFLICT":
+                comp_fact = BOTH
+                comp_cut = BOTH
+                norm_status = "FACT_CONFLICT"
+            elif fact_status != "ACTIVE":
+                norm_status = "INDETERMINATE_NO_ACTIVE_FACT"
+            else:
+                if norm_fact is not None:
+                    comp_fact = SUPPORT if norm_fact.predicate(fact_value) else REFUTE
+                if norm_cut is not None:
+                    comp_cut = SUPPORT if norm_cut.predicate(fact_value) else REFUTE
+
+                if norm_fact is None and norm_cut is None:
+                    norm_status = "INDETERMINATE_NO_NORM"
+                elif cut.norm_time != cut.fact_time and comp_fact == SUPPORT and comp_cut == REFUTE:
+                    retroactive_norm_detected = True
+                    norm_status = "RETROACTIVE_NORM_DRIFT"
+                elif cut.norm_time != cut.fact_time and comp_fact == REFUTE and comp_cut == SUPPORT:
+                    retroactive_norm_detected = True
+                    norm_status = "RETROACTIVE_RELAXATION"
+                elif comp_fact == SUPPORT and comp_cut == SUPPORT:
+                    norm_status = "CONSISTENT_COMPLIANT"
+                elif comp_fact == REFUTE and comp_cut == REFUTE:
+                    norm_status = "CONSISTENT_VIOLATION"
+                else:
+                    norm_status = "PARTIAL_NORM_COVERAGE"
+
+        primary_verdict = comp_fact if norm_id is not None else fact_evidence
+
+        if dep_graph is not None and derivation_key is not None:
+            reads = [f"4d_fact:{fact_id}@t={cut.fact_time},obs<={cut.obs_time}"]
+            if norm_id is not None:
+                reads.append(f"4d_norm:{norm_id}@t={cut.fact_time}")
+            dep_graph.record_derivation(
+                derivation_key,
+                primary_verdict.label,
+                reads=reads,
+                neg_reads=[f"tombstone:{fact_id}", f"late_obs:{fact_id}"],
+            )
+
+        return FourDQueryResult(
+            cut=cut,
+            fact_id=fact_id,
+            fact_status=fact_status,
+            fact_value=fact_value,
+            fact_evidence=fact_evidence,
+            resurrection_blocked=resurrection_blocked,
+            reconciliation_required=reconciliation_required,
+            late_observation_detected=len(late_obs) > 0,
+            late_observations=late_obs,
+            norm_id=norm_id,
+            norm_at_fact_version=norm_fact.version if norm_fact else None,
+            norm_at_cut_version=norm_cut.version if norm_cut else None,
+            compliant_at_fact_time=comp_fact,
+            compliant_at_norm_time=comp_cut,
+            retroactive_norm_detected=retroactive_norm_detected,
+            norm_temporal_status=norm_status,
+            primary_verdict=primary_verdict,
+        )
+
+
+@dataclass(frozen=True)
+class ChisholmNormSpec:
+    """Stratified Chisholm Contrary-To-Duty (CTD) norm specification."""
+
+    norm_id: str
+    primary_obligation: str
+    compliant_followup: str
+    contrary_to_duty_compensation: str
+    hard_redline_guards: Tuple[NamedConstraint, ...]
+    soft_preferences: Tuple[NamedConstraint, ...] = ()
+
+
+@dataclass(frozen=True)
+class ChisholmEvaluationResult:
+    """Explosion-free stratified deontic verdict enforcing R3 hard-redline dominance."""
+
+    norm_id: str
+    state: str
+    active_obligations: Tuple[str, ...]
+    suppressed_obligations: Tuple[str, ...]
+    explosion_prevented: bool
+    hard_redline_violated: Tuple[str, ...]
+    verdict: Verdict
+
+
+class ChisholmDeonticEngine:
+    """Stratified Chisholm CTD Deontic Automaton with R3 Hard-Redline Dominance."""
+
+    def __init__(self, solver: Optional[FiniteDomainCSPSolver] = None) -> None:
+        self._solver = solver or FiniteDomainCSPSolver()
+
+    def evaluate(
+        self,
+        spec: ChisholmNormSpec,
+        action_assignment: Dict[str, Any],
+        primary_observed: EvidenceBit,
+        followup_observed: EvidenceBit = NEITHER,
+        compensation_observed: EvidenceBit = NEITHER,
+        candidate_domains: Optional[Dict[str, Sequence[Any]]] = None,
+        node_budget: int = 2000,
+    ) -> ChisholmEvaluationResult:
+        violated_redlines = tuple(
+            c.name
+            for c in spec.hard_redline_guards
+            if all(v in action_assignment for v in c.variables) and not c.predicate(action_assignment)
+        )
+        if violated_redlines:
+            return ChisholmEvaluationResult(
+                norm_id=spec.norm_id,
+                state="HARD_REDLINE_HALT",
+                active_obligations=(),
+                suppressed_obligations=(
+                    spec.primary_obligation,
+                    spec.compliant_followup,
+                    spec.contrary_to_duty_compensation,
+                ),
+                explosion_prevented=True,
+                hard_redline_violated=violated_redlines,
+                verdict=ConflictVerdict(
+                    kind="unsat_core",
+                    mus=violated_redlines,
+                    mcs=(),
+                    relaxable=tuple(c.name for c in spec.soft_preferences),
+                ),
+            )
+
+        if candidate_domains is not None:
+            hard_guards = [
+                NamedConstraint(c.name, c.variables, c.predicate, hard=True, priority=c.priority)
+                for c in spec.hard_redline_guards
+            ]
+            soft_prefs = [
+                NamedConstraint(c.name, c.variables, c.predicate, hard=False, priority=c.priority)
+                for c in spec.soft_preferences
+            ]
+            csp_verdict = self._solver.solve_tiered(
+                candidate_domains,
+                hard_guards + soft_prefs,
+                node_budget=node_budget,
+            )
+            if isinstance(csp_verdict, ConflictVerdict):
+                return ChisholmEvaluationResult(
+                    norm_id=spec.norm_id,
+                    state="HARD_REDLINE_HALT",
+                    active_obligations=(),
+                    suppressed_obligations=(
+                        spec.primary_obligation,
+                        spec.compliant_followup,
+                        spec.contrary_to_duty_compensation,
+                    ),
+                    explosion_prevented=True,
+                    hard_redline_violated=csp_verdict.mus,
+                    verdict=csp_verdict,
+                )
+
+        if primary_observed == BOTH:
+            return ChisholmEvaluationResult(
+                norm_id=spec.norm_id,
+                state="EVIDENCE_CONFLICT",
+                active_obligations=(spec.primary_obligation,),
+                suppressed_obligations=(spec.compliant_followup, spec.contrary_to_duty_compensation),
+                explosion_prevented=True,
+                hard_redline_violated=(),
+                verdict=ConflictVerdict(kind="evidence_both", mus=(spec.primary_obligation,), mcs=()),
+            )
+
+        if primary_observed == NEITHER:
+            return ChisholmEvaluationResult(
+                norm_id=spec.norm_id,
+                state="INDETERMINATE_PRIMARY",
+                active_obligations=(spec.primary_obligation,),
+                suppressed_obligations=(spec.compliant_followup, spec.contrary_to_duty_compensation),
+                explosion_prevented=True,
+                hard_redline_violated=(),
+                verdict=UnresolvedHoleVerdict(
+                    hole=UnresolvedHole(
+                        kind="observable_ro",
+                        missing_ref=f"{spec.norm_id}:{spec.primary_obligation}",
+                        details="Primary obligation observation missing; refusing premature CTD activation.",
+                    )
+                ),
+            )
+
+        if primary_observed == SUPPORT:
+            if followup_observed == BOTH:
+                v: Verdict = ConflictVerdict(kind="evidence_both", mus=(spec.compliant_followup,), mcs=())
+            elif followup_observed == SUPPORT:
+                v = SupportVerdict(
+                    witness={"branch": "compliant_followup", "fulfilled": spec.compliant_followup},
+                    dep_closure=(spec.primary_obligation, spec.compliant_followup),
+                )
+            elif followup_observed == REFUTE:
+                v = RefuteVerdict(
+                    counterexample={"branch": "compliant_followup", "violated": spec.compliant_followup},
+                    dep_closure=(spec.primary_obligation, spec.compliant_followup),
+                )
+            else:
+                v = UnresolvedHoleVerdict(
+                    hole=UnresolvedHole(
+                        kind="observable_ro",
+                        missing_ref=f"{spec.norm_id}:{spec.compliant_followup}",
+                        details="Primary obligation fulfilled; awaiting compliant_followup observation.",
+                    )
+                )
+            return ChisholmEvaluationResult(
+                norm_id=spec.norm_id,
+                state="COMPLIANT_FOLLOWUP_ACTIVE",
+                active_obligations=(spec.compliant_followup,),
+                suppressed_obligations=(spec.contrary_to_duty_compensation,),
+                explosion_prevented=True,
+                hard_redline_violated=(),
+                verdict=v,
+            )
+
+        if compensation_observed == BOTH:
+            v_ctd: Verdict = ConflictVerdict(
+                kind="evidence_both", mus=(spec.contrary_to_duty_compensation,), mcs=()
+            )
+        elif compensation_observed == SUPPORT:
+            v_ctd = SupportVerdict(
+                witness={
+                    "branch": "ctd_compensation",
+                    "primary_breached": spec.primary_obligation,
+                    "compensation_fulfilled": spec.contrary_to_duty_compensation,
+                },
+                dep_closure=(spec.primary_obligation, spec.contrary_to_duty_compensation),
+            )
+        elif compensation_observed == REFUTE:
+            v_ctd = RefuteVerdict(
+                counterexample={
+                    "branch": "ctd_compensation",
+                    "primary_breached": spec.primary_obligation,
+                    "compensation_violated": spec.contrary_to_duty_compensation,
+                },
+                dep_closure=(spec.primary_obligation, spec.contrary_to_duty_compensation),
+            )
+        else:
+            v_ctd = UnresolvedHoleVerdict(
+                hole=UnresolvedHole(
+                    kind="observable_ro",
+                    missing_ref=f"{spec.norm_id}:{spec.contrary_to_duty_compensation}",
+                    details="Primary obligation breached (~a); CTD compensation active and awaiting observation.",
+                )
+            )
+
+        return ChisholmEvaluationResult(
+            norm_id=spec.norm_id,
+            state="CTD_COMPENSATION_ACTIVE",
+            active_obligations=(spec.contrary_to_duty_compensation,),
+            suppressed_obligations=(spec.compliant_followup,),
+            explosion_prevented=True,
+            hard_redline_violated=(),
+            verdict=v_ctd,
+        )

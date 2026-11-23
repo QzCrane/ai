@@ -1,5 +1,5 @@
 {
-  "manifest_version": "v31.0",
+  "manifest_version": "v32.0",
   "target_document": "docs/whitepapers/world_cognition_unified_model.md",
   "governance_rule": "Every ACTIVE theory/mechanism/falsification entry MUST have its required_anchor present in target_document; any removed entry MUST switch status to MERGED_INTO or FALSIFIED_BY with explicit disposition_target (zero silent evaporation).",
   "entries": [
@@ -615,6 +615,33 @@
       "title": "外部使用者防火墙铁律（人类与 AI 仅作为编译器外部使用者）",
       "status": "ACTIVE",
       "required_anchor": "外部使用者防火墙铁律",
+      "disposition_target": null
+    },
+    {
+      "id": "CALC-4D-BITEMPORAL-EVALUATOR",
+      "domain": "operational_calculus",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "4D 双时态可执行求值器（fact/obs/norm/judge 切面与法不溯及既往）",
+      "status": "ACTIVE",
+      "required_anchor": "4D 双时态可执行求值器",
+      "disposition_target": null
+    },
+    {
+      "id": "CALC-CHISHOLM-CTD-DEONTIC",
+      "domain": "operational_calculus",
+      "arch_layer": "LAYER_C_L1_DETERMINISTIC_KERNEL",
+      "title": "Chisholm 反事实违约补偿分层状态机与 R3 硬红线不可抵消律",
+      "status": "ACTIVE",
+      "required_anchor": "Chisholm 反事实违约补偿演算",
+      "disposition_target": null
+    },
+    {
+      "id": "GOV-EPOCH-MIGRATION-EXT-USER",
+      "domain": "external_user_protocol",
+      "arch_layer": "LAYER_E_EXTERNAL_USERS_AI_BRAIN",
+      "title": "跨 Epoch 离线本体迁移门禁与外部 AI 使用者零内部术语泄漏协议",
+      "status": "ACTIVE",
+      "required_anchor": "跨 Epoch 离线本体迁移与外部使用者协议",
       "disposition_target": null
     }
   ],

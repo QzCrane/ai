@@ -2781,5 +2781,108 @@ class Test03GovernanceAndSSOT(unittest.TestCase):
         if sync.get("sec_repo_found"):
             self.assertTrue(sync["zero_ai_enforced"])
 
+    def test_251_v32_bitemporal_chisholm_epoch_migration_and_external_user_protocol(self):
+        from src.brain.world_kernel_engine import (
+            BOTH, NEITHER, REFUTE, SUPPORT, BitemporalFactLedger, ChisholmDeonticEngine, ChisholmNormSpec,
+            FourDTimeCut, NamedConstraint,
+        )
+        from src.brain.five_axis_microworld import validate_epoch_migration, validate_external_user_protocol
+        from scripts.repo_doctor import (
+            audit_executable_world_engine, audit_theory_preservation_manifest, audit_zero_dead_code,
+        )
+
+        # A. 4D Bitemporal Ledger (non-retroactivity, late obs, tombstone anti-resurrection, conflict)
+        def norm_v1_min_108(val): return val >= 108
+        def norm_v2_min_120(val): return val >= 120
+
+        ledger = BitemporalFactLedger()
+        ledger.register_norm("produce_price", 1, effective_from=1, effective_to=10, recorded_at=1, predicate=norm_v1_min_108)
+        ledger.register_norm("produce_price", 2, effective_from=10, effective_to=None, recorded_at=10, predicate=norm_v2_min_120)
+        ledger.append_fact("order_1", 108, valid_from=5, recorded_at=5, generation=1)
+
+        r_retro = ledger.query_at(FourDTimeCut(5, 12, 10, 12), "order_1", norm_id="produce_price")
+        self.assertTrue(r_retro.retroactive_norm_detected)
+        self.assertEqual(r_retro.norm_temporal_status, "RETROACTIVE_NORM_DRIFT")
+        self.assertEqual(r_retro.compliant_at_fact_time, SUPPORT)
+        self.assertEqual(r_retro.compliant_at_norm_time, REFUTE)
+        self.assertEqual(r_retro.primary_verdict, SUPPORT)
+
+        ledger.append_fact("order_late", 108, valid_from=5, recorded_at=12, generation=1)
+        r_late = ledger.query_at(FourDTimeCut(5, 7, 5, 12), "order_late")
+        self.assertEqual(r_late.fact_status, "ABSENT")
+        self.assertTrue(r_late.late_observation_detected)
+
+        ledger.append_fact("order_del", None, valid_from=5, recorded_at=8, generation=2, tombstone=True)
+        ledger.append_fact("order_del", 108, valid_from=5, recorded_at=12, generation=1, tombstone=False)
+        r_tomb = ledger.query_at(FourDTimeCut(5, 12, 5, 12), "order_del")
+        self.assertEqual(r_tomb.fact_status, "TOMBSTONED")
+        self.assertTrue(r_tomb.resurrection_blocked)
+        self.assertTrue(r_tomb.reconciliation_required)
+
+        with self.assertRaises(ValueError):
+            FourDTimeCut(5, 12, 5, 10)
+        with self.assertRaises(ValueError):
+            ledger.append_fact("order_1", 999, valid_from=5, recorded_at=5, generation=1)
+
+        # B. Chisholm CTD + R3 Hard-Redline Dominance
+        def guard_no_forge(a): return not a["forge_audit_log"]
+        def pref_zero_cost(a): return a["cost"] == 0
+
+        spec = ChisholmNormSpec(
+            norm_id="escrow_delivery",
+            primary_obligation="ship_on_time",
+            compliant_followup="notify_buyer",
+            contrary_to_duty_compensation="refund_penalty",
+            hard_redline_guards=(NamedConstraint("no_forge_audit", ("forge_audit_log",), guard_no_forge, hard=True),),
+            soft_preferences=(NamedConstraint("zero_cost", ("cost",), pref_zero_cost, hard=False, priority=1_000_000),),
+        )
+        eng = ChisholmDeonticEngine()
+        res_comp = eng.evaluate(spec, {"forge_audit_log": False, "cost": 10}, primary_observed=SUPPORT, followup_observed=SUPPORT)
+        self.assertEqual(res_comp.state, "COMPLIANT_FOLLOWUP_ACTIVE")
+        self.assertIn("refund_penalty", res_comp.suppressed_obligations)
+
+        res_ctd = eng.evaluate(spec, {"forge_audit_log": False, "cost": 100}, primary_observed=REFUTE, compensation_observed=SUPPORT)
+        self.assertEqual(res_ctd.state, "CTD_COMPENSATION_ACTIVE")
+        self.assertTrue(res_ctd.explosion_prevented)
+        self.assertIn("notify_buyer", res_ctd.suppressed_obligations)
+
+        res_r3 = eng.evaluate(spec, {"forge_audit_log": True, "cost": 0}, primary_observed=SUPPORT, followup_observed=SUPPORT)
+        self.assertEqual(res_r3.state, "HARD_REDLINE_HALT")
+        self.assertEqual(res_r3.verdict.halt_tag, "<|halt:bottom|>")
+
+        # C. Cross-Epoch Offline Migration
+        old_s = {"epoch": 1, "fields": {"id": {"type": "str", "required": True}, "amt": {"type": "int", "required": True}, "st": {"type": "str", "enum": ["A", "B"]}}, "invariants": ["R1"]}
+        new_ok = {"epoch": 2, "fields": {"id": {"type": "str", "required": True}, "amt": {"type": "float", "required": True}, "st": {"type": "str", "enum": ["A", "B", "C"]}, "note": {"type": "str", "required": True, "default": "ok"}}, "invariants": ["R1"]}
+        hist = [{"id": "1", "amt": 10, "st": "A"}]
+        m_ok = validate_epoch_migration(old_s, new_ok, hist)
+        self.assertEqual(m_ok["decision"], "MIGRATE_COMPAT")
+        self.assertNotIn("note", hist[0])
+
+        new_bad = {"epoch": 2, "fields": {"id": {"type": "str", "required": True}, "amt": {"type": "int", "required": True}, "st": {"type": "str", "enum": ["B"]}}, "invariants": []}
+        m_bad = validate_epoch_migration(old_s, new_bad, hist)
+        self.assertEqual(m_bad["decision"], "HALT_BREAKING")
+        self.assertEqual(m_bad["halt_tag"], "<|halt:bottom|>")
+
+        # D. External AI User Protocol Firewall
+        p_ok = validate_external_user_protocol(
+            {"zero_ai_inside_compiler": True, "ai_role": "EXTERNAL_USER_ONLY"},
+            {"message": "条款冲突已定位至退货红线"},
+        )
+        self.assertEqual(p_ok["decision"], "ALLOW_EXTERNAL_PROTOCOL")
+        p_bad = validate_external_user_protocol(
+            {"zero_ai_inside_compiler": False, "compiler_llm_hook": True, "ai_role": "COMPILER_ORACLE", "authority_req": "host_grant", "minted_by": "external_ai"},
+            {"message": "vram_4gb_cap and hir_arena_dump 互斥锁 降维中间表示"},
+        )
+        self.assertEqual(p_bad["decision"], "REJECT_PROTOCOL_VIOLATION")
+        self.assertIn("hir_arena", p_bad["leaked_tokens"])
+        self.assertIn("互斥锁", p_bad["leaked_tokens"])
+
+        # E. Full Doctor Gates
+        self.assertTrue(audit_zero_dead_code()["ok"])
+        self.assertTrue(audit_executable_world_engine()["ok"])
+        man = audit_theory_preservation_manifest()
+        self.assertTrue(man["ok"], man)
+        self.assertGreaterEqual(man["active_theories_verified"], 79)
+
 if __name__ == "__main__":
     unittest.main()

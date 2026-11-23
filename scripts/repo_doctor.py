@@ -63,7 +63,7 @@ def audit_zero_dead_code() -> dict:
             "VersionedWeightSnapshot", "ConditionalFailurePlaybook",
         }),
         ("five_axis_microworld.py", {"FiveAxisMicroworldGenerator"}),
-        ("world_kernel_engine.py", {"EvidenceBit", "NamedConstraint", "FiniteDomainCSPSolver", "DependencyGraph"}),
+        ("world_kernel_engine.py", {"EvidenceBit", "NamedConstraint", "FiniteDomainCSPSolver", "DependencyGraph", "FourDTimeCut", "BitemporalFactLedger", "ChisholmDeonticEngine"}),
     ]
     dead_classes = {}
     for fname, roots in core_specs:
@@ -483,10 +483,12 @@ def audit_executable_world_engine() -> dict:
     if str(REPO_ROOT) not in sys.path:
         sys.path.insert(0, str(REPO_ROOT))
     from src.brain.world_kernel_engine import (
-        BOTH, NEITHER, REFUTE, SUPPORT, DependencyGraph, EvidenceBit, FiniteDomainCSPSolver, NamedConstraint,
+        BOTH, NEITHER, REFUTE, SUPPORT, BitemporalFactLedger, ChisholmDeonticEngine, ChisholmNormSpec,
+        DependencyGraph, EvidenceBit, FiniteDomainCSPSolver, FourDTimeCut, NamedConstraint,
     )
     from src.brain.five_axis_microworld import (
-        DEFAULT_FOUR_LAYER_PROFILES, desugar_intent_essence_to_msk, validate_layer_dag, validate_layered_kernel_packet,
+        DEFAULT_FOUR_LAYER_PROFILES, desugar_intent_essence_to_msk, validate_epoch_migration,
+        validate_external_user_protocol, validate_layer_dag, validate_layered_kernel_packet,
     )
 
     vals = (SUPPORT, REFUTE, BOTH, NEITHER)
@@ -534,12 +536,73 @@ def audit_executable_world_engine() -> dict:
     }
     dag_ok = validate_layer_dag([("L0_INTENT", "L1_CONSENSUS"), ("L0_INTENT", "L1_KERNEL"), ("L1_CONSENSUS", "L3_EXECUTION"), ("L1_KERNEL", "L3_EXECUTION")], profiles=diamond_profiles)["ok"]
 
+    # 5. Real 4D Bitemporal Ledger (non-retroactivity + late obs)
+    ledger = BitemporalFactLedger()
+    ledger.register_norm("price_floor", 1, effective_from=1, effective_to=10, recorded_at=1, predicate=lambda v: v >= 108)
+    ledger.register_norm("price_floor", 2, effective_from=10, effective_to=None, recorded_at=10, predicate=lambda v: v >= 120)
+    ledger.append_fact("order_paid", 108, valid_from=5, recorded_at=5, generation=1)
+    q4d = ledger.query_at(FourDTimeCut(5, 12, 10, 12), "order_paid", norm_id="price_floor")
+    bitemporal_4d_ok = bool(
+        q4d.retroactive_norm_detected
+        and q4d.compliant_at_fact_time == SUPPORT
+        and q4d.compliant_at_norm_time == REFUTE
+        and q4d.primary_verdict == SUPPORT
+    )
+
+    # 6. Real Chisholm CTD Engine + R3 hard-redline dominance
+    ch_spec = ChisholmNormSpec(
+        norm_id="delivery_ctd",
+        primary_obligation="deliver_on_time",
+        compliant_followup="send_receipt",
+        contrary_to_duty_compensation="issue_delay_voucher",
+        hard_redline_guards=(NamedConstraint("no_forge_audit", ("forge_audit",), lambda a: not a["forge_audit"], hard=True),),
+        soft_preferences=(NamedConstraint("low_cost", ("cost",), lambda a: a["cost"] <= 10, hard=False, priority=1_000_000),),
+    )
+    ch_eng = ChisholmDeonticEngine()
+    ch_ctd = ch_eng.evaluate(ch_spec, {"forge_audit": False, "cost": 50}, primary_observed=REFUTE, compensation_observed=SUPPORT)
+    ch_r3 = ch_eng.evaluate(ch_spec, {"forge_audit": True, "cost": 0}, primary_observed=SUPPORT, followup_observed=SUPPORT)
+    chisholm_ctd_r3_ok = bool(
+        ch_ctd.state == "CTD_COMPENSATION_ACTIVE"
+        and ch_ctd.explosion_prevented
+        and "send_receipt" in ch_ctd.suppressed_obligations
+        and ch_r3.state == "HARD_REDLINE_HALT"
+    )
+
+    # 7. Cross-Epoch migration + External AI User protocol
+    ep_compat = validate_epoch_migration(
+        {"epoch": 1, "fields": {"id": {"type": "str", "required": True}}, "invariants": ["R1"]},
+        {"epoch": 2, "fields": {"id": {"type": "str", "required": True}, "tag": {"type": "str", "required": True, "default": "v2"}}, "invariants": ["R1"]},
+        [{"id": "a1"}],
+    )
+    ep_break = validate_epoch_migration(
+        {"epoch": 1, "fields": {"id": {"type": "str", "required": True}}, "invariants": ["R1"]},
+        {"epoch": 2, "fields": {"id": {"type": "str", "required": True}}, "invariants": []},
+        [{"id": "a1"}],
+    )
+    ext_ok = validate_external_user_protocol(
+        {"zero_ai_inside_compiler": True, "ai_role": "EXTERNAL_USER_ONLY"},
+        {"message": "业务契约校验通过"},
+    )
+    ext_bad = validate_external_user_protocol(
+        {"zero_ai_inside_compiler": False, "ai_role": "EXTERNAL_USER_ONLY"},
+        {"message": "hir_arena overflow"},
+    )
+    epoch_ext_ok = bool(
+        ep_compat["decision"] == "MIGRATE_COMPAT"
+        and ep_break["decision"] == "HALT_BREAKING"
+        and ext_ok["ok"]
+        and (not ext_bad["ok"])
+    )
+
     return {
-        "ok": bool(bilattice_ok and csp_ok and dep_ok and adv_hiding_ok and dag_ok),
+        "ok": bool(bilattice_ok and csp_ok and dep_ok and adv_hiding_ok and dag_ok and bitemporal_4d_ok and chisholm_ctd_r3_ok and epoch_ext_ok),
         "bilattice_laws_ok": bilattice_ok,
         "real_csp_mus_ok": csp_ok,
         "dep_closure_invalidation_ok": dep_ok,
         "adversarial_hiding_and_diamond_dag_ok": bool(adv_hiding_ok and dag_ok),
+        "bitemporal_4d_ok": bitemporal_4d_ok,
+        "chisholm_ctd_r3_ok": chisholm_ctd_r3_ok,
+        "epoch_migration_and_ext_user_ok": epoch_ext_ok,
     }
 
 
