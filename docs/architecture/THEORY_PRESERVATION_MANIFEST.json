@@ -1,5 +1,5 @@
 {
-  "manifest_version": "v28.0",
+  "manifest_version": "v29.0",
   "target_document": "docs/whitepapers/world_cognition_unified_model.md",
   "governance_rule": "Every ACTIVE theory/mechanism/falsification entry MUST have its required_anchor present in target_document; any removed entry MUST switch status to MERGED_INTO or FALSIFIED_BY with explicit disposition_target (zero silent evaporation).",
   "entries": [
@@ -394,6 +394,55 @@
       "status": "ACTIVE",
       "required_anchor": "2610.37984",
       "source_ref": "https://arxiv.org/abs/2610.37984"
+    },
+    {
+      "id": "META-EXCLUSION-CLOSURE-LAW",
+      "domain": "meta_methodology",
+      "status": "ACTIVE",
+      "required_anchor": "排除创造闭合",
+      "source_ref": "world_cognition_unified_model.md#3.1B"
+    },
+    {
+      "id": "META-SHARED-CARRIER-O-K",
+      "domain": "meta_methodology",
+      "status": "ACTIVE",
+      "required_anchor": "共享载体",
+      "source_ref": "world_cognition_unified_model.md#3.1B"
+    },
+    {
+      "id": "META-CONTROL-VS-DOMAIN-OPEN",
+      "domain": "meta_methodology",
+      "status": "ACTIVE",
+      "required_anchor": "控制结构闭合",
+      "source_ref": "world_cognition_unified_model.md#3.1B"
+    },
+    {
+      "id": "META-MVSL-CLOSURE",
+      "domain": "meta_methodology",
+      "status": "ACTIVE",
+      "required_anchor": "Minimum Viable Semantic Leverage",
+      "source_ref": "world_cognition_unified_model.md#3.1B"
+    },
+    {
+      "id": "STRAT-OFFENSIVE-NARROW-WAIST",
+      "domain": "strategic_paradigm",
+      "status": "ACTIVE",
+      "required_anchor": "立法与雕塑",
+      "source_ref": "world_cognition_unified_model.md#3.1B"
+    },
+    {
+      "id": "FAL-11-SATISFIX-AGENT-DRIFT",
+      "domain": "2026q4_falsification",
+      "status": "ACTIVE",
+      "required_anchor": "2611.16289",
+      "source_ref": "https://arxiv.org/abs/2611.16289"
+    },
+    {
+      "id": "CALC-M0-FIVE-GATE-PROTOCOL",
+      "domain": "operational_calculus",
+      "status": "ACTIVE",
+      "required_anchor": "M0 -> M1",
+      "source_ref": "world_cognition_unified_model.md#3.1B"
     }
   ]
 }
